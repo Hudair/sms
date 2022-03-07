@@ -1,0 +1,4 @@
+/vendor
+/.env
+/storage/installed
+/storage/logs

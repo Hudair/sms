@@ -1,0 +1,459 @@
+{
+  "admin": [
+    {
+      "url": "admin/dashboard",
+      "name": "Dashboard",
+      "slug": "dashboard",
+      "i18n": "Dashboard",
+      "icon": "feather icon-home",
+      "access": "access backend"
+    },
+    {
+      "url": "",
+      "name": "Customer",
+      "icon": "feather icon-users",
+      "i18n": "Customer",
+      "access": "view customer|view subscription",
+      "submenu": [
+        {
+          "url": "admin/customers",
+          "name": "Customers",
+          "i18n": "Customers",
+          "access": "view customer"
+        },
+        {
+          "url": "admin/subscriptions",
+          "name": "Subscriptions",
+          "i18n": "Subscriptions",
+          "access": "view subscription"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Plan",
+      "i18n": "Plan",
+      "icon": "feather icon-credit-card",
+      "access": "manage plans|manage currencies",
+      "submenu": [
+        {
+          "url": "admin/plans",
+          "name": "Plans",
+          "i18n": "Plans",
+          "access": "manage plans"
+        },
+        {
+          "url": "admin/currencies",
+          "name": "Currencies",
+          "i18n": "Currencies",
+          "access": "manage currencies"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Sending",
+      "icon": "feather icon-send",
+      "i18n": "Sending",
+      "access": "view sender_id|view keywords|view sending_servers|view phone_numbers",
+      "submenu": [
+        {
+          "url": "admin/sending-servers",
+          "name": "Sending Servers",
+          "i18n": "Sending Servers",
+          "access": "view sending_servers"
+        },
+        {
+          "url": "admin/senderid",
+          "name": "Sender ID",
+          "i18n": "Sender ID",
+          "access": "view sender_id"
+        },
+        {
+          "url": "admin/keywords",
+          "name": "Keywords",
+          "i18n": "Keywords",
+          "access": "view keywords"
+        },
+        {
+          "url": "admin/phone-numbers",
+          "name": "Phone Numbers",
+          "i18n": "Phone Numbers",
+          "access": "view phone_numbers"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Security",
+      "i18n": "Security",
+      "icon": "feather icon-shield",
+      "access": "view blacklist|view spam_word",
+      "submenu": [
+        {
+          "url": "admin/blacklists",
+          "name": "Blacklist",
+          "i18n": "Blacklist",
+          "access": "view blacklist"
+        },
+        {
+          "url": "admin/spam-word",
+          "name": "Spam Word",
+          "i18n": "Spam Word",
+          "access": "view spam_word"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Ticket",
+      "i18n": "Ticket",
+      "icon": "feather icon-life-buoy",
+      "access": "view tickets|view department",
+      "submenu": [
+        {
+          "url": "admin/tickets",
+          "name": "Tickets",
+          "i18n": "Tickets",
+          "access": "view tickets"
+        },
+        {
+          "url": "admin/department",
+          "name": "Department",
+          "i18n": "Department",
+          "access": "view department"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Administrator",
+      "i18n": "Administrator",
+      "icon": "feather icon-user",
+      "access": "view administrator|view roles",
+      "submenu": [
+        {
+          "url": "admin/administrators",
+          "name": "Administrators",
+          "i18n": "Administrators",
+          "access": "view administrator"
+        },
+        {
+          "url": "admin/roles",
+          "name": "Admin Roles",
+          "i18n": "Admin Roles",
+          "access": "view roles"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Settings",
+      "i18n": "Settings",
+      "icon": "feather icon-settings",
+      "access": "general settings|view languages|view payment_gateways|view email_templates|manage update_application",
+      "submenu": [
+        {
+          "url": "admin/settings",
+          "name": "All Settings",
+          "i18n": "All Settings",
+          "access": "general settings"
+        },
+        {
+          "url": "admin/languages",
+          "name": "Language",
+          "i18n": "Language",
+          "access": "view languages"
+        },
+        {
+          "url": "admin/payment-gateways",
+          "name": "Payment Gateways",
+          "i18n": "Payment Gateways",
+          "access": "view payment_gateways"
+        },
+        {
+          "url": "admin/email-templates",
+          "name": "Email Templates",
+          "i18n": "Email Templates",
+          "access": "view email_templates"
+        },
+        {
+          "url": "admin/update-application",
+          "name": "Update Application",
+          "i18n": "Update Application",
+          "access": "manage update_application"
+        },
+        {
+          "url": "admin/maintenance-mode",
+          "name": "Maintenance Mode",
+          "i18n": "Maintenance Mode",
+          "access": "manage maintenance_mode"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Reports",
+      "i18n": "Reports",
+      "icon": "feather icon-bar-chart-2",
+      "access": "view invoices|view sms_history",
+      "submenu": [
+        {
+          "url": "admin/invoices",
+          "name": "All Invoices",
+          "i18n": "All Invoices",
+          "access": "view invoices"
+        },
+        {
+          "url": "admin/sms-history",
+          "name": "SMS History",
+          "i18n": "SMS History",
+          "access": "view sms_history"
+        },
+        {
+          "url": "admin/block-message",
+          "name": "Block Message",
+          "i18n": "Block Message",
+          "access": "view block_message"
+        }
+      ]
+    }
+  ],
+  "customer": [
+    {
+      "url": "dashboard",
+      "name": "Dashboard",
+      "slug": "dashboard",
+      "i18n": "Dashboard",
+      "icon": "feather icon-home",
+      "access": "access_backend"
+    },
+    {
+      "url": "view-charts",
+      "name": "View Charts",
+      "slug": "view-charts",
+      "i18n": "View Charts",
+      "icon": "feather icon-pie-chart",
+      "access": "view_charts"
+    },
+    {
+      "url": "contacts",
+      "name": "Contacts",
+      "slug": "contacts",
+      "i18n": "Contacts",
+      "icon": "feather icon-user",
+      "access": "view_contact_group|create_contact_group|update_contact_group|delete_contact_group|view_contact|create_contact|update_contact|delete_contact"
+    },
+    {
+      "url": "",
+      "name": "Sending",
+      "icon": "feather icon-send",
+      "i18n": "Sending",
+      "access": "create_sending_servers|view_numbers|view_keywords|view_sender_id|sms_template",
+      "submenu": [
+        {
+          "url": "sending-servers",
+          "name": "Sending Servers",
+          "i18n": "Sending Servers",
+          "access": "create_sending_servers"
+        },
+        {
+          "url": "numbers",
+          "name": "Phone Numbers",
+          "i18n": "Phone Numbers",
+          "access": "view_numbers"
+        },
+        {
+          "url": "keywords",
+          "name": "Keywords",
+          "i18n": "Keywords",
+          "access": "view_keywords"
+        },
+        {
+          "url": "sender-id",
+          "name": "Sender ID",
+          "i18n": "Sender ID",
+          "access": "view_sender_id"
+        },
+        {
+          "url": "sms-template",
+          "name": "SMS Template",
+          "i18n": "SMS Template",
+          "access": "sms_template"
+        }
+      ]
+    },
+    {
+      "url": "blacklists",
+      "name": "Blacklist",
+      "slug": "blacklists",
+      "i18n": "Blacklist",
+      "icon": "feather icon-shield",
+      "access": "view_blacklist|create_blacklist|update_blacklist|delete_blacklist"
+    },
+    {
+      "url": "",
+      "name": "SMS",
+      "i18n": "SMS",
+      "icon": "feather icon-message-square",
+      "access": "sms_overview|sms_campaign_builder|sms_quick_send|sms_bulk_messages",
+      "submenu": [
+        {
+          "url": "sms/overview",
+          "name": "Overview",
+          "i18n": "Overview",
+          "access": "sms_overview"
+        },
+        {
+          "url": "sms/campaign-builder",
+          "name": "Campaign Builder",
+          "i18n": "Campaign Builder",
+          "access": "sms_campaign_builder"
+        },
+        {
+          "url": "sms/quick-send",
+          "name": "Send Quick",
+          "i18n": "Send Quick",
+          "access": "sms_quick_send"
+        },
+        {
+          "url": "sms/import",
+          "name": "Send Using File",
+          "i18n": "Send Using File",
+          "access": "sms_bulk_messages"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "Voice",
+      "i18n": "Voice",
+      "icon": "feather icon-phone-call",
+      "access": "voice_overview|voice_campaign_builder|voice_quick_send|voice_bulk_messages",
+      "submenu": [
+        {
+          "url": "voice/overview",
+          "name": "Overview",
+          "i18n": "Overview",
+          "access": "voice_overview"
+        },
+        {
+          "url": "voice/campaign-builder",
+          "name": "Campaign Builder",
+          "i18n": "Campaign Builder",
+          "access": "voice_campaign_builder"
+        },
+        {
+          "url": "voice/quick-send",
+          "name": "Send Quick",
+          "i18n": "Send Quick",
+          "access": "voice_quick_send"
+        },
+        {
+          "url": "voice/import",
+          "name": "Send Using File",
+          "i18n": "Send Using File",
+          "access": "voice_bulk_messages"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "MMS",
+      "i18n": "MMS",
+      "icon": "feather icon-image",
+      "access": "mms_overview|mms_campaign_builder|mms_quick_send|mms_bulk_messages",
+      "submenu": [
+        {
+          "url": "mms/overview",
+          "name": "Overview",
+          "i18n": "Overview",
+          "access": "mms_overview"
+        },
+        {
+          "url": "mms/campaign-builder",
+          "name": "Campaign Builder",
+          "i18n": "Campaign Builder",
+          "access": "mms_campaign_builder"
+        },
+        {
+          "url": "mms/quick-send",
+          "name": "Send Quick",
+          "i18n": "Send Quick",
+          "access": "mms_quick_send"
+        },
+        {
+          "url": "mms/import",
+          "name": "Send Using File",
+          "i18n": "Send Using File",
+          "access": "mms_bulk_messages"
+        }
+      ]
+    },
+    {
+      "url": "",
+      "name": "WhatsApp",
+      "i18n": "WhatsApp",
+      "icon": "feather icon-message-circle",
+      "access": "whatsapp_overview|whatsapp_campaign_builder|whatsapp_quick_send|whatsapp_bulk_messages",
+      "submenu": [
+        {
+          "url": "whatsapp/overview",
+          "name": "Overview",
+          "i18n": "Overview",
+          "access": "whatsapp_overview"
+        },
+        {
+          "url": "whatsapp/campaign-builder",
+          "name": "Campaign Builder",
+          "i18n": "Campaign Builder",
+          "access": "whatsapp_campaign_builder"
+        },
+        {
+          "url": "whatsapp/quick-send",
+          "name": "Send Quick",
+          "i18n": "Send Quick",
+          "access": "whatsapp_quick_send"
+        },
+        {
+          "url": "whatsapp/import",
+          "name": "Send Using File",
+          "i18n": "Send Using File",
+          "access": "whatsapp_bulk_messages"
+        }
+      ]
+    },
+    {
+      "url": "chat-box",
+      "name": "Chat Box",
+      "slug": "chat-box",
+      "i18n": "Chat Box",
+      "icon": "feather icon-slack",
+      "access": "chat_box"
+    },
+    {
+      "url": "tickets",
+      "name": "Tickets",
+      "slug": "tickets",
+      "i18n": "Tickets",
+      "icon": "feather icon-mail",
+      "access": "view_ticket|create_ticket|delete_ticket"
+    },
+    {
+      "url": "knowledge-bases",
+      "name": "Knowledge Bases",
+      "slug": "knowledge-bases",
+      "i18n": "Knowledge Bases",
+      "icon": "feather icon-book-open",
+      "access": "knowledge_bases"
+    },
+    {
+      "url": "developers",
+      "name": "Developers",
+      "slug": "developers",
+      "i18n": "Developers",
+      "icon": "feather icon-terminal",
+      "access": "developers"
+    }
+  ]
+}

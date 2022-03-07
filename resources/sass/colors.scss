@@ -1,0 +1,19 @@
+// ================================================================================================
+//  File Name: colors.scss
+//  Description: Common color file to include color palettes and colors file, its quire good to
+//  have all color classes in a separate file as it's quite heavy.
+// ================================================================================================
+
+// Core
+// ------------------------------
+
+// Import variables and mixins
+@import "bootstrap/mixins/gradients";
+@import "core/mixins/hex2rgb";
+
+//box shadow for alert's heading
+@import "core/mixins/alert";
+
+// Color system, always load last
+// ------------------------------
+@import "core/colors/palette";
