@@ -227,7 +227,7 @@
     tour.addStep('step-1', {
         text: 'Thank you for choosing Ultimate SMS!<br><br>' +
             'This small tour will guide you through some of the Ultimate SMS  features and will help you get started using the application.<br><br>' +
-            'If you ever need support, please send email to <code>akasham67@gmail.com</code><br><br>' +
+            'If you ever need support, please send email to <code>info@arabcode.online</code><br><br>' +
             'Let\'s get started!',
         buttons: [
 

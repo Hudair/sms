@@ -60,7 +60,7 @@ class AppConfig extends Model
                 ],
                 [
                         'setting' => 'from_email',
-                        'value'   => 'akasham67@gmail.com',
+                        'value'   => 'info@arabcode.online',
                 ],
                 [
                         'setting' => 'from_name',
@@ -244,7 +244,7 @@ class AppConfig extends Model
                 ],
                 [
                         'setting' => 'notification_email',
-                        'value'   => 'akasham67@gmail.com',
+                        'value'   => 'info@arabcode.online',
                 ],
                 [
                         'setting' => 'sender_id_notification_email',
