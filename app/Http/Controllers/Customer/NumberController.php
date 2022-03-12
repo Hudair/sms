@@ -64,12 +64,14 @@ class NumberController extends CustomerBaseController
         $this->authorize('view_numbers');
 
         $columns = [
-                0 => 'uid',
-                1 => 'number',
-                2 => 'price',
-                3 => 'status',
-                4 => 'capabilities',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'number',
+                4 => 'price',
+                5 => 'status',
+                6 => 'capabilities',
+                7 => 'actions',
         ];
 
         $totalData = PhoneNumbers::where('user_id', Auth::user()->id)->count();
@@ -103,29 +105,31 @@ class NumberController extends CustomerBaseController
         if ( ! empty($numbers)) {
             foreach ($numbers as $number) {
 
-                $release  = __('locale.labels.release');
-                $renew    = __('locale.labels.renew');
-                $checkout = route('customer.numbers.pay', $number->uid);
-
-                $action = "<span class='action-release text-warning mr-1' data-toggle='tooltip' data-placement='top' title='$release'  data-id='$number->uid'><i class='feather us-2x icon-minus-square'></i></span>";
-
+                $is_assigned = false;
                 if ($number->status == 'assigned') {
-                    $status = '<div class="chip chip-success"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.assigned').'</div></div></div>';
+                    $is_assigned = true;
+                    $status      = '<span class="badge bg-success text-uppercase">'.__('locale.labels.assigned').'</span>';
                 } else {
-                    $status = '<div class="chip chip-danger"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.expired').'</div></div></div>';
-                    $action .= "<a href='$checkout' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$renew' ><i class='feather us-2x icon-refresh-cw' ></i></a>";
+                    $status = '<span class="badge bg-danger text-uppercase">'.__('locale.labels.expired').'</span>';
                 }
 
-                $nestedData['uid']          = $number->uid;
-                $nestedData['number']       = $number->number;
-                $nestedData['price']        = "<div>
+
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $number->uid;
+                $nestedData['number']        = $number->number;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($number->price, $number->currency->format)." </p>
                                                         <p class='text-muted'>".$number->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['status']       = $status;
+                $nestedData['status']        = $status;
+                $nestedData['is_assigned']   = $is_assigned;
+
                 $nestedData['capabilities'] = $number->getCapabilities();
-                $nestedData['action']       = $action;
-                $data[]                     = $nestedData;
+
+                $nestedData['renew_label'] = __('locale.labels.renew');
+                $nestedData['renew']       = route('customer.numbers.pay', $number->uid);
+                $nestedData['release']     = __('locale.labels.release');
+                $data[]                    = $nestedData;
 
             }
         }
@@ -173,11 +177,13 @@ class NumberController extends CustomerBaseController
         $this->authorize('buy_numbers');
 
         $columns = [
-                0 => 'uid',
-                1 => 'number',
-                2 => 'price',
-                3 => 'capabilities',
-                4 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'number',
+                4 => 'price',
+                5 => 'capabilities',
+                6 => 'actions',
         ];
 
         $totalData = PhoneNumbers::where('status', 'available')->count();
@@ -211,17 +217,17 @@ class NumberController extends CustomerBaseController
         if ( ! empty($numbers)) {
             foreach ($numbers as $number) {
 
-                $checkout = route('customer.numbers.pay', $number->uid);
-
-                $nestedData['uid']          = null;
-                $nestedData['number']       = $number->number;
-                $nestedData['price']        = "<div>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $number->uid;
+                $nestedData['buy']           = __('locale.labels.buy');
+                $nestedData['number']        = $number->number;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($number->price, $number->currency->format)." </p>
                                                         <p class='text-muted'>".$number->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['capabilities'] = $number->getCapabilities();
-                $nestedData['action']       = "<a href='$checkout' class='text-primary mr-1'><i class='feather us-2x icon-shopping-bag' ></i>".__('locale.labels.buy')."</a>";
-                $data[]                     = $nestedData;
+                $nestedData['checkout']      = route('customer.numbers.pay', $number->uid);
+                $nestedData['capabilities']  = $number->getCapabilities();
+                $data[]                      = $nestedData;
 
             }
         }

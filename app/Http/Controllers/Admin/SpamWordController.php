@@ -70,9 +70,11 @@ class SpamWordController extends AdminBaseController
         $this->authorize('view spam_word');
 
         $columns = [
-                0 => 'uid',
-                1 => 'word',
+                0 => 'responsive_id',
+                1 => 'uid',
                 2 => 'uid',
+                3 => 'word',
+                4 => 'action',
         ];
 
         $totalData = SpamWord::count();
@@ -106,10 +108,10 @@ class SpamWordController extends AdminBaseController
         if ( ! empty($spam_word)) {
             foreach ($spam_word as $word) {
 
-                $nestedData['uid']    = $word->uid;
-                $nestedData['word']   = $word->word;
-                $nestedData['action'] = "<span class='action-delete text-danger' data-id='$word->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]               = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $word->uid;
+                $nestedData['word']          = $word->word;
+                $data[]                      = $nestedData;
 
             }
         }

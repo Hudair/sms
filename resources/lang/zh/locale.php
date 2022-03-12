@@ -473,6 +473,7 @@ return [
                 'bulk_approve' => '批准',
                 'bulk_cancel'  => '取消',
                 'bulk_disable' => '禁用',
+                'showing_entries' => '显示 :start 到 :end 的 :total 条目',
         ],
 
     //Localization for application http status codes

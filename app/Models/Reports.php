@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static count()
  * @method static offset(mixed $start)
  * @method static whereLike(string[] $array, mixed $search)
+ * @method static insert(array $data)
  */
 class Reports extends Model
 {
@@ -102,25 +103,25 @@ class Reports extends Model
         $sms_type = $this->sms_type;
 
         if ($sms_type == 'plain') {
-            return '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.plain').'</span></div>';
+            return '<span class="badge badge-light-primary text-uppercase mr-1 mb-1">'.__('locale.labels.plain').'</span>';
         }
         if ($sms_type == 'unicode') {
-            return '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.unicode').'</span></div>';
+            return '<span class="badge badge-light-primary text-uppercase mr-1 mb-1">'.__('locale.labels.unicode').'</span>';
         }
 
         if ($sms_type == 'voice') {
-            return '<div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.voice').'</span></div>';
+            return '<span class="badge badge-light-success text-uppercase mr-1 mb-1">'.__('locale.labels.voice').'</span>';
         }
 
         if ($sms_type == 'mms') {
-            return '<div class="badge badge-info text-uppercase mr-1 mb-1"><span>'.__('locale.labels.mms').'</span></div>';
+            return '<span class="badge badge-light-info text-uppercase mr-1 mb-1">'.__('locale.labels.mms').'</span>';
         }
 
         if ($sms_type == 'whatsapp') {
-            return '<div class="badge badge-warning text-uppercase mb-1"><span>'.__('locale.labels.whatsapp').'</span></div>';
+            return '<span class="badge badge-light-warning text-uppercase mb-1">'.__('locale.labels.whatsapp').'</span>';
         }
 
-        return '<div class="badge badge-danger text-uppercase mb-1"><span>'.__('locale.labels.invalid').'</span></div>';
+        return '<span class="badge badge-light-danger text-uppercase mb-1">'.__('locale.labels.invalid').'</span>';
     }
 
     /**
@@ -133,18 +134,18 @@ class Reports extends Model
         $sms_type = $this->send_by;
 
         if ($sms_type == 'from') {
-            return '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.outgoing').'</span></div>';
+            return '<span class="badge badge-light-primary text-uppercase mr-1 mb-1">'.__('locale.labels.outgoing').'</span>';
         }
 
         if ($sms_type == 'to') {
-            return '<div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.incoming').'</span></div>';
+            return '<span class="badge badge-light-success text-uppercase mr-1 mb-1">'.__('locale.labels.incoming').'</span>';
         }
 
         if ($sms_type == 'api') {
-            return '<div class="badge badge-info text-uppercase mr-1 mb-1"><span>'.__('locale.labels.api').'</span></div>';
+            return '<span class="badge badge-light-info text-uppercase mr-1 mb-1">'.__('locale.labels.api').'</span>';
         }
 
-        return '<div class="badge badge-danger text-uppercase mb-1"><span>'.__('locale.labels.invalid').'</span></div>';
+        return '<span class="badge badge-light-danger text-uppercase mb-1">'.__('locale.labels.invalid').'</span>';
     }
 
 

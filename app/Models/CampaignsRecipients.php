@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @method static insert(array $numbers)
  * @method static where(string $string, $id)
+ * @method static create(array $array)
  */
 class CampaignsRecipients extends Model
 {

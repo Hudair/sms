@@ -7,168 +7,276 @@
    Author URL: https://codecanyon.net/user/codeglen
 ==========================================================================================*/
 
+'use strict';
+var sidebarToggle = $('.sidebar-toggle'),
+    overlay = $('.body-content-overlay'),
+    sidebarContent = $('.sidebar-content');
 
-(function($) {
-  "use strict";
+// Chat sidebar toggle
+function sidebarToggleFunction() {
+  if (sidebarToggle.length) {
+    sidebarToggle.on('click', function () {
+      sidebarContent.addClass('show');
+      overlay.addClass('show');
+    });
+  }
+}
+$(function () {
+  var chatUsersListWrapper = $('.chat-application .chat-user-list-wrapper'),
+      profileSidebar = $('.chat-application .chat-profile-sidebar'),
+      profileSidebarArea = $('.chat-application .profile-sidebar-area'),
+      profileToggle = $('.chat-application .sidebar-profile-toggle'),
+      userProfileToggle = $('.chat-application .user-profile-toggle'),
+      userProfileSidebar = $('.user-profile-sidebar'),
+      statusRadio = $('.chat-application .user-status input:radio[name=userStatus]'),
+      userChats = $('.user-chats'),
+      chatsUserList = $('.chat-users-list'),
+      chatList = $('.chat-list'),
+      contactList = $('.contact-list'),
+      closeIcon = $('.chat-application .close-icon'),
+      sidebarCloseIcon = $('.chat-application .sidebar-close-icon'),
+      menuToggle = $('.chat-application .menu-toggle'),
+      speechToText = $('.speech-to-text'),
+      chatSearch = $('.chat-application #chat-search');
 
-  // if it is not touch device
-  if (!$.app.menu.is_touch_device()){
+  // init ps if it is not touch device
+  if (!$.app.menu.is_touch_device()) {
     // Chat user list
-    if($('.chat-application .chat-user-list').length > 0){
-      var chat_user_list = new PerfectScrollbar(".chat-user-list");
+    if (chatUsersListWrapper.length > 0) {
+      var chatUserList = new PerfectScrollbar(chatUsersListWrapper[0]);
     }
 
-    // Chat user profile
-    if($('.chat-application .profile-sidebar-area .scroll-area').length > 0){
-      var chat_user_list = new PerfectScrollbar(".profile-sidebar-area .scroll-area");
+    // Admin profile left
+    if (userProfileSidebar.find('.user-profile-sidebar-area').length > 0) {
+      var userScrollArea = new PerfectScrollbar(userProfileSidebar.find('.user-profile-sidebar-area')[0]);
     }
 
     // Chat area
-    if($('.user-chats').length > 0){
-      var chat_user = new PerfectScrollbar(".user-chats", {
+    if (userChats.length > 0) {
+      var chatsUser = new PerfectScrollbar(userChats[0], {
         wheelPropagation: false
       });
     }
 
     // User profile right area
-    if($('.chat-application .user-profile-sidebar-area').length > 0){
-      var user_profile = new PerfectScrollbar(".user-profile-sidebar-area");
+    if (profileSidebarArea.length > 0) {
+      var user_profile = new PerfectScrollbar(profileSidebarArea[0]);
     }
+  } else {
+    chatUsersListWrapper.css('overflow', 'scroll');
+    userProfileSidebar.find('.user-profile-sidebar-area').css('overflow', 'scroll');
+    userChats.css('overflow', 'scroll');
+    profileSidebarArea.css('overflow', 'scroll');
+
+    // on user click sidebar close in touch devices
+    $(chatsUserList)
+        .find('li')
+        .on('click', function () {
+          $(sidebarContent).removeClass('show');
+          $(overlay).removeClass('show');
+        });
   }
 
-  // if it is a touch device
-  else {
-    $(".chat-user-list").css("overflow", "scroll");
-    $(".profile-sidebar-area .scroll-area").css("overflow", "scroll");
-    $(".user-chats").css("overflow", "scroll");
-    $(".user-profile-sidebar-area").css("overflow", "scroll");
+  // Chat Profile sidebar & overlay toggle
+  if (profileToggle.length) {
+    profileToggle.on('click', function () {
+      profileSidebar.addClass('show');
+      overlay.addClass('show');
+    });
   }
 
-
-  // Chat Profile sidebar toggle
-  $('.chat-application .sidebar-profile-toggle').on('click',function(){
-    $('.chat-profile-sidebar').addClass('show');
-    $('.chat-overlay').addClass('show');
-  });
-
-  // User Profile sidebar toggle
-  $('.chat-application .user-profile-toggle').on('click',function(){
-    $('.user-profile-sidebar').addClass('show');
-    $('.chat-overlay').addClass('show');
-  });
-
-  // Update status by clickin on Radio
-  $('.chat-application .user-status input:radio[name=userStatus]').on('change', function(){
-    var $className = "avatar-status-"+this.value;
-    $(".header-profile-sidebar .avatar span").removeClass();
-    $(".sidebar-profile-toggle .avatar span").removeClass();
-    $(".header-profile-sidebar .avatar span").addClass($className+" avatar-status-lg");
-    $(".sidebar-profile-toggle .avatar span").addClass($className);
-  });
+  // Update status by clicking on Radio
+  if (statusRadio.length) {
+    statusRadio.on('change', function () {
+      var $className = 'avatar-status-' + this.value,
+          profileHeaderAvatar = $('.header-profile-sidebar .avatar span');
+      profileHeaderAvatar.removeClass();
+      profileToggle.find('.avatar span').removeClass();
+      profileHeaderAvatar.addClass($className + ' avatar-status-lg');
+      profileToggle.find('.avatar span').addClass($className);
+    });
+  }
 
   // On Profile close click
-  $(".chat-application .close-icon").on('click',function(){
-    $('.chat-profile-sidebar').removeClass('show');
-    $('.user-profile-sidebar').removeClass('show');
-    if(!$(".sidebar-content").hasClass("show")){
-      $('.chat-overlay').removeClass('show');
-    }
-  });
+  if (closeIcon.length) {
+    closeIcon.on('click', function () {
+      profileSidebar.removeClass('show');
+      userProfileSidebar.removeClass('show');
+      if (!sidebarContent.hasClass('show')) {
+        overlay.removeClass('show');
+      }
+    });
+  }
 
   // On sidebar close click
-  $(".chat-application .sidebar-close-icon").on('click',function(){
-    $('.sidebar-content').removeClass('show');
-    $('.chat-overlay').removeClass('show');
-  });
+  if (sidebarCloseIcon.length) {
+    sidebarCloseIcon.on('click', function () {
+      sidebarContent.removeClass('show');
+      overlay.removeClass('show');
+    });
+  }
+
+  // User Profile sidebar toggle
+  if (userProfileToggle.length) {
+    userProfileToggle.on('click', function () {
+      userProfileSidebar.addClass('show');
+      overlay.addClass('show');
+    });
+  }
 
   // On overlay click
-  $(".chat-application .chat-overlay").on('click',function(){
-    $('.app-content .sidebar-content').removeClass('show');
-    $('.chat-application .chat-overlay').removeClass('show');
-    $('.chat-profile-sidebar').removeClass('show');
-    $('.user-profile-sidebar').removeClass('show');
-  });
+  if (overlay.length) {
+    overlay.on('click', function () {
+      sidebarContent.removeClass('show');
+      overlay.removeClass('show');
+      profileSidebar.removeClass('show');
+      userProfileSidebar.removeClass('show');
+    });
+  }
 
   // Add class active on click of Chat users list
-  $(".chat-application .chat-user-list ul li").on('click', function(){
-    if($('.chat-user-list ul li').hasClass('active')){
-      $('.chat-user-list ul li').removeClass('active');
-    }
-    $(this).addClass("active");
-    $(this).find(".badge").remove();
-    if($('.chat-user-list ul li').hasClass('active')){
-      $('.start-chat-area').addClass('d-none');
-      $('.active-chat').removeClass('d-none');
-    }
-    else{
-      $('.start-chat-area').removeClass('d-none');
-      $('.active-chat').addClass('d-none');
-    }
-  });
+  if (chatUsersListWrapper.find('ul li').length) {
+    chatUsersListWrapper.find('ul li').on('click', function () {
+      var $this = $(this),
+          startArea = $('.start-chat-area'),
+          activeChat = $('.active-chat');
 
-  // Favorite star click
-  $(".chat-application .favorite i").on("click", function(e) {
-    $(this).parent('.favorite').toggleClass("warning");
-    e.stopPropagation();
+      if (chatUsersListWrapper.find('ul li').hasClass('active')) {
+        chatUsersListWrapper.find('ul li').removeClass('active');
+      }
+
+      $this.addClass('active');
+      $this.find('.badge').remove();
+
+      if (chatUsersListWrapper.find('ul li').hasClass('active')) {
+        startArea.addClass('d-none');
+        activeChat.removeClass('d-none');
+      } else {
+        startArea.removeClass('d-none');
+        activeChat.addClass('d-none');
+      }
+    });
+  }
+
+  // auto scroll to bottom of Chat area
+  chatsUserList.find('li').on('click', function () {
+    userChats.animate({ scrollTop: userChats[0].scrollHeight }, 400);
   });
 
   // Main menu toggle should hide app menu
-  $('.chat-application .menu-toggle').on('click',function(e){
-    $('.app-content .sidebar-left').removeClass('show');
-    $('.chat-application .chat-overlay').removeClass('show');
-  });
-
-  // Chat sidebar toggle
-  if ($(window).width() < 992) {
-    $('.chat-application .sidebar-toggle').on('click',function(){
-      $('.app-content .sidebar-content').addClass('show');
-      $('.chat-application .chat-overlay').addClass('show');
+  if (menuToggle.length) {
+    menuToggle.on('click', function (e) {
+      sidebarContent.removeClass('show');
+      overlay.removeClass('show');
+      profileSidebar.removeClass('show');
+      userProfileSidebar.removeClass('show');
     });
   }
 
-  // For chat sidebar on small screen
-  if ($(window).width() > 992) {
-    if($('.chat-application .chat-overlay').hasClass('show')){
-      $('.chat-application .chat-overlay').removeClass('show');
-    }
+  if ($(window).width() < 992) {
+    sidebarToggleFunction();
   }
-
-  // Scroll Chat area
-  $(".user-chats").scrollTop($(".user-chats > .chats").height());
 
   // Filter
-  $(".chat-application #chat-search").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    if(value!=""){
-      $(".chat-user-list .chat-users-list-wrapper li").filter(function() {
-        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+  if (chatSearch.length) {
+    chatSearch.on('keyup', function () {
+      var value = $(this).val().toLowerCase();
+      if (value !== '') {
+        // filter chat list
+        chatList.find('li:not(.no-results)').filter(function () {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+        // filter contact list
+        contactList.find('li:not(.no-results)').filter(function () {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        });
+        var chat_tbl_row = chatList.find('li:not(.no-results):visible').length,
+            contact_tbl_row = contactList.find('li:not(.no-results):visible').length;
+
+        // check if chat row available
+        if (chat_tbl_row == 0) {
+          chatList.find('.no-results').addClass('show');
+        } else {
+          if (chatList.find('.no-results').hasClass('show')) {
+            chatList.find('.no-results').removeClass('show');
+          }
+        }
+
+        // check if contact row available
+        if (contact_tbl_row == 0) {
+          contactList.find('.no-results').addClass('show');
+        } else {
+          if (contactList.find('.no-results').hasClass('show')) {
+            contactList.find('.no-results').removeClass('show');
+          }
+        }
+      } else {
+        // If filter box is empty
+        chatsUserList.find('li').show();
+        if (chatUsersListWrapper.find('.no-results').hasClass('show')) {
+          chatUsersListWrapper.find('.no-results').removeClass('show');
+        }
+      }
+    });
+  }
+
+  if (speechToText.length) {
+    // Speech To Text
+    var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+    if (SpeechRecognition !== undefined && SpeechRecognition !== null) {
+      var recognition = new SpeechRecognition(),
+          listening = false;
+      speechToText.on('click', function () {
+        var $this = $(this);
+        recognition.onspeechstart = function () {
+          listening = true;
+        };
+        if (listening === false) {
+          recognition.start();
+        }
+        recognition.onerror = function (event) {
+          listening = false;
+        };
+        recognition.onresult = function (event) {
+          $this.closest('.form-send-message').find('.message').val(event.results[0][0].transcript);
+        };
+        recognition.onspeechend = function (event) {
+          listening = false;
+          recognition.stop();
+        };
       });
     }
-    else{
-      // If filter box is empty
-      $(".chat-user-list .chat-users-list-wrapper li").show();
-    }
-  });
-
-})(jQuery);
-
-$(window).on("resize", function() {
-  // remove show classes from sidebar and overlay if size is > 992
+  }
+});
+// Window Resize
+$(window).on('resize', function () {
+  sidebarToggleFunction();
   if ($(window).width() > 992) {
-    if($('.chat-application .chat-overlay').hasClass('show')){
+    if ($('.chat-application .body-content-overlay').hasClass('show')) {
       $('.app-content .sidebar-left').removeClass('show');
-      $('.chat-application .chat-overlay').removeClass('show');
+      $('.chat-application .body-content-overlay').removeClass('show');
     }
   }
 
   // Chat sidebar toggle
-  if ($(window).width() < 992) {
-    if($('.chat-application .chat-profile-sidebar').hasClass('show')){
-      $('.chat-profile-sidebar').removeClass('show');
+  if ($(window).width() < 991) {
+    if (
+        !$('.chat-application .chat-profile-sidebar').hasClass('show') ||
+        !$('.chat-application .sidebar-content').hasClass('show')
+    ) {
+      $('.sidebar-content').removeClass('show');
+      $('.body-content-overlay').removeClass('show');
     }
-    $('.chat-application .sidebar-toggle').on('click',function(){
-      $('.app-content .sidebar-content').addClass('show');
-      $('.chat-application .chat-overlay').addClass('show');
-    });
   }
 });
+
+// Add message to chat - function call on form submit
+function enterChat(source) {
+  var message = $('.message').val();
+  if (/\S/.test(message)) {
+    var html = '<div class="chat-content">' + '<p>' + message + '</p>' + '</div>';
+    $('.chat:last-child .chat-body').append(html);
+    $('.message').val('');
+    $('.user-chats').scrollTop($('.user-chats > .chats').height());
+  }
+}

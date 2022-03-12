@@ -22,26 +22,25 @@
 
                                             <p>{!! __('locale.description.add_unit') !!}</p>
 
-                                            <div class="form-group">
-                                                <label for="add_unit" class="required">{{__('locale.labels.per_unit_price')}} = {{ Auth::user()->customer->subscription->plan->getOption('per_unit_price') }} {{ Auth::user()->customer->subscription->plan->currency->code }}</label>
 
-                                                <div class="input-group">
-                                                    <input type="text" id="add_unit" class="form-control @error('add_unit') is-invalid @enderror" name="add_unit" required>
-                                                    @error('add_unit')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
-                                                    <div class="input-group-append">
-                                                        <span class="input-group-text text-primary font-weight-bold update-price">0 {{ Auth::user()->customer->subscription->plan->currency->code }}</span>
+                                            <div class="col-12">
+                                                <div class="mb-1">
+                                                    <label for="add_unit" class="form-label required">{{__('locale.labels.per_unit_price')}} = {{ Auth::user()->customer->subscription->plan->getOption('per_unit_price') }} {{ str_replace('{PRICE}', '', Auth::user()->customer->subscription->plan->currency->format) }}</label>
+                                                    <div class="input-group input-group-merge mb-2">
+                                                        <input type="text" id="add_unit" class="form-control @error('add_unit') is-invalid @enderror" name="add_unit" required>
+                                                        <span class="input-group-text update-price">0 {{ str_replace('{PRICE}', '', Auth::user()->customer->subscription->plan->currency->format) }}</span>
+
+                                                        @error('add_unit')
+                                                        <p><small class="text-danger">{{ $message }}</small></p>
+                                                        @enderror
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1">
-                                                <i class="feather icon-shopping-cart"></i> {{__('locale.labels.checkout')}}
+                                            <button type="submit" class="btn btn-primary mb-1">
+                                                <i data-feather="shopping-cart"></i> {{__('locale.labels.checkout')}}
                                             </button>
                                         </div>
 
@@ -81,7 +80,7 @@
         function get_price() {
             let total_unit = $get_price[0].value;
             let total_price = total_unit * "{{ Auth::user()->customer->subscription->plan->getOption('per_unit_price') }}";
-            $('.update-price').text(Math.ceil(total_price) + " {{ Auth::user()->customer->subscription->plan->currency->code}}")
+            $('.update-price').text(Math.ceil(total_price) + " {{ str_replace('{PRICE}', '', Auth::user()->customer->subscription->plan->currency->format)}}")
         }
 
         $get_price.keyup(get_price);

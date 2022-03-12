@@ -33,10 +33,11 @@ class UpdateContactGroup extends FormRequest
         $name        = $this->name;
 
         return [
-                'name' => ['required',
+                'name'           => ['required',
                         Rule::unique('contact_groups')->where(function ($query) use ($customer_id, $name) {
                             return $query->where('customer_id', $customer_id)->where('name', $name);
                         })->ignore($id)],
+                'sending_server' => 'required',
         ];
     }
 

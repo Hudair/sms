@@ -72,11 +72,13 @@ class SenderIDController extends CustomerBaseController
         $this->authorize('view_sender_id');
 
         $columns = [
-                0 => 'uid',
-                1 => 'sender_id',
-                2 => 'price',
-                3 => 'status',
-                4 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'sender_id',
+                4 => 'price',
+                5 => 'status',
+                6 => 'action',
         ];
 
         $totalData = Senderid::where('user_id', Auth::user()->id)->count();
@@ -110,36 +112,40 @@ class SenderIDController extends CustomerBaseController
         if ( ! empty($sender_ids)) {
             foreach ($sender_ids as $senderid) {
 
-                $checkout = route('customer.senderid.pay', $senderid->uid);
-                $pay      = __('locale.labels.pay');
-                $renew    = __('locale.labels.renew');
-                $delete   = __('locale.buttons.delete');
-
-                $action = "<span class='action-delete text-danger mr-1' data-toggle='tooltip' data-placement='top' title='$delete'  data-id='$senderid->uid'><i class='feather us-2x icon-trash'></i></span>";
+                $is_checkout = false;
+                $checkout_label = null;
 
                 if ($senderid->status == 'active') {
-                    $status = '<div class="chip chip-success"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.active').'</div></div></div>';
+                    $status = '<span class="badge bg-success text-uppercase">'.__('locale.labels.active').'</span>';
                 } elseif ($senderid->status == 'pending') {
-                    $status = '<div class="chip chip-primary"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.pending').'</div></div></div>';
+                    $status = '<span class="badge bg-primary text-uppercase">'.__('locale.labels.pending').'</span>';
                 } elseif ($senderid->status == 'payment_required') {
-                    $status = '<div class="chip chip-info"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.payment_required').'</div></div></div>';
-                    $action .= "<a href='$checkout' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$pay'><i class='feather us-2x icon-shopping-cart' ></i></a>";
+                    $is_checkout    = true;
+                    $checkout_label = __('locale.labels.pay');
+                    $status         = '<span class="badge bg-info text-uppercase">'.__('locale.labels.payment_required').'</span>';
                 } elseif ($senderid->status == 'expired') {
-                    $status = '<div class="chip chip-warning"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.expired').'</div></div></div>';
-                    $action .= "<a href='$checkout' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$renew'><i class='feather us-2x icon-refresh-cw' ></i></a>";
+                    $is_checkout    = true;
+                    $checkout_label = __('locale.labels.renew');
+                    $status         = '<span class="badge bg-warning text-uppercase">'.__('locale.labels.expired').'</span>';
                 } else {
-                    $status = '<div class="chip chip-danger"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.block').'</div></div></div>';
+                    $status = '<span class="badge bg-danger text-uppercase">'.__('locale.labels.block').'</span>';
                 }
 
-                $nestedData['uid']       = $senderid->uid;
-                $nestedData['sender_id'] = $senderid->sender_id;
-                $nestedData['price']     = "<div>
+
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $senderid->uid;
+                $nestedData['sender_id']     = $senderid->sender_id;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($senderid->price, $senderid->currency->format)." </p>
                                                         <p class='text-muted'>".$senderid->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['status']    = $status;
-                $nestedData['action']    = $action;
-                $data[]                  = $nestedData;
+                $nestedData['status']        = $status;
+                $nestedData['is_checkout']   = $is_checkout;
+
+                $nestedData['renew_label'] = $checkout_label;
+                $nestedData['renew']       = route('customer.senderid.pay', $senderid->uid);
+                $nestedData['delete']      = __('locale.buttons.delete');
+                $data[]                    = $nestedData;
 
             }
         }
@@ -153,7 +159,6 @@ class SenderIDController extends CustomerBaseController
 
         echo json_encode($json_data);
         exit();
-
     }
 
     /**

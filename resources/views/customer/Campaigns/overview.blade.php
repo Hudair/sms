@@ -4,112 +4,74 @@
 
 @section('vendor-style')
     <!-- vendor css files -->
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/nouislider.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap5.min.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/sweetalert2.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/datatables.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/extensions/dataTables.checkboxes.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/charts/apexcharts.css')) }}">
 
 @endsection
 
 @section('page-style')
     <!-- Page css files -->
-    <link rel="stylesheet" href="{{ asset(mix('css/plugins/extensions/noui-slider.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('css/core/colors/palette-noui.css')) }}">
-
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/data-list-view.css')) }}">
-
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/card-analytics.css')) }}">
-    <style>
-
-        table.dataTable {
-            border: none !important;
-        }
-
-        table.dataTable thead tr {
-            background-color: #fff;
-        }
-
-
-    </style>
-
+    <link rel="stylesheet" href="{{ asset(mix('css/base/plugins/charts/chart-apex.css')) }}">
 @endsection
 
 @section('content')
+    <section class="campaign-overview">
 
-
-    <section id="nav-justified">
         <div class="row">
-            <div class="col-sm-12">
-                <div class="card overflow-hidden">
-                    <div class="card-content">
-                        <div class="card-body">
-                            <ul class="nav nav-tabs nav-fill mt-5" id="myTab2" role="tablist">
+            <div class="col-12">
 
-                                <li class="nav-item">
-                                    <a class="nav-link active"
-                                       id="settings-tab-justified"
-                                       data-toggle="tab"
-                                       href="#overview"
-                                       role="tab"
-                                       aria-controls="overview"
-                                       aria-selected="true">
-                                        <i class="feather icon-bar-chart primary"></i> {{ __('locale.menu.Overview') }}
-                                    </a>
-                                </li>
+                <ul class="nav nav-pills mb-2" role="tablist">
+                    <!-- overview -->
+                    <li class="nav-item">
+                        <a class="nav-link active" id="account-tab" data-bs-toggle="tab" href="#overview" aria-controls="overview" role="tab" aria-selected="true">
+                            <i data-feather="pie-chart" class="font-medium-3 me-50"></i>
+                            <span class="fw-bold">{{__('locale.menu.Overview')}}</span>
+                        </a>
+                    </li>
 
-                                <li class="nav-item">
-                                    <a class="nav-link"
-                                       id="contact-tab-justified"
-                                       data-toggle="tab"
-                                       href="#contact"
-                                       role="tab"
-                                       aria-controls="contact"
-                                       aria-selected="true">
-                                        <i class="feather icon-users primary"></i> {{ __('locale.contacts.contacts') }}
-                                    </a>
-                                </li>
-                            </ul>
+                    <!-- contacts -->
+                    <li class="nav-item">
+                        <a class="nav-link" id="contacts-tab" data-bs-toggle="tab" href="#contacts" aria-controls="contacts" role="tab" aria-selected="false">
+                            <i data-feather="bar-chart" class="font-medium-3 me-50"></i>
+                            <span class="fw-bold">{{ __('locale.menu.SMS History') }}</span>
+                        </a>
+                    </li>
+
+                </ul>
 
 
-                            {{-- Tab panes --}}
-                            <div class="tab-content pt-1">
-                                <div class="tab-pane active" id="overview" role="tabpanel" aria-labelledby="overview-tab-justified">
-                                    @include('customer.Campaigns._overview')
-                                </div>
+                <div class="tab-content">
 
-
-                                <div class="tab-pane" id="contact" role="tabpanel" aria-labelledby="contact-tab-justified">
-                                    @include('customer.Campaigns._contacts')
-                                </div>
-
-
-                            </div>
-                        </div>
+                    <div class="tab-pane active" id="overview" aria-labelledby="overview-tab" role="tabpanel">
+                        @include('customer.Campaigns._overview')
                     </div>
+
+                    <div class="tab-pane" id="contacts" aria-labelledby="contacts-tab" role="tabpanel">
+                        @include('customer.Campaigns._contacts')
+                    </div>
+
                 </div>
             </div>
         </div>
     </section>
-
 @endsection
 
 @section('vendor-script')
     <!-- vendor files -->
-    <script src="{{ asset(mix('vendors/js/extensions/wNumb.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/nouislider.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/responsive.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.checkboxes.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.html5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.rowGroup.min.js')) }}"></script>
 
     <script src="{{ asset(mix('vendors/js/extensions/sweetalert2.all.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
-
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.bootstrap.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.select.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.checkboxes.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
-
     <script src="{{ asset(mix('vendors/js/charts/apexcharts.min.js')) }}"></script>
 
 @endsection
@@ -117,20 +79,19 @@
 
 @section('page-script')
 
-
-
     <script>
         $(document).ready(function () {
 
+            $('#contacts-tab').on('click', function (e) {
+                $($.fn.dataTable.tables(true)).DataTable()
+                    .columns.adjust()
+                    .responsive.recalc();
+            });
 
             $(window).on("load", function () {
 
-                let $danger = '#EA5455';
-                let $success = '#00db89';
-                let $primary = '#7367f0';
-                let $primary_light = '#9c8cfc';
-                let $danger_light = '#f29292';
-                let $stroke_color = '#b9c3cd';
+                let $success = '#00db89',
+                    $strok_color = '#b9c3cd';
 
 
                 // Customer Chart
@@ -139,42 +100,29 @@
                 let Delivered = "{{ $campaign->readCache('DeliveredCount') }}";
                 let Failed = "{{ $campaign->readCache('FailedDeliveredCount') }}";
 
-                let customerChartoptions = {
+                let smsReports = {
                     chart: {
                         type: 'pie',
-                        height: 325,
-                        dropShadow: {
-                            enabled: false,
-                            blur: 5,
-                            left: 1,
-                            top: 1,
-                            opacity: 0.2
-                        },
+                        height: 285,
                         toolbar: {
                             show: false
                         }
                     },
-                    labels: ['{{ __('locale.labels.delivered') }}', '{{ __('locale.labels.failed') }}'],
+                    labels: ["{{ __('locale.labels.delivered') }}", "{{ __('locale.labels.failed') }}"],
                     series: [parseInt(Delivered), parseInt(Failed)],
                     dataLabels: {
                         enabled: false
                     },
-                    legend: {show: true},
+                    legend: {show: false},
                     stroke: {
-                        width: 5
+                        width: 4
                     },
-                    colors: [$primary, $danger],
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            gradientToColors: [$primary_light, $danger_light]
-                        }
-                    }
+                    colors: ['#7367F0', '#EA5455'],
                 }
 
                 let customerChart = new ApexCharts(
-                    document.querySelector("#customer-chart"),
-                    customerChartoptions
+                    document.querySelector("#sms-reports"),
+                    smsReports
                 );
 
                 customerChart.render();
@@ -185,7 +133,7 @@
 
                 let goalChartoptions = {
                     chart: {
-                        height: 250,
+                        height: 245,
                         type: 'radialBar',
                         sparkline: {
                             enabled: true,
@@ -201,14 +149,14 @@
                     colors: [$success],
                     plotOptions: {
                         radialBar: {
-                            size: 110,
+                            offsetY: -10,
                             startAngle: -150,
                             endAngle: 150,
                             hollow: {
-                                size: '77%',
+                                size: '77%'
                             },
                             track: {
-                                background: $stroke_color,
+                                background: $strok_color,
                                 strokeWidth: '50%',
                             },
                             dataLabels: {
@@ -217,7 +165,7 @@
                                 },
                                 value: {
                                     offsetY: 18,
-                                    color: $stroke_color,
+                                    color: $strok_color,
                                     fontSize: '4rem'
                                 }
                             }
@@ -240,6 +188,11 @@
                     stroke: {
                         lineCap: 'round'
                     },
+                    grid: {
+                        padding: {
+                            bottom: 30
+                        }
+                    }
 
                 }
 
@@ -258,21 +211,21 @@
             function showResponseMessage(data) {
 
                 if (data.status === 'success') {
-                    toastr.success(data.message, 'Success!!', {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['success'](data.message, '{{__('locale.labels.success')}}!!', {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
                     dataListView.draw();
                 } else {
-                    toastr.warning("{{__('locale.exceptions.something_went_wrong')}}", "{{__('locale.labels.attention')}}", {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['warning']("{{__('locale.exceptions.something_went_wrong')}}", '{{ __('locale.labels.warning') }}!', {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
                 }
             }
@@ -281,7 +234,7 @@
             let Table = $("table");
 
             // init list view datatable
-            let dataListView = $('.data-list-view').DataTable({
+            let dataListView = $('.datatables-basic').DataTable({
 
                 "processing": true,
                 "serverSide": true,
@@ -292,7 +245,9 @@
                     "data": {_token: "{{csrf_token()}}"}
                 },
                 "columns": [
-                    {"data": "uid", orderable: false, searchable: false},
+                    {"data": 'responsive_id', orderable: false, searchable: false},
+                    {"data": "uid"},
+                    {"data": "uid"},
                     {"data": "created_at"},
                     {"data": "from"},
                     {"data": "to"},
@@ -301,61 +256,110 @@
                     {"data": "action", orderable: false, searchable: false}
                 ],
 
-                bAutoWidth: false,
-                responsive: false,
                 searchDelay: 1500,
                 columnDefs: [
                     {
+                        // For Responsive
+                        className: 'control',
                         orderable: false,
-                        targets: 0,
-                        checkboxes: {selectRow: true}
+                        responsivePriority: 2,
+                        targets: 0
+                    },
+                    {
+                        // For Checkboxes
+                        targets: 1,
+                        orderable: false,
+                        responsivePriority: 3,
+                        render: function (data) {
+                            return (
+                                '<div class="form-check"> <input class="form-check-input dt-checkboxes" type="checkbox" value="" id="' +
+                                data +
+                                '" /><label class="form-check-label" for="' +
+                                data +
+                                '"></label></div>'
+                            );
+                        },
+                        checkboxes: {
+                            selectAllRender:
+                                '<div class="form-check"> <input class="form-check-input" type="checkbox" value="" id="checkboxSelectAll" /><label class="form-check-label" for="checkboxSelectAll"></label></div>',
+                            selectRow: true
+                        }
+                    },
+                    {
+                        targets: 2,
+                        visible: false
+                    },
+                    {
+                        // Actions
+                        targets: -1,
+                        title: '{{ __('locale.labels.actions') }}',
+                        orderable: false,
+                        render: function (data, type, full) {
+                            return (
+                                '<span class="action-delete text-danger pe-1 cursor-pointer" data-id=' + full['uid'] + '>' +
+                                feather.icons['trash'].toSvg({class: 'font-medium-4'}) +
+                                '</span>' +
+                                '<span class="action-view text-primary pe-1 cursor-pointer" data-id=' + full['uid'] + '>' +
+                                feather.icons['eye'].toSvg({class: 'font-medium-4'}) +
+                                '</span>'
+                            );
+                        }
                     }
                 ],
-                dom:
-                    '<"top"<"actions action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">p>',
-                oLanguage: {
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
                     sLengthMenu: "_MENU_",
                     sZeroRecords: "{{ __('locale.datatables.no_results') }}",
-                    sSearch: "",
+                    sSearch: "{{ __('locale.datatables.search') }}",
                     sProcessing: "{{ __('locale.datatables.processing') }}",
-                    oPaginate: {
-                        sFirst: "{{ __('locale.datatables.first') }}",
-                        sPrevious: "{{ __('locale.datatables.previous') }}",
-                        sNext: "{{ __('locale.datatables.next') }}",
-                        sLast: "{{ __('locale.datatables.last') }}"
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
+                },
+
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.modal({
+                            header: function (row) {
+                                let data = row.data();
+                                return 'Details of ' + data['uid'];
+                            }
+                        }),
+                        type: 'column',
+                        renderer: function (api, rowIdx, columns) {
+                            let data = $.map(columns, function (col) {
+                                return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                    ? '<tr data-dt-row="' +
+                                    col.rowIdx +
+                                    '" data-dt-column="' +
+                                    col.columnIndex +
+                                    '">' +
+                                    '<td>' +
+                                    col.title +
+                                    ':' +
+                                    '</td> ' +
+                                    '<td>' +
+                                    col.data +
+                                    '</td>' +
+                                    '</tr>'
+                                    : '';
+                            }).join('');
+
+                            return data ? $('<table class="table"/>').append('<tbody>' + data + '</tbody>') : false;
+                        }
                     }
                 },
                 aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
                 select: {
                     style: "multi"
                 },
-                order: [[0, "desc"]],
-                bInfo: false,
-                pageLength: 10,
-                buttons: [],
-                initComplete: function () {
-                    $(".dt-buttons .btn").removeClass("btn-secondary")
-                }
-
+                order: [[2, "desc"]],
+                displayLength: 10,
             });
-
-            dataListView.on('draw.dt', function () {
-                setTimeout(function () {
-                    if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
-                        $(".dt-checkboxes-cell input, .dt-checkboxes").addClass("mac-checkbox")
-                    }
-                }, 50);
-            });
-
-
-            // To append actions dropdown before add new button
-            let actionDropdown = $(".add-new-div")
-            actionDropdown.insertBefore($(".top .actions .dt-buttons"))
-
-            // Scrollbar
-            if ($(".data-items").length > 0) {
-                new PerfectScrollbar(".data-items", {wheelPropagation: false})
-            }
 
             // On view
             Table.delegate(".action-view", "click", function (e) {
@@ -370,31 +374,31 @@
                     success: function (data) {
                         Swal.fire({
                             html: `<div class="table-responsive">
-<table class="table table-striped text-left">
+<table class="table table-striped">
 
         <tbody>
             <tr>
-                <td>{{ __('locale.labels.from') }}</td>
+                <td width="35%">{{ __('locale.labels.from') }}</td>
                 <td>` + data.data.from + `</td>
             </tr>
             <tr>
-                <td>{{ __('locale.labels.to') }}</td>
+                <td width="35%">{{ __('locale.labels.to') }}</td>
                 <td>` + data.data.to + `</td>
             </tr>
             <tr>
-                <td>{{ __('locale.labels.message') }}</td>
+                <td width="35%">{{ __('locale.labels.message') }}</td>
                 <td>` + data.data.message + `</td>
             </tr>
             <tr>
-                <td>{{ __('locale.labels.type') }}</td>
+                <td width="35%">{{ __('locale.labels.type') }}</td>
                 <td>` + data.data.sms_type + `</td>
             </tr>
             <tr>
-                <td>{{ __('locale.labels.status') }}</td>
+                <td width="35%">{{ __('locale.labels.status') }}</td>
                 <td>` + data.data.status + `</td>
             </tr>
             <tr>
-                <td>{{ __('locale.labels.cost') }}</td>
+                <td width="35%">{{ __('locale.labels.cost') }}</td>
                 <td>` + data.data.cost + `</td>
             </tr>
 
@@ -408,28 +412,27 @@
                         if (reject.status === 422) {
                             let errors = reject.responseJSON.errors;
                             $.each(errors, function (key, value) {
-                                toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                    positionClass: 'toast-top-right',
-                                    containerId: 'toast-top-right',
-                                    progressBar: true,
+                                toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                     closeButton: true,
-                                    newestOnTop: true
+                                    positionClass: 'toast-top-right',
+                                    progressBar: true,
+                                    newestOnTop: true,
+                                    rtl: isRtl
                                 });
                             });
                         } else {
-                            toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
                     }
                 })
 
             });
-
 
             // On Delete
             Table.delegate(".action-delete", "click", function (e) {
@@ -438,13 +441,13 @@
                 Swal.fire({
                     title: "{{ __('locale.labels.are_you_sure') }}",
                     text: "{{ __('locale.labels.able_to_revert') }}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.delete_it') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
@@ -461,21 +464,21 @@
                                 if (reject.status === 422) {
                                     let errors = reject.responseJSON.errors;
                                     $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     });
                                 } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
+                                    toastr['warning']("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
                                         closeButton: true,
-                                        newestOnTop: true
+                                        positionClass: 'toast-top-right',
+                                        progressBar: true,
+                                        newestOnTop: true,
+                                        rtl: isRtl
                                     });
                                 }
                             }
@@ -492,22 +495,24 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     text: "{{__('locale.campaigns.delete_sms')}}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{__('locale.labels.delete_selected')}}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
                         let sms_ids = [];
-                        dataListView.rows('.selected').every(function (rowIdx) {
-                            sms_ids.push(dataListView.row(rowIdx).data().uid)
-                        })
+                        let rows_selected = dataListView.column(1).checkboxes.selected();
 
-                        if (sms_ids.length > 1) {
+                        $.each(rows_selected, function (index, rowId) {
+                            sms_ids.push(rowId)
+                        });
+
+                        if (sms_ids.length > 0) {
 
                             $.ajax({
                                 url: "{{ route('customer.reports.batch_action') }}",
@@ -524,32 +529,32 @@
                                     if (reject.status === 422) {
                                         let errors = reject.responseJSON.errors;
                                         $.each(errors, function (key, value) {
-                                            toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                                positionClass: 'toast-top-right',
-                                                containerId: 'toast-top-right',
-                                                progressBar: true,
+                                            toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                                 closeButton: true,
-                                                newestOnTop: true
+                                                positionClass: 'toast-top-right',
+                                                progressBar: true,
+                                                newestOnTop: true,
+                                                rtl: isRtl
                                             });
                                         });
                                     } else {
-                                        toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     }
                                 }
                             })
                         } else {
-                            toastr.warning("{{__('locale.labels.at_least_one_data')}}", "{{__('locale.labels.attention')}}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning']("{{__('locale.labels.at_least_one_data')}}", "{{__('locale.labels.attention')}}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
 

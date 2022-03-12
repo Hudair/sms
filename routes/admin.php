@@ -27,6 +27,7 @@ Route::get('customers/{customer}/avatar', 'CustomerController@avatar')->name('cu
 Route::post('customers/{customer}/avatar', 'CustomerController@updateAvatar');
 Route::post('customers/{customer}/remove-avatar', 'CustomerController@removeAvatar');
 Route::post('customers/{customer}/add-unit', 'CustomerController@addUnit')->name('customers.add_unit');
+Route::post('customers/{customer}/remove-unit', 'CustomerController@removeUnit')->name('customers.remove_unit');
 Route::post('customers/{customer}/update-information', 'CustomerController@updateInformation')->name('customers.update_information');
 Route::post('customers/{customer}/permissions', 'CustomerController@permissions')->name('customers.permissions');
 Route::post('customers/{customer}/active', 'CustomerController@activeToggle')->name('customers.active');
@@ -123,7 +124,7 @@ Route::resource('sending-servers', 'SendingServerController', [
  * 2. Customer can export list
  * 3. Customer can use API
  * 4. Customer can create own sending server
- * 5. Customer can create sub accounts
+ * 5. Customer can create sub-accounts
  * 6. Customer can delete sms history
  * 7. Add Previous sms balance on next subscription
  * 8. Sender ID Verification
@@ -153,6 +154,14 @@ Route::post('plans/{plan}/set-primary', 'PlanController@setPrimary')->name('plan
 Route::post('plans/{plan}/speed-limit', 'PlanController@updateSpeedLimit')->name('plans.settings.speed-limit');
 Route::post('plans/{plan}/cutting-system', 'PlanController@updateCuttingSystem')->name('plans.settings.cutting-system');
 Route::post('plans/{plan}/pricing', 'PlanController@updatePricing')->name('plans.settings.pricing');
+Route::get('plans/{plan}/coverage', 'PlanController@addCoverage')->name('plans.settings.coverage');
+Route::post('plans/{plan}/coverage', 'PlanController@addCoveragePost');
+Route::post('plans/{plan}/search', 'PlanController@searchCoverage')->name('plans.settings.search_coverage');
+Route::get('plans/{plan}/edit-coverage/{coverage}', 'PlanController@editCoverage')->name('plans.settings.edit_coverage');
+Route::post('plans/{plan}/edit-coverage/{coverage}', 'PlanController@editCoveragePost');
+Route::post('plans/{plan}/coverage/{coverage}/active', 'PlanController@activeCoverageToggle')->name('plans.coverage.active');
+Route::post('plans/{plan}/coverage/{coverage}/delete', 'PlanController@deleteCoverage')->name('plans.coverage.delete');
+
 Route::post('plans/{plan}/delete-sending-server', 'PlanController@deletePlanSendingServer')->name('plans.settings.delete-sending-server');
 Route::post('plans/{plan}/copy', 'PlanController@copy')->name('plans.copy');
 Route::post('plans/batch_action', 'PlanController@batchAction')->name('plans.batch_action');
@@ -322,6 +331,13 @@ Route::resource('languages', 'LanguageController', [
         'only' => ['index', 'create', 'store', 'update', 'destroy'],
 ]);
 
+//country module
+Route::post('countries/search', 'CountriesController@search')->name('countries.search');
+Route::post('countries/{country}/active', 'CountriesController@activeToggle')->name('countries.active');
+Route::resource('countries', 'CountriesController', [
+        'only' => ['index', 'create', 'store', 'destroy'],
+]);
+
 
 // Payment gateways
 Route::post('payment-gateways/{gateway}/active', 'PaymentMethodController@activeToggle')->name('payment-gateways.active');
@@ -345,6 +361,8 @@ Route::get('maintenance-mode', 'SettingsController@maintenanceMode')->name('sett
 
 //update application
 Route::get('update-application', 'SettingsController@updateApplication')->name('settings.update_application');
+Route::post('update-application', 'SettingsController@postUpdateApplication');
+Route::get('check-available-update', 'SettingsController@checkAvailableUpdate')->name('settings.check_update');
 
 //Plugins
 Route::get('plugins', 'PluginsController@plugins')->name('plugins');
@@ -352,6 +370,7 @@ Route::get('plugins', 'PluginsController@plugins')->name('plugins');
 
 Route::post('invoices/search', 'InvoiceController@search')->name('invoices.search');
 Route::get('invoices/{invoice}/view', 'InvoiceController@view')->name('invoices.view');
+Route::get('invoices/{invoice}/print', 'InvoiceController@print')->name('invoices.print');
 Route::post('invoices/batch_action', 'InvoiceController@batchAction')->name('invoices.batch_action');
 Route::resource('invoices', 'InvoiceController', [
         'only' => ['index', 'destroy'],
@@ -371,8 +390,18 @@ Route::prefix('reports')->name('reports.')->group(function () {
     Route::get('/', 'ReportsController@reports')->name('all');
     Route::post('/search', 'ReportsController@searchAllMessages')->name('search.all');
     Route::post('/{uid}/view', 'ReportsController@viewReports');
-    Route::get('/export', 'ReportsController@export')->name('export');
+    Route::post('/export', 'ReportsController@export')->name('export');
     Route::post('/{uid}/destroy', 'ReportsController@destroy');
     Route::post('batch_action', 'ReportsController@batchAction')->name('batch_action');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Theme Customizer
+|--------------------------------------------------------------------------
+|
+|
+|
+*/
+Route::get('customizer', 'ThemeCustomizerController@index')->name('theme.customizer');
+Route::post('customizer', 'ThemeCustomizerController@postCustomizer');

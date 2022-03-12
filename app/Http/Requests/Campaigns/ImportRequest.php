@@ -25,6 +25,7 @@ class ImportRequest extends FormRequest
     {
         return [
                 'name'          => 'required',
+                'sending_server'   => 'required|exists:plans_sending_servers,sending_server_id',
                 'import_file'   => 'required|mimes:csv,txt',
                 'timezone'      => 'required_if:schedule,true|timezone',
                 'schedule_date' => 'required_if:schedule,true|date|nullable',

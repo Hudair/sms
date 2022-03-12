@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use App\Library\SmsBuilder;
+
+//use App\Library\SMPP;
+use App\Library\SMSCounter;
 use App\Library\Tool;
 use Aws\Sns\Exception\SnsException;
 use Aws\Sns\SnsClient;
+use BenMorel\GsmCharsetConverter\Converter;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Translation\Translator;
@@ -13,7 +17,13 @@ use Illuminate\Database\Eloquent\Model;
 use Plivo\Exceptions\PlivoResponseException;
 use Plivo\RestClient;
 use Psr\Http\Client\ClientExceptionInterface;
+
 use smpp\SMPP;
+
+//use SMSGatewayMe\Client\ApiException;
+//use SMSGatewayMe\Client\ClientProvider;
+//use SMSGatewayMe\Client\Model\SendMessageRequest;
+use stdClass;
 use Twilio\Exceptions\ConfigurationException;
 use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
@@ -120,7 +130,7 @@ class SendCampaignSMS extends Model
                     $source_param = $cg_info->source_param;
                     $source_value = $cg_info->source_value;
 
-                    if ($data['sender_id'] != null || $data['sender_id'] != '') {
+                    if ($data['sender_id'] != '') {
                         $send_custom_data[$source_param] = $data['sender_id'];
                     } else {
                         $send_custom_data[$source_param] = $source_value;
@@ -250,8 +260,30 @@ class SendCampaignSMS extends Model
             } elseif ($sending_server->type == 'smpp') {
 
                 $sender_id = $data['sender_id'];
-                $phone     = $data['phone'];
                 $message   = $data['message'];
+
+
+//                try {
+//                    $smpp        = new SMPP();
+//                    $smpp->debug = 0;
+//
+//                    $smpp->open($sending_server->api_link, $sending_server->port, $sending_server->username, $sending_server->password);
+//
+//                    if ($sms_type == 'unicode') {
+//                        $unicode_message = iconv('Windows-1256', 'UTF-16BE', $message);
+//                        $get_sms_status  = $smpp->send_long($sender_id, $phone, $unicode_message);
+//                    } else {
+//                        $get_sms_status = $smpp->send_long($sender_id, $phone, $message);
+//                    }
+//
+//                    if ($get_sms_status) {
+//                        $get_sms_status = 'Delivered';
+//                    }
+//
+//                } catch (Exception $ex) {
+//                    $get_sms_status = $ex->getMessage();
+//                }
+
 
                 if ($sending_server->source_addr_ton != 5) {
                     $source_ton = $sending_server->source_addr_ton;
@@ -306,7 +338,7 @@ class SendCampaignSMS extends Model
                                 $get_sms_status = $get_response->status.'|'.$get_response->sid;
                             }
 
-                        } catch (ConfigurationException | TwilioException $e) {
+                        } catch (ConfigurationException|TwilioException $e) {
                             $get_sms_status = $e->getMessage();
                         }
                         break;
@@ -326,29 +358,26 @@ class SendCampaignSMS extends Model
                                 $get_sms_status = $get_response->status.'|'.$get_response->sid;
                             }
 
-                        } catch (ConfigurationException | TwilioException $e) {
+                        } catch (ConfigurationException|TwilioException $e) {
                             $get_sms_status = $e->getMessage();
                         }
                         break;
 
                     case 'ClickatellTouch':
+                        $send_message     = urlencode($message);
+                        $sms_sent_to_user = $gateway_url."?apiKey=$sending_server->api_key"."&to=$phone"."&content=$send_message";
 
-                        $parameters = [
-                                'api_key' => $sending_server->api_key,
-                                'to'      => $phone,
-                                'content' => $message,
-                        ];
-                        if (isset($data['sender_id'])) {
-                            $parameters['from'] = $data['sender_id'];
+                        if ($data['sender_id']) {
+                            $sender_id        = str_replace(['(', ')', '+', '-', ' '], '', $data['sender_id']);
+                            $sms_sent_to_user .= "&from=".$sender_id;
                         }
 
-                        $sending_url = $gateway_url.'?'.http_build_query($parameters);
 
                         try {
 
                             $ch = curl_init();
 
-                            curl_setopt($ch, CURLOPT_URL, $sending_url);
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
                             curl_setopt($ch, CURLOPT_HTTPGET, 1);
                             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                             $response = curl_exec($ch);
@@ -420,14 +449,15 @@ class SendCampaignSMS extends Model
                                 'password'    => $sending_server->password,
                                 'source'      => $data['sender_id'],
                                 'destination' => $phone,
-                                'message'     => $message,
                                 'dlr'         => 1,
                         ];
 
                         if ($sms_type == 'unicode') {
-                            $parameters['type'] = 2;
+                            $parameters['type']    = 2;
+                            $parameters['message'] = $this->sms_unicode($message);
                         } else {
-                            $parameters['type'] = 0;
+                            $parameters['type']    = 0;
+                            $parameters['message'] = $message;
                         }
 
                         $sending_url = $gateway_url.'?'.http_build_query($parameters);
@@ -589,7 +619,7 @@ class SendCampaignSMS extends Model
                                     $data['sender_id']
                             );
 
-                            $get_sms_status = 'Delivered|'.$response->getmessageUuid(0);
+                            $get_sms_status = 'Delivered|'.$response->getmessageUuid(0)[0];
 
                         } catch (PlivoResponseException $e) {
                             $get_sms_status = $e->getMessage();
@@ -642,8 +672,7 @@ class SendCampaignSMS extends Model
                     case 'BulkSMS':
 
                         $parameters = [
-                                'auto-unicode'        => true,
-                                'longMessageMaxParts' => 3,
+                                'longMessageMaxParts' => 6,
                                 'to'                  => $phone,
                                 'body'                => $message,
                         ];
@@ -659,7 +688,7 @@ class SendCampaignSMS extends Model
                                     'Authorization:Basic '.base64_encode("$sending_server->username:$sending_server->password"),
                             ];
                             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url."?auto-unicode=true");
                             curl_setopt($ch, CURLOPT_POST, 1);
                             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
@@ -668,9 +697,9 @@ class SendCampaignSMS extends Model
 
                             $get_data = json_decode($response, true);
 
-                            if (isset($get_data) && is_array($get_data)) {
-                                if (array_key_exists('id', $get_data)) {
-                                    $get_sms_status = 'Delivered|'.$get_data['id'];
+                            if (isset($get_data) && is_array($get_data) && array_key_exists('0', $get_data)) {
+                                if (array_key_exists('id', $get_data[0])) {
+                                    $get_sms_status = 'Delivered|'.$get_data[0]['id'];
                                 } elseif (array_key_exists('detail', $get_data)) {
                                     $get_sms_status = $get_data['detail'];
                                 }
@@ -697,7 +726,7 @@ class SendCampaignSMS extends Model
                                 $get_sms_status = $output->getStatus();
                             }
 
-                        } catch (ClientExceptionInterface | \Vonage\Client\Exception\Exception $e) {
+                        } catch (ClientExceptionInterface|\Vonage\Client\Exception\Exception $e) {
                             $get_sms_status = $e->getMessage();
                         }
                         break;
@@ -1017,7 +1046,7 @@ class SendCampaignSMS extends Model
                                 'To'   => '+'.$phone,
                         ];
 
-                        $sending_url = $gateway_url."/api/laml/2010-04-01/Accounts/$sending_server->api_token/Messages.json";
+                        $sending_url = $gateway_url."/api/laml/2010-04-01/Accounts/$sending_server->project_id/Messages.json";
 
                         $ch = curl_init();
 
@@ -1025,9 +1054,10 @@ class SendCampaignSMS extends Model
                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                         curl_setopt($ch, CURLOPT_POST, 1);
                         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
-                        curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->api_token".":"."$sending_server->project_id");
+                        curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->project_id".":"."$sending_server->api_token");
 
                         $get_response = curl_exec($ch);
+
                         if (curl_errno($ch)) {
                             $get_sms_status = curl_error($ch);
                         } else {
@@ -1059,7 +1089,7 @@ class SendCampaignSMS extends Model
                         if (is_numeric($data['sender_id'])) {
                             $sender_id = '+'.$data['sender_id'];
                         } else {
-                            $sender_id = $$data['sender_id'];
+                            $sender_id = $data['sender_id'];
                         }
 
                         $parameters = [
@@ -1399,7 +1429,7 @@ class SendCampaignSMS extends Model
 
                         //If server returned HTTP Status 200 the request was successful
                         if ($info['http_code'] == 200) {
-                            //Store access token - Valid for 30 minutes - We must login every 30 minutes
+                            //Store access token - Valid for 30 minutes - We must log in every 30 minutes
                             $arr_res      = json_decode($result);
                             $access_token = $arr_res->payload->access_token;
                             //Send SMS
@@ -1502,7 +1532,6 @@ class SendCampaignSMS extends Model
                                 'username' => $sending_server->username,
                                 'password' => $sending_server->password,
                                 'to'       => $phone,
-                                'source'   => $data['sender_id'],
                                 'message'  => $message,
                         ];
 
@@ -1512,7 +1541,7 @@ class SendCampaignSMS extends Model
                             $parameters['type'] = 't';
                         }
 
-                        $gateway_url = $gateway_url.'?'.http_build_query($parameters);
+                        $gateway_url = $gateway_url.'?'.http_build_query($parameters).'&source='.$data['sender_id'];
 
 
                         try {
@@ -2067,7 +2096,7 @@ class SendCampaignSMS extends Model
 
                                 if (isset($output) && is_array($output) && array_key_exists('SMSMessageData', $output)) {
                                     if (strpos($output['SMSMessageData']['Message'], 'Sent') !== false) {
-                                        $get_sms_status = 'Delivered';
+                                        $get_sms_status = 'Delivered|'.$output['SMSMessageData']['Recipients']['0']['messageId'];
                                     } else {
                                         $get_sms_status = $output['SMSMessageData']['Message'];
                                     }
@@ -2404,6 +2433,1856 @@ class SendCampaignSMS extends Model
                         curl_close($ch);
                         break;
 
+                    case 'Callr':
+
+                        $random_data        = str_random(10);
+                        $options            = new stdClass();
+                        $options->user_data = $random_data;
+
+                        $phone = str_replace(['+', '(', ')', '-', " "], '', $phone);
+
+                        $parameters = [
+                                'to'      => '+'.$phone,
+                                'body'    => $message,
+                                'options' => $options,
+                        ];
+
+                        if (isset($data['sender_id'])) {
+                            $parameters['from'] = $data['sender_id'];
+                        }
+
+                        try {
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+                            $headers   = [];
+                            $headers[] = "Authorization: Basic ".base64_encode("$sending_server->username:$sending_server->password");
+                            $headers[] = "Content-Type: application/json";
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                            $result = curl_exec($ch);
+                            curl_close($ch);
+
+                            $result = json_decode($result, true);
+
+                            if (is_array($result) && array_key_exists('status', $result)) {
+
+                                if ($result['status'] == 'error') {
+                                    $get_sms_status = $result['data']['message'];
+                                } else {
+                                    $get_sms_status = 'Delivered|'.$random_data;
+                                }
+
+                            } else {
+                                $get_sms_status = 'Invalid request';
+                            }
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+
+                    case 'Skyetel':
+                        $parameters = [
+                                'to'   => $phone,
+                                'text' => $message,
+                        ];
+
+                        if (isset($data['sender_id'])) {
+                            $gateway_url .= "?from=".$data['sender_id'];
+                        }
+
+                        try {
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+                            $headers   = [];
+                            $headers[] = "Authorization: Basic ".base64_encode("$sending_server->account_sid:$sending_server->api_secret");
+                            $headers[] = "Content-Type: application/json";
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                            $result = curl_exec($ch);
+                            curl_close($ch);
+
+                            $result = json_decode($result, true);
+
+                            if (is_array($result)) {
+                                if (array_key_exists('direction', $result)) {
+                                    $get_sms_status = 'Delivered';
+                                } elseif (array_key_exists('message', $result)) {
+                                    $get_sms_status = $result['message'];
+                                } else {
+                                    $get_sms_status = implode(' ', $result);
+                                }
+                            } else {
+                                $get_sms_status = 'Invalid request';
+                            }
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'LTR':
+
+                        $parameters = [
+                                'username' => $sending_server->username,
+                                'password' => $sending_server->password,
+                                'api_key'  => $sending_server->api_key,
+                                'phone'    => $phone,
+                                'message'  => $message,
+                                'sender'   => $data['sender_id'],
+                        ];
+
+                        if ($sms_type == 'unicode') {
+                            $parameters['type'] = 'Urdu';
+                        } else {
+                            $parameters['type'] = 'English';
+                        }
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $get_sms_status = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                if (strpos($get_sms_status, 'sent') !== false) {
+                                    $get_sms_status = 'Delivered';
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+
+                        break;
+
+
+                    case 'Bulksmsplans':
+
+                        $parameters = [
+                                'api_id'       => $sending_server->auth_id,
+                                'api_password' => $sending_server->password,
+                                'sms_type'     => $sending_server->route,
+                                'number'       => $phone,
+                                'message'      => $message,
+                                'sender'       => $data['sender_id'],
+                        ];
+
+                        if ($sms_type == 'unicode') {
+                            $parameters['sms_encoding'] = 'unicode';
+                        } else {
+                            $parameters['sms_encoding'] = 'text';
+                        }
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $output = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $result = json_decode($output, true);
+
+                                if (is_array($result) && array_key_exists('code', $result)) {
+                                    if ($result['code'] == '200') {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $result['message'];
+                                    }
+                                } else {
+                                    $get_sms_status = implode(' ', $result);
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'Sinch':
+                        $parameters = [
+                                'from' => urlencode($data['sender_id']),
+                                'to'   => [
+                                        $phone,
+                                ],
+                                'body' => $message,
+                        ];
+
+                        try {
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_POST, 1);
+
+                            $headers   = [];
+                            $headers[] = "Authorization: Bearer $sending_server->api_token";
+                            $headers[] = "Content-Type: application/json";
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                            $result = curl_exec($ch);
+                            curl_close($ch);
+
+                            $result = json_decode($result, true);
+
+                            if (is_array($result) && array_key_exists('id', $result)) {
+                                $batch_id  = $result['id'];
+                                $recipient = $result['to'][0];
+
+                                $curl = curl_init();
+
+                                curl_setopt($curl, CURLOPT_URL, $gateway_url."/".$batch_id."/delivery_report/".$recipient);
+                                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                                curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "GET");
+
+
+                                $headers   = [];
+                                $headers[] = "Authorization: Bearer $sending_server->api_token";
+                                curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+
+                                $result = curl_exec($curl);
+                                curl_close($curl);
+
+                                $get_data = json_decode($result, true);
+
+                                if (is_array($get_data) && array_key_exists('status', $get_data)) {
+                                    if ($get_data['status'] == 'Delivered' || $get_data['status'] == 'Queued' || $get_data['status'] == 'Dispatched') {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $get_data['status'];
+                                    }
+                                } else {
+                                    $get_sms_status = 'Invalid request';
+                                }
+                            } else {
+                                $get_sms_status = 'Invalid request';
+                            }
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'D7Networks':
+
+                        $parameters = [
+                                "to"      => $phone,
+                                "from"    => $data['sender_id'],
+                                "content" => $message,
+                        ];
+
+                        $headers = [
+                                'Content-Type: application/x-www-form-urlencoded',
+                                'Authorization: Basic '.base64_encode($sending_server->username.":".$sending_server->password),
+                        ];
+
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                        $get_data = curl_exec($ch);
+
+                        if (curl_error($ch)) {
+                            $get_sms_status = curl_error($ch);
+                        } else {
+
+                            $get_response = json_decode($get_data, true);
+
+                            if (isset($get_response) && is_array($get_response)) {
+                                if (array_key_exists('data', $get_response)) {
+                                    $get_sms_status = 'Delivered';
+                                } else {
+                                    $get_sms_status = $get_response['message'];
+                                }
+                            } else {
+                                $get_sms_status = implode(' ', $get_response);
+                            }
+                        }
+                        curl_close($ch);
+
+                        break;
+
+                    case 'CMCOM':
+
+                        $random_data = str_random(10);
+
+                        $parameters = [
+                                'messages' => [
+                                        'authentication' => [
+                                                'productToken' => $sending_server->api_token,
+                                        ],
+                                        'msg'            => [
+                                                [
+                                                        'from'                        => $data['sender_id'],
+                                                        'body'                        => [
+                                                                'content' => $message,
+                                                                'type'    => 'auto',
+                                                        ],
+                                                        'minimumNumberOfMessageParts' => 1,
+                                                        'maximumNumberOfMessageParts' => 8,
+                                                        'to'                          => [
+                                                                [
+                                                                        'number' => '+'.$phone,
+                                                                ],
+                                                        ],
+                                                        'allowedChannels'             => [
+                                                                'SMS',
+                                                        ],
+                                                        'reference'                   => $random_data,
+                                                ],
+                                        ],
+                                ],
+                        ];
+
+                        $headers = [
+                                'Content-Type:application/json;charset=UTF-8',
+                        ];
+
+                        $ch = curl_init(); //open connection
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($ch, CURLOPT_HEADER, false);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                        if ( ! $result = curl_exec($ch)) {
+                            $get_sms_status = json_decode(curl_error($ch));
+                        } else {
+                            $output = json_decode($result, true);
+
+                            if (isset($output) && is_array($output) && array_key_exists('errorCode', $output) && array_key_exists('details', $output)) {
+                                if ($output['errorCode'] == 0) {
+                                    $get_sms_status = 'Delivered|'.$random_data;
+                                } else {
+                                    $get_sms_status = $output['details'];
+                                }
+                            } else {
+                                $get_sms_status = (string) $output;
+                            }
+                        }
+                        curl_close($ch);
+                        break;
+
+                    case 'PitchWink':
+                        $parameters = [
+                                'version'        => '4.00',
+                                'credential'     => $sending_server->c1,
+                                'token'          => $sending_server->api_token,
+                                'function'       => 'SEND_MESSAGE',
+                                'principal_user' => "",
+                                'messages'       => [
+                                        [
+                                                'id_extern'    => $data['sender_id'],
+                                                'aux_user'     => uniqid(),
+                                                'mobile'       => $phone,
+                                                'send_project' => 'N',
+                                                'message'      => $message,
+                                        ],
+                                ],
+                        ];
+
+                        try {
+
+                            $ch = curl_init(); //open connection
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_HEADER, false);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                            if ( ! $result = curl_exec($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $output = json_decode($result, true);
+
+                                if (isset($output) && is_array($output) && array_key_exists('returncode', $output)) {
+                                    switch ($output['returncode']) {
+                                        case '000':
+                                            $get_sms_status = 'Delivered';
+                                            break;
+
+                                        case '001':
+                                            $get_sms_status = 'Credential and/or Token invalids';
+                                            break;
+
+                                        case '002':
+                                            $get_sms_status = 'API not available for Test Accounts';
+                                            break;
+
+                                        case '003':
+                                            $get_sms_status = 'Account Inactive';
+                                            break;
+
+                                        case '004':
+                                            $get_sms_status = 'Exceeded the limit of 20.000 messages';
+                                            break;
+
+                                        case '005':
+                                            $get_sms_status = 'Wrong Version';
+                                            break;
+
+                                        case '006':
+                                            $get_sms_status = 'Version is invalid';
+                                            break;
+
+                                        case '007':
+                                            $get_sms_status = 'Function does not exist';
+                                            break;
+
+                                        case '008':
+                                            $get_sms_status = 'Attribute invalid';
+                                            break;
+
+                                        case '009':
+                                            $get_sms_status = 'Account blocked';
+                                            break;
+
+                                        case '600':
+                                        case '601':
+                                        case '602':
+                                        case '603':
+                                            $get_sms_status = 'Json is invalid';
+                                            break;
+
+                                        case '900':
+                                        case '901':
+                                        case '902':
+                                            $get_sms_status = 'Internal Error';
+                                            break;
+
+                                        case '905':
+                                            $get_sms_status = 'POST not accepted. Send again';
+                                            break;
+                                    }
+
+                                } else {
+                                    $get_sms_status = (string) $output;
+                                }
+                            }
+                            curl_close($ch);
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'Wavy':
+                        $parameters = [
+                                "destination" => $phone,
+                                "messageText" => $message,
+                        ];
+
+                        $headers = [
+                                "authenticationtoken: $sending_server->auth_token",
+                                "username: $sending_server->username",
+                                "content-type: application/json",
+                        ];
+
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                        $get_data = curl_exec($ch);
+
+                        if (curl_error($ch)) {
+                            $get_sms_status = curl_error($ch);
+                        } else {
+
+                            $get_response = json_decode($get_data, true);
+
+                            if (isset($get_response) && is_array($get_response)) {
+                                if (array_key_exists('id', $get_response)) {
+                                    $get_sms_status = 'Delivered';
+                                } elseif (array_key_exists('errorMessage', $get_response)) {
+                                    $get_sms_status = $get_response['errorMessage'];
+                                }
+                            } else {
+                                $get_sms_status = implode(' ', $get_response);
+                            }
+                        }
+                        curl_close($ch);
+                        break;
+
+                    case 'Solucoesdigitais':
+                        $parameters = [
+                                'usuario'              => $sending_server->username,
+                                'senha'                => $sending_server->password,
+                                'centro_custo_interno' => $sending_server->c1,
+                                'id_campanha'          => str_random(10),
+                                'numero'               => $phone,
+                                'mensagem'             => $message,
+                        ];
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $get_data = curl_exec($ch);
+
+                            if (curl_error($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_response = json_decode($get_data, true);
+
+                                if (isset($get_response) && is_array($get_response) && array_key_exists('status', $get_response)) {
+                                    if ($get_response['status'] == true) {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $get_response['infomacoes'][0];
+                                    }
+                                } else {
+                                    $get_sms_status = implode(' ', $get_response);
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+
+                    case 'SmartVision':
+                        $parameters = [
+                                'key'      => $sending_server->api_key,
+                                'senderid' => $data['sender_id'],
+                                'contacts' => $phone,
+                                'campaign' => '6940',
+                                'routeid'  => '39',
+                                'msg'      => $message,
+                        ];
+
+                        if ($sms_type == 'unicode') {
+                            $parameters['type'] = 'unicode';
+                        } else {
+                            $parameters['type'] = 'text';
+                        }
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $get_response = curl_exec($ch);
+
+                            if (curl_error($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                if (substr_count($get_response, 'SMS SUBMITTED') !== 0) {
+                                    $get_sms_status = 'Delivered';
+                                } else {
+                                    switch (trim($get_response)) {
+                                        case '1002':
+                                            $get_sms_status = 'Sender Id/Masking Not Found';
+                                            break;
+                                        case '1003':
+                                            $get_sms_status = 'API Key Not Found';
+                                            break;
+                                        case '1004':
+                                            $get_sms_status = 'SPAM Detected';
+                                            break;
+                                        case '1005':
+                                        case '1006':
+                                            $get_sms_status = 'Internal Error';
+                                            break;
+                                        case '1007':
+                                            $get_sms_status = 'Balance Insufficient';
+                                            break;
+                                        case '1008':
+                                            $get_sms_status = 'Message is empty';
+                                            break;
+                                        case '1009':
+                                            $get_sms_status = 'Message Type Not Set (text/unicode)';
+                                            break;
+                                        case '1010':
+                                            $get_sms_status = 'Invalid User & Password';
+                                            break;
+                                        case '1011':
+                                            $get_sms_status = 'Invalid User Id';
+                                            break;
+                                    }
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+
+                    case 'ZipComIo':
+
+                        $parameters = [
+                                'to'        => $phone,
+                                'from'      => $data['sender_id'],
+                                'content'   => $message,
+                                'type'      => 'sms',
+                                'simulated' => true,
+                        ];
+
+                        try {
+
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_POST, 1);
+
+
+                            $headers   = [];
+                            $headers[] = "x-api-key: $sending_server->api_key";
+                            $headers[] = "Content-Type: application/json";
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                            $get_sms_status = curl_exec($ch);
+                            curl_close($ch);
+
+                            $get_data = json_decode($get_sms_status, true);
+
+                            if (is_array($get_data) && array_key_exists('status', $get_data)) {
+                                if ($get_data['status'] == 'Message Submitted') {
+                                    $get_sms_status = 'Delivered';
+                                } else {
+                                    $get_sms_status = $get_data['status'];
+                                }
+                            }
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'GlobalSMSCN':
+
+                        $time = time();
+                        $sign = md5($sending_server->api_key.$sending_server->api_secret.$time);
+
+                        $parameters = [
+                                'appId'   => $sending_server->application_id,
+                                'numbers' => $phone,
+                                'content' => $message,
+                        ];
+
+                        if ($data['sender_id']) {
+                            $parameters['senderID'] = $data['sender_id'];
+                        }
+
+                        $gateway_url = $gateway_url.'?'.http_build_query($parameters);
+
+                        $headers   = [];
+                        $headers[] = "Sign: $sign";
+                        $headers[] = "Timestamp: $time";
+                        $headers[] = "Api-Key: $sending_server->api_key";
+                        $headers[] = "Content-Type: application/json;charset=UTF-8";
+
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+
+                        $get_sms_status = curl_exec($ch);
+
+                        if (curl_errno($ch)) {
+                            $get_sms_status = curl_error($ch);
+                        } else {
+
+                            $get_data = json_decode($get_sms_status, true);
+
+                            if (is_array($get_data) && array_key_exists('status', $get_data)) {
+                                $code = $get_data['status'];
+                                switch ($code) {
+
+                                    case '0':
+                                        $get_sms_status = 'Delivered';
+                                        break;
+
+                                    case '-1':
+                                        $get_sms_status = 'Authentication error';
+                                        break;
+
+                                    case '-2':
+                                        $get_sms_status = 'IP access is limited';
+                                        break;
+
+                                    case '-3':
+                                        $get_sms_status = 'Sensitive words';
+                                        break;
+
+                                    case '-4':
+                                        $get_sms_status = 'SMS message is empty';
+                                        break;
+
+                                    case '-5':
+                                        $get_sms_status = 'SMS message is over length';
+                                        break;
+
+                                    case '-6':
+                                        $get_sms_status = 'Do not match template';
+                                        break;
+
+                                    case '-7':
+                                        $get_sms_status = 'Receiver numbers over limit';
+                                        break;
+
+                                    case '-8':
+                                        $get_sms_status = 'Receiver number empty';
+                                        break;
+
+                                    case '-9':
+                                        $get_sms_status = 'Receiver number abnormal';
+                                        break;
+
+                                    case '-10':
+                                        $get_sms_status = 'Balance is low';
+                                        break;
+
+                                    case '-11':
+                                        $get_sms_status = 'Incorrect timing format';
+                                        break;
+
+                                    case '-12':
+                                        $get_sms_status = 'Due to platform issue,bulk submit is fail,pls contact admin';
+                                        break;
+
+                                    case '-13':
+                                        $get_sms_status = 'User locked';
+                                        break;
+
+                                    case '-16':
+                                        $get_sms_status = 'Timestamp expires';
+                                        break;
+                                }
+                            }
+
+                        }
+                        curl_close($ch);
+                        break;
+
+                    case 'Web2SMS237':
+
+
+                        $curl = curl_init();
+
+                        curl_setopt_array($curl, [
+                                CURLOPT_URL            => 'https://api.web2sms237.com/token',
+                                CURLOPT_RETURNTRANSFER => true,
+                                CURLOPT_ENCODING       => '',
+                                CURLOPT_MAXREDIRS      => 10,
+                                CURLOPT_TIMEOUT        => 0,
+                                CURLOPT_FOLLOWLOCATION => true,
+                                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                                CURLOPT_CUSTOMREQUEST  => 'POST',
+                                CURLOPT_HTTPHEADER     => [
+                                        'Authorization: Basic '.base64_encode($sending_server->api_key.':'.$sending_server->api_secret),
+                                ],
+                        ]);
+
+                        $response = curl_exec($curl);
+
+                        curl_close($curl);
+
+
+                        $response = json_decode($response, true);
+
+                        if (isset($response) && is_array($response) && array_key_exists('access_token', $response)) {
+                            $access_token = $response['access_token'];
+
+                            $parameters = [
+                                    'text'      => $message,
+                                    'phone'     => '+'.$phone,
+                                    'sender_id' => $data['sender_id'],
+                                    'flash'     => false,
+                            ];
+
+                            $sendSMS = json_encode($parameters);
+                            $curl    = curl_init();
+
+                            curl_setopt_array($curl, [
+                                    CURLOPT_URL            => $gateway_url,
+                                    CURLOPT_RETURNTRANSFER => true,
+                                    CURLOPT_ENCODING       => "",
+                                    CURLOPT_MAXREDIRS      => 10,
+                                    CURLOPT_TIMEOUT        => 30,
+                                    CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                                    CURLOPT_CUSTOMREQUEST  => "POST",
+                                    CURLOPT_POSTFIELDS     => $sendSMS,
+                                    CURLOPT_HTTPHEADER     => [
+                                            "authorization: Bearer ".$access_token,
+                                            "content-type: application/json",
+                                    ],
+                            ]);
+
+                            $response = curl_exec($curl);
+                            $err      = curl_error($curl);
+
+                            curl_close($curl);
+
+                            if ($err) {
+                                $get_sms_status = $err;
+                            } else {
+                                $response = json_decode($response, true);
+
+                                if (isset($response) && is_array($response)) {
+
+                                    if (array_key_exists('id', $response)) {
+                                        $get_sms_status = 'Delivered';
+                                    } elseif (array_key_exists('message', $response)) {
+                                        $get_sms_status = $response['message'];
+                                    } else {
+                                        $get_sms_status = 'Failed';
+                                    }
+                                } else {
+                                    $get_sms_status = 'Invalid Request';
+                                }
+                            }
+
+                        } else {
+                            $get_sms_status = 'Access token not found';
+                        }
+
+                        break;
+
+                    case 'BongaTech':
+                        $parameters = [
+                                'username' => $sending_server->username,
+                                'password' => $sending_server->password,
+                                'phone'    => $phone,
+                                'message'  => $message,
+                                'sender'   => $data['sender_id'],
+                        ];
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $get_sms_status = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_data = json_decode($get_sms_status, true);
+
+                                if (is_array($get_data) && array_key_exists('status', $get_data)) {
+                                    if ($get_data['status'] == false) {
+                                        $get_sms_status = $get_data['message'];
+                                    } else {
+                                        $get_sms_status = 'Delivered';
+                                    }
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+
+                    case 'FloatSMS':
+                        $parameters = [
+                                'key'     => $sending_server->api_key,
+                                'phone'   => $phone,
+                                'message' => $message,
+                        ];
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $get_sms_status = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_data = json_decode($get_sms_status, true);
+                                if (is_array($get_data) && array_key_exists('status', $get_data)) {
+                                    if ($get_data['status'] == 200) {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $get_data['message'];
+                                    }
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'MaisSMS':
+
+                        $parameters = [
+                                [
+                                        "numero"      => $phone,
+                                        "mensagem"    => $message,
+                                        "servico"     => 'short',
+                                        "parceiro_id" => $sending_server->c1,
+                                        "codificacao" => "0",
+                                ],
+                        ];
+
+                        try {
+
+                            $headers = [
+                                    'Content-Type:application/json',
+                                    'Authorization: Bearer '.$sending_server->api_token,
+                            ];
+
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            $response = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_response = json_decode($response, true);
+                                if (isset($get_response) && is_array($get_response) && array_key_exists('status', $get_response)) {
+                                    if ($get_response['status'] == '200') {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = 'Status Code: '.$get_response['status'];
+                                    }
+                                } else {
+                                    $get_sms_status = 'Authentication failed';
+                                }
+                            }
+
+                            curl_close($ch);
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'EasySmsXyz':
+
+                        $parameters = [
+                                "number"   => $phone,
+                                "message"  => $message,
+                                "schedule" => null,
+                                "key"      => $sending_server->api_key,
+                                "devices"  => "0",
+                                "type"     => "sms",
+                        ];
+
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                        curl_setopt($ch, CURLOPT_POST, true);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
+                        $response = curl_exec($ch);
+                        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                        if (curl_errno($ch)) {
+                            $get_sms_status = curl_error($ch);
+                        } else {
+                            if ($httpCode == 200) {
+                                $json = json_decode($response, true);
+
+                                if ($json == false) {
+                                    if (empty($response)) {
+                                        $get_sms_status = 'Missing data in request. Please provide all the required information to send messages.';
+                                    } else {
+                                        $get_sms_status = $response;
+                                    }
+                                } else {
+                                    if ($json["success"]) {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $json["error"]["message"];
+                                    }
+                                }
+                            } else {
+                                $get_sms_status = 'Error Code: '.$httpCode;
+                            }
+                        }
+                        curl_close($ch);
+                        break;
+
+                    case 'Sozuri':
+                        $parameters = [
+                                'project' => $sending_server->project_id,
+                                'from'    => $data['sender_id'],
+                                'to'      => $phone,
+                                'channel' => 'sms',
+                                'message' => $message,
+                                'type'    => 'promotional',
+                        ];
+
+                        $headers = [
+                                "authorization: Bearer $sending_server->api_key",
+                                "Content-Type: application/json",
+                                "Accept: application/json",
+                        ];
+
+
+                        $ch = curl_init();
+
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                        curl_setopt($ch, CURLOPT_POST, 1);
+
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                        $result = curl_exec($ch);
+                        if (curl_errno($ch)) {
+                            $get_sms_status = curl_error($ch);
+                        } else {
+                            $response = json_decode($result, true);
+
+                            if (is_array($response) && array_key_exists('messageData', $response) && array_key_exists('messages', $response['messageData'])) {
+                                if ($response['messageData']['messages']) {
+                                    $get_sms_status = 'Delivered';
+                                } else {
+                                    $get_sms_status = 'Unknown error';
+                                }
+                            } else {
+                                $get_sms_status = 'Unknown Error';
+                            }
+                        }
+                        curl_close($ch);
+
+                        break;
+
+                    case 'ExpertTexting':
+
+                        $parameters = [
+                                'username'   => $sending_server->username,
+                                'api_key'    => $sending_server->api_key,
+                                'api_secret' => $sending_server->api_secret,
+                                'from'       => $data['sender_id'],
+                                'to'         => $phone,
+                                'text'       => $message,
+                        ];
+
+                        if ($sms_type == 'unicode') {
+                            $parameters['type'] = 'unicode';
+                        } else {
+                            $parameters['type'] = 'text';
+                        }
+
+                        try {
+
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_POST, true);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            $response = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $result = json_decode($response, true);
+
+                                if (is_array($result) && array_key_exists('Status', $result)) {
+                                    if ($result['Status'] == 0) {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $result['ErrorMessage'];
+                                    }
+                                } else {
+                                    $get_sms_status = (string) $response;
+                                }
+                            }
+                            curl_close($ch);
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+
+                        break;
+
+                    case 'Ejoin':
+
+                        $parameters = [
+                                "type"     => "send-sms",
+                                "task_num" => 1,
+                                "tasks"    => [
+                                        [
+                                                'tid'  => str_random(),
+                                                "from" => $data['sender_id'],
+                                                "to"   => $phone,
+                                                "sms"  => $message,
+                                        ],
+                                ],
+                        ];
+
+                        $headers = [
+                                'Content-Type: text/plain',
+                                'Authorization: Basic '.base64_encode($sending_server->username.":".$sending_server->password),
+                        ];
+
+
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url."?username=".$sending_server->username."&password=".$sending_server->password);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                        $get_data = curl_exec($ch);
+
+                        if (curl_error($ch)) {
+                            $get_sms_status = curl_error($ch);
+                        } else {
+
+                            $get_response = json_decode($get_data, true);
+
+                            if (isset($get_response) && is_array($get_response) && array_key_exists('code', $get_response) && array_key_exists('reason', $get_response)) {
+                                if ($get_response['code'] == 0 || $get_response['code'] == 200) {
+                                    $get_sms_status = 'Delivered';
+                                } else {
+                                    $get_sms_status = $get_response['reason'];
+                                }
+                            } else {
+                                $get_sms_status = $get_response['desc'];
+                            }
+                        }
+                        curl_close($ch);
+                        break;
+
+
+                    case 'BulkSMSNigeria':
+                        $parameters = [
+                                'api_token' => $sending_server->api_token,
+                                'dnd'       => $sending_server->c1,
+                                'from'      => $data['sender_id'],
+                                'to'        => $phone,
+                                'body'      => $message,
+                        ];
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $get_sms_status = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_data = json_decode($get_sms_status, true);
+                                if (is_array($get_data) && array_key_exists('data', $get_data) && array_key_exists('status', $get_data['data'])) {
+                                    if ($get_data['data']['status'] == 'success') {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = 'Failed';
+                                    }
+                                } else {
+                                    $get_sms_status = 'Failed';
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+
+                    case 'SendSMSGate':
+
+                        $parameters = http_build_query([
+                                'user' => $sending_server->username,
+                                'pwd'  => $sending_server->password,
+                                'dadr' => $phone,
+                                'text' => $message,
+                                'sadr' => $data['sender_id'],
+                        ]);
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".$parameters;
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            $get_sms_status = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                if (is_numeric($get_sms_status)) {
+                                    $get_sms_status = 'Delivered';
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'Gateway360':
+                        $parameters = [
+                                'api_key'  => $sending_server->api_key,
+                                'concat'   => 1,
+                                'messages' => [
+                                        [
+                                                'from' => $data['sender_id'],
+                                                'to'   => $phone,
+                                                'text' => $message,
+                                        ],
+                                ],
+                        ];
+
+                        try {
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_POST, 1);
+
+                            $headers   = [];
+                            $headers[] = 'Content-Type: application/json';
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                            $result = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+
+                                $result = json_decode($result, true);
+
+                                if (isset($result) && is_array($result) && array_key_exists('status', $result)) {
+                                    if ($result['status'] == 'ok') {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $result['error_msg'];
+                                    }
+
+                                } else {
+                                    $get_sms_status = $result;
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'AjuraTech':
+
+                        $parameters = [
+                                'apikey'         => $sending_server->api_key,
+                                'secretkey'      => $sending_server->api_secret,
+                                'callerID'       => $data['sender_id'],
+                                'toUser'         => $phone,
+                                'messageContent' => $message,
+                        ];
+
+                        try {
+
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $result = curl_exec($ch);
+
+                            if (curl_error($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+
+                                $result = json_decode($result, true);
+
+                                if (isset($result) && is_array($result) && array_key_exists('Status', $result)) {
+                                    if ($result['Status'] == '0') {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $result['Text'];
+                                    }
+
+                                } else {
+                                    $get_sms_status = $result;
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+
+                        break;
+
+
+                    case 'SMSCloudCI':
+
+                        $parameters = [
+                                'sender'     => $data['sender_id'],
+                                'content'    => $message,
+                                'recipients' => [$phone],
+                        ];
+
+
+                        try {
+
+                            $headers = [
+                                    'Content-Type: application/json',
+                                    'cache-control: no-cache',
+                                    'Authorization: Bearer '.$sending_server->api_token,
+                            ];
+
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            $response = curl_exec($ch);
+                            curl_close($ch);
+
+                            $get_response = json_decode($response, true);
+
+                            if (isset($get_response) && is_array($get_response)) {
+                                if (array_key_exists('status', $get_response)) {
+                                    if ($get_response['status'] == 200) {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $get_response['statusMessage'];
+                                    }
+                                } elseif (array_key_exists('id', $get_response)) {
+                                    $get_sms_status = 'Delivered|'.$get_response['id'];
+                                } else {
+                                    $get_sms_status = (string) $response;
+                                }
+                            } else {
+                                $get_sms_status = (string) $response;
+                            }
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+
+                    case 'LifetimeSMS':
+
+                        $parameters = [
+                                'api_token'  => $sending_server->api_token,
+                                'api_secret' => $sending_server->api_secret,
+                                'from'       => $data['sender_id'],
+                                'message'    => $message,
+                                'to'         => $phone,
+                        ];
+
+
+                        try {
+
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_HEADER, 0);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
+                            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                            $get_sms_status = curl_exec($ch);
+                            curl_close($ch);
+
+                            if (substr_count($get_sms_status, 'OK') == 1) {
+                                $get_sms_status = explode(':', $get_sms_status);
+                                if (isset($get_sms_status) && is_array($get_sms_status) && array_key_exists('3', $get_sms_status)) {
+                                    $get_sms_status = 'Delivered|'.trim($get_sms_status['3']);
+                                } else {
+                                    $get_sms_status = 'Delivered';
+                                }
+                            } else {
+                                $get_sms_status = str_replace('ERROR:', '', $get_sms_status);
+                            }
+
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+                    case 'PARATUS':
+
+                        $parameters = [
+                                'app' => 'ws',
+                                'u'   => $sending_server->username,
+                                'h'   => $sending_server->api_token,
+                                'to'  => $phone,
+                                'op'  => 'pv',
+                                'msg' => $message,
+                        ];
+
+                        if (isset($data['sender_id'])) {
+                            $parameters['from'] = $data['sender_id'];
+                        }
+
+                        try {
+                            $sms_sent_to_user = $gateway_url."?".http_build_query($parameters);
+
+                            $ch = curl_init();
+
+                            curl_setopt($ch, CURLOPT_URL, $sms_sent_to_user);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+                            $result = curl_exec($ch);
+
+                            if (curl_error($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+
+                                $response = json_decode($result, true);
+
+                                if (is_array($response) && array_key_exists('data', $response)) {
+                                    $get_sms_status = 'Delivered|'.$response['data'][0]['smslog_id'];
+                                } elseif (is_array($response) && array_key_exists('error', $response)) {
+                                    $get_sms_status = $response['error_string'];
+                                } else {
+                                    $get_sms_status = (string) $result;
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $exception) {
+                            $get_sms_status = $exception->getMessage();
+                        }
+                        break;
+
+                    case 'MOOVCI':
+
+                        $timestamp = date('Y-m-d H:i:s');
+                        $token     = md5("$sending_server->c1"."$sending_server->api_key".$timestamp);
+
+                        $parameters = [
+                                'recipients' => $phone,
+                                'sendmode'   => 0,
+                                'message'    => utf8_decode($message),
+                                'smstype'    => 'normal',
+                                'sendername' => $data['sender_id'],
+                        ];
+
+                        $headers = [
+                                'apiKey: '.$sending_server->api_key,
+                                'login: '.$sending_server->c1,
+                                'timeStamp: '.$timestamp,
+                                'token: '.$token,
+                        ];
+
+                        try {
+
+                            $ch = curl_init($gateway_url);
+                            curl_setopt($ch, CURLOPT_FAILONERROR, false);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                            $result = curl_exec($ch);
+                            curl_close($ch);
+
+                            $response = json_decode($result, true);
+
+                            if (is_array($response) && array_key_exists('smsResponse', $response)) {
+                                $get_sms_status = 'Delivered';
+                            } else {
+                                $get_sms_status = array_key_first($response);
+                            }
+
+                        } catch (Exception $exception) {
+                            $get_sms_status = $exception->getMessage();
+                        }
+                        break;
+
+                    case 'LeTexto':
+
+                        $parameters = [
+                                'campaignType' => 'SIMPLE',
+                                'sender'       => $data['sender_id'],
+                                'message'      => $message,
+                                'recipients'   => [['phone' => $phone]],
+                        ];
+
+
+                        try {
+
+                            $headers = [
+                                    'Content-Type: application/json',
+                                    'Authorization: Bearer '.$sending_server->api_token,
+                            ];
+
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            $response = curl_exec($ch);
+                            curl_close($ch);
+
+                            $get_response = json_decode($response, true);
+
+                            if (isset($get_response) && is_array($get_response)) {
+                                if (array_key_exists('status', $get_response)) {
+                                    if ($get_response['status'] == 200) {
+                                        $get_sms_status = 'Delivered';
+                                    } else {
+                                        $get_sms_status = $get_response['message'];
+                                    }
+                                } elseif (array_key_exists('id', $get_response)) {
+                                    $get_sms_status = 'Delivered|'.$get_response['id'];
+                                } else {
+                                    $get_sms_status = (string) $response;
+                                }
+                            } else {
+                                $get_sms_status = (string) $response;
+                            }
+
+                        } catch (Exception $e) {
+                            $get_sms_status = $e->getMessage();
+                        }
+                        break;
+
+
+                    case 'SMSCarrierEU':
+                        $parameters = [
+                                'user'       => $sending_server->username,
+                                'password'   => $sending_server->password,
+                                'sender'     => $data['sender_id'],
+                                'recipients' => $phone,
+                                'dlr'        => 0,
+                        ];
+
+                        if ($sms_type == 'unicode') {
+                            $parameters['message'] = $this->sms_unicode($message);
+                            $gateway_url           = 'https://smsc.i-digital-m.com/smsgw/sendunicode.php';
+                        } else {
+                            $parameters['message'] = $message;
+                        }
+
+                        $sending_url = $gateway_url.'?'.http_build_query($parameters);
+
+                        try {
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $sending_url);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            $get_sms_status = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_sms_status = preg_replace("/\r|\n/", "", $get_sms_status);
+
+                                if (substr_count($get_sms_status, 'OK') == 1) {
+                                    $get_sms_status = 'Delivered';
+                                } else {
+                                    $get_sms_status = str_replace('ERROR:', '', $get_sms_status);
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $exception) {
+                            $get_sms_status = $exception->getMessage();
+                        }
+                        break;
+
+
+                    case 'MSMPusher':
+                        $parameters = [
+                                'api_private_key' => $sending_server->c1,
+                                'api_public_key'  => $sending_server->c2,
+                                'sender'          => $data['sender_id'],
+                                'numbers'         => $phone,
+                                'message'         => $message,
+                        ];
+
+
+                        $sending_url = $gateway_url.'?'.http_build_query($parameters);
+
+                        try {
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_URL, $sending_url);
+                            curl_setopt($ch, CURLOPT_HTTPGET, 1);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                            $get_sms_status = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_sms_status = trim($get_sms_status);
+                                switch ($get_sms_status) {
+                                    case '1000':
+                                        $get_sms_status = 'Delivered';
+                                        break;
+
+                                    case '1001':
+                                        $get_sms_status = 'Not All Messages were sent successfully due to insufficient balance';
+                                        break;
+
+                                    case '1002':
+                                        $get_sms_status = 'Missing API Parameters';
+                                        break;
+
+                                    case '1003':
+                                        $get_sms_status = 'Insufficient balance';
+                                        break;
+
+                                    case '1004':
+                                        $get_sms_status = 'Mismatched API key';
+                                        break;
+
+                                    case '1005':
+                                        $get_sms_status = 'Invalid Phone Number';
+                                        break;
+
+                                    case '1006':
+                                        $get_sms_status = 'invalid Sender ID. Sender ID must not be more than 11 Characters. Characters include white space.';
+                                        break;
+
+                                    case '1007':
+                                        $get_sms_status = 'Message scheduled for later delivery';
+                                        break;
+
+                                    case '1008':
+                                        $get_sms_status = 'Empty Message';
+                                        break;
+
+                                    case '1009':
+                                        $get_sms_status = 'SMS sending failed';
+                                        break;
+
+                                    case '1010':
+                                        $get_sms_status = 'No messages has been sent on the specified dates using the specified api key';
+                                        break;
+
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $exception) {
+                            $get_sms_status = $exception->getMessage();
+                        }
+                        break;
+
+                    case 'TxTria':
+                        $parameters = [
+                                'sys_id'     => $sending_server->c1,
+                                'auth_token' => $sending_server->auth_token,
+                                'From'       => $data['sender_id'],
+                                'To'         => $phone,
+                                'Body'       => urlencode($message),
+                        ];
+
+                        try {
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
+
+                            $response = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_response = json_decode($response, true);
+
+                                if (isset($get_response) && is_array($get_response)) {
+                                    if (array_key_exists('success', $get_response) && $get_response['success'] == 1) {
+                                        $get_sms_status = 'Delivered';
+                                    } elseif (array_key_exists('error', $get_response) && $get_response['error'] == 1) {
+                                        $get_sms_status = $get_response['message'];
+                                    } else {
+                                        $get_sms_status = (string) $response;
+                                    }
+                                } else {
+                                    $get_sms_status = (string) $response;
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $exception) {
+                            $get_sms_status = $exception->getMessage();
+                        }
+                        break;
+
+                    case 'Gatewayapi':
+                        $converter       = new Converter();
+                        $convert_message = $converter->convertUtf8ToGsm($message, true, '');
+
+                        $sms_counter  = new SMSCounter();
+                        $message_data = $sms_counter->count($convert_message);
+
+                        $parameters = [
+                                'message'      => $convert_message,
+                                'sender'       => $data['sender_id'],
+                                'callback_url' => route('dlr.gatewayapi'),
+                                'max_parts'    => 9,
+                                'recipients'   => [
+                                        [
+                                                'msisdn' => $phone,
+                                        ],
+                                ],
+                        ];
+
+                        if ($message_data->encoding == 'UTF16') {
+                            $parameters['encoding'] = 'UCS2';
+                        }
+
+
+                        $headers = [
+                                'Accept: application/json',
+                                'Content-Type: application/json',
+                        ];
+
+                        try {
+                            $ch = curl_init();
+                            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                            curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                            curl_setopt($ch, CURLOPT_POST, 1);
+                            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                            curl_setopt($ch, CURLOPT_USERPWD, $sending_server->api_token.":");
+                            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                            $response = curl_exec($ch);
+
+                            if (curl_errno($ch)) {
+                                $get_sms_status = curl_error($ch);
+                            } else {
+                                $get_response = json_decode($response, true);
+
+                                if (isset($get_response) && is_array($get_response)) {
+                                    if (array_key_exists('ids', $get_response)) {
+                                        $get_sms_status = 'Delivered|'.$get_response['ids'][0];
+                                    } else {
+                                        $get_sms_status = $get_response['message'];
+                                    }
+                                } else {
+                                    $get_sms_status = (string) $response;
+                                }
+                            }
+                            curl_close($ch);
+                        } catch (Exception $exception) {
+                            $get_sms_status = $exception->getMessage();
+                        }
+                        break;
+
+
+//                    case 'SmsGatewayMe':
+//
+//                        $messageClient = new ClientProvider($sending_server->api_token);
+//
+//                        $sendMessageRequest = new SendMessageRequest([
+//                                'phoneNumber' => $phone,
+//                                'message'     => $message,
+//                                'deviceId'    => $sending_server->device_id,
+//                        ]);
+//
+//                        try {
+//                            $response = $messageClient->getMessageClient()->sendMessages([
+//                                    $sendMessageRequest,
+//                            ]);
+//
+//                            if (is_array($response)) {
+//                                if (array_key_exists('0', $response)) {
+//                                    $get_sms_status = 'Delivered|'.$response[0]->getId();
+//                                } else {
+//                                    $get_sms_status = 'Invalid request';
+//                                }
+//
+//                            } else {
+//                                $get_sms_status = (string) $response;
+//                            }
+//                        } catch (ApiException $e) {
+//                            $get_sms_status = $e->getMessage();
+//                        }
+//                        break;
+
                     default:
                         $get_sms_status = __('locale.sending_servers.sending_server_not_found');
                         break;
@@ -2497,7 +4376,7 @@ class SendCampaignSMS extends Model
                             $get_sms_status = $get_response->status.'|'.$get_response->sid;
                         }
 
-                    } catch (ConfigurationException | TwilioException $e) {
+                    } catch (ConfigurationException|TwilioException $e) {
                         $get_sms_status = $e->getMessage();
                     }
                     break;
@@ -2512,7 +4391,7 @@ class SendCampaignSMS extends Model
                                 Tool::createVoiceFile($message, 'Plivo'),
                         );
 
-                        $get_sms_status = 'Delivered|'.$response->getmessageUuid(0);
+                        $get_sms_status = 'Delivered|'.$response->getmessageUuid(0)[0];
 
                     } catch (PlivoResponseException $e) {
                         $get_sms_status = $e->getMessage();
@@ -2643,7 +4522,7 @@ class SendCampaignSMS extends Model
                             'To'   => '+'.$phone,
                     ];
 
-                    $sending_url = $gateway_url."/api/laml/2010-04-01/Accounts/$sending_server->api_token/Calls.json";
+                    $sending_url = $gateway_url."/api/laml/2010-04-01/Accounts/$sending_server->project_id/Calls.json";
 
                     $ch = curl_init();
 
@@ -2651,7 +4530,7 @@ class SendCampaignSMS extends Model
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                     curl_setopt($ch, CURLOPT_POST, 1);
                     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
-                    curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->api_token".":"."$sending_server->project_id");
+                    curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->project_id".":"."$sending_server->api_token");
 
                     $get_response = curl_exec($ch);
                     if (curl_errno($ch)) {
@@ -2761,7 +4640,7 @@ class SendCampaignSMS extends Model
                             $get_sms_status = $get_response->status.'|'.$get_response->sid;
                         }
 
-                    } catch (ConfigurationException | TwilioException $e) {
+                    } catch (ConfigurationException|TwilioException $e) {
                         $get_sms_status = $e->getMessage();
                     }
                     break;
@@ -2813,41 +4692,101 @@ class SendCampaignSMS extends Model
                     break;
 
                 case 'Plivo':
+                    $parameters = json_encode([
+                            'src'        => $data['sender_id'],
+                            'dst'        => $phone,
+                            'text'       => $message,
+                            'type'       => 'mms',
+                            'media_urls' => [
+                                    $media_url,
+                            ],
+                    ]);
 
-                    $client = new RestClient($sending_server->auth_id, $sending_server->auth_token);
-                    try {
-                        $response = $client->messages->create(
-                                $data['sender_id'],
-                                [$phone],
-                                $message,
-                                ['media_urls' => $media_url]
-                        );
+                    $ch = curl_init();
 
-                        $get_sms_status = 'Delivered|'.$response->getmessageUuid(0);
+                    curl_setopt($ch, CURLOPT_URL, "https://api.plivo.com/v1/Account/$sending_server->auth_id/Message/");
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
+                    curl_setopt($ch, CURLOPT_POST, 1);
+                    curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->auth_id".":"."$sending_server->auth_token");
 
-                    } catch (PlivoResponseException $e) {
-                        $get_sms_status = $e->getMessage();
+                    $headers   = [];
+                    $headers[] = "Content-Type: application/json";
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                    $result = curl_exec($ch);
+                    if (curl_errno($ch)) {
+                        $get_sms_status = curl_error($ch);
+                    } else {
+                        $response = json_decode($result, true);
+
+                        if (json_last_error() == JSON_ERROR_NONE) {
+                            if (isset($response) && is_array($response) && array_key_exists('message', $response)) {
+                                if (substr_count($response['message'], 'queued')) {
+                                    $get_sms_status = 'Delivered|'.$response['message_uuid'][0];
+                                } else {
+                                    $get_sms_status = $response['message'];
+                                }
+                            } elseif (isset($response) && is_array($response) && array_key_exists('error', $response)) {
+                                $get_sms_status = $response['error'];
+                            } else {
+                                $get_sms_status = trim($result);
+                            }
+                        } else {
+                            $get_sms_status = trim($result);
+                        }
                     }
+                    curl_close($ch);
 
                     break;
 
                 case 'PlivoPowerpack':
+                    $parameters = json_encode([
+                            'powerpack_uuid' => $data['sender_id'],
+                            'dst'            => $phone,
+                            'text'           => $message,
+                            'type'           => 'mms',
+                            'media_urls'     => [
+                                    $media_url,
+                            ],
+                    ]);
 
-                    $client = new RestClient($sending_server->auth_id, $sending_server->auth_token);
-                    try {
-                        $response = $client->messages->create(
-                                null,
-                                [$phone],
-                                $message,
-                                ['media_urls' => $media_url],
-                                $data['sender_id']
-                        );
+                    $ch = curl_init();
 
-                        $get_sms_status = 'Delivered|'.$response->getmessageUuid(0);
+                    curl_setopt($ch, CURLOPT_URL, "https://api.plivo.com/v1/Account/$sending_server->auth_id/Message/");
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
+                    curl_setopt($ch, CURLOPT_POST, 1);
+                    curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->auth_id".":"."$sending_server->auth_token");
 
-                    } catch (PlivoResponseException $e) {
-                        $get_sms_status = $e->getMessage();
+                    $headers   = [];
+                    $headers[] = "Content-Type: application/json";
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                    $result = curl_exec($ch);
+                    if (curl_errno($ch)) {
+                        $get_sms_status = curl_error($ch);
+                    } else {
+                        $response = json_decode($result, true);
+
+                        if (json_last_error() == JSON_ERROR_NONE) {
+                            if (isset($response) && is_array($response) && array_key_exists('message', $response)) {
+                                if (substr_count($response['message'], 'queued')) {
+                                    $get_sms_status = 'Delivered|'.$response['message_uuid'][0];
+                                } else {
+                                    $get_sms_status = $response['message'];
+                                }
+                            } elseif (isset($response) && is_array($response) && array_key_exists('error', $response)) {
+                                $get_sms_status = $response['error'];
+                            } else {
+                                $get_sms_status = trim($result);
+                            }
+                        } else {
+                            $get_sms_status = trim($result);
+                        }
                     }
+                    curl_close($ch);
+
 
                     break;
 
@@ -2860,7 +4799,7 @@ class SendCampaignSMS extends Model
                             'number'      => $phone,
                             'message'     => $message,
                             'attachmentx' => $media_url,
-                            'typex'       => mime_content_type($media_url),
+                            'typex'       => image_type_to_mime_type(exif_imagetype($media_url)),
                             'namex'       => basename($media_url),
                     ];
 
@@ -2935,7 +4874,7 @@ class SendCampaignSMS extends Model
                             'To'       => '+'.$phone,
                     ];
 
-                    $sending_url = $gateway_url."/api/laml/2010-04-01/Accounts/$sending_server->api_token/Messages.json";
+                    $sending_url = $gateway_url."/api/laml/2010-04-01/Accounts/$sending_server->project_id/Messages.json";
 
                     $ch = curl_init();
 
@@ -2943,7 +4882,7 @@ class SendCampaignSMS extends Model
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
                     curl_setopt($ch, CURLOPT_POST, 1);
                     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($parameters));
-                    curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->api_token".":"."$sending_server->project_id");
+                    curl_setopt($ch, CURLOPT_USERPWD, "$sending_server->project_id".":"."$sending_server->api_token");
 
                     $get_response = curl_exec($ch);
                     if (curl_errno($ch)) {
@@ -2976,7 +4915,7 @@ class SendCampaignSMS extends Model
                     if (is_numeric($data['sender_id'])) {
                         $sender_id = '+'.$data['sender_id'];
                     } else {
-                        $sender_id = $$data['sender_id'];
+                        $sender_id = $data['sender_id'];
                     }
 
                     $parameters = [
@@ -3030,11 +4969,11 @@ class SendCampaignSMS extends Model
 
                 case 'Bandwidth':
 
-                    $sender_id = str_replace(['+', '(', ')', '-', ' '], '', $this->sender_id);
+                    $sender_id = str_replace(['+', '(', ')', '-', ' '], '', $data['sender_id']);
 
                     $parameters = [
                             'from'          => '+'.$sender_id,
-                            'to'            => ['+'.$this->cl_phone],
+                            'to'            => ['+'.$phone],
                             'text'          => $this->message,
                             'applicationId' => $sending_server->application_id,
                             'media'         => [
@@ -3135,6 +5074,102 @@ class SendCampaignSMS extends Model
 
                     break;
 
+                case 'Skyetel':
+                    $parameters = [
+                            'to'    => $phone,
+                            'text'  => $message,
+                            'media' => [
+                                    $media_url,
+                            ],
+                    ];
+
+                    if (isset($data['sender_id'])) {
+                        $gateway_url .= "?from=".$data['sender_id'];
+                    }
+
+                    try {
+                        $ch = curl_init();
+
+                        curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+                        $headers   = [];
+                        $headers[] = "Authorization: Basic ".base64_encode("$sending_server->account_sid:$sending_server->api_secret");
+                        $headers[] = "Content-Type: application/json";
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                        $result = curl_exec($ch);
+                        curl_close($ch);
+
+                        $result = json_decode($result, true);
+
+                        if (is_array($result)) {
+                            if (array_key_exists('direction', $result)) {
+                                $get_sms_status = 'Delivered';
+                            } elseif (array_key_exists('message', $result)) {
+                                $get_sms_status = $result['message'];
+                            } else {
+                                $get_sms_status = implode(' ', $result);
+                            }
+                        } else {
+                            $get_sms_status = 'Invalid request';
+                        }
+
+                    } catch (Exception $e) {
+                        $get_sms_status = $e->getMessage();
+                    }
+                    break;
+
+                case 'TxTria':
+                    $parameters = [
+                            'sys_id'     => $sending_server->c1,
+                            'auth_token' => $sending_server->auth_token,
+                            'From'       => $data['sender_id'],
+                            'To'         => $phone,
+                            'FileName0'  => basename($media_url),
+                            'MediaUrl0'  => base64_encode(file_get_contents($media_url)),
+                    ];
+                    if ($message != null) {
+                        $parameters['Body'] = urlencode($message);
+                    }
+
+                    try {
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                        curl_setopt($ch, CURLOPT_URL, 'https://txtria.com/api/sendsms');
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, $parameters);
+                        $response = curl_exec($ch);
+
+                        if (curl_errno($ch)) {
+                            $get_sms_status = curl_error($ch);
+                        } else {
+                            $get_response = json_decode($response, true);
+
+                            if (isset($get_response) && is_array($get_response)) {
+                                if (array_key_exists('success', $get_response) && $get_response['success'] == 1) {
+                                    $get_sms_status = 'Delivered';
+                                } elseif (array_key_exists('error', $get_response) && $get_response['error'] == 1) {
+                                    $get_sms_status = $get_response['message'];
+                                } else {
+                                    $get_sms_status = (string) $response;
+                                }
+                            } else {
+                                $get_sms_status = (string) $response;
+                            }
+                        }
+                        curl_close($ch);
+                    } catch (Exception $exception) {
+                        $get_sms_status = $exception->getMessage();
+                    }
+                    break;
+
+
                 default:
                     $get_sms_status = __('locale.sending_servers.sending_server_not_found');
                     break;
@@ -3193,6 +5228,11 @@ class SendCampaignSMS extends Model
         $gateway_name   = $data['sending_server']->settings;
         $get_sms_status = $data['status'];
         $message        = $data['message'];
+        $media_url      = null;
+
+        if (isset($data['media_url'])) {
+            $media_url = $data['media_url'];
+        }
 
         if ($get_sms_status == null) {
             $gateway_url = $sending_server->api_link;
@@ -3200,14 +5240,20 @@ class SendCampaignSMS extends Model
 
                 case 'Twilio':
 
+                    $parameters = [
+                            'from' => 'whatsapp:'.$data['sender_id'],
+                            'body' => $message,
+                    ];
+
+                    if ($media_url != null) {
+                        $parameters['mediaUrl'] = $media_url;
+                    }
+
                     try {
                         $client = new Client($sending_server->account_sid, $sending_server->auth_token);
 
                         $get_response = $client->messages->create(
-                                'whatsapp:'.$phone, [
-                                        'from' => 'whatsapp:'.$data['sender_id'],
-                                        'body' => $message,
-                                ]
+                                'whatsapp:'.$phone, $parameters
                         );
 
                         if ($get_response->status == 'queued' || $get_response->status == 'accepted') {
@@ -3216,7 +5262,7 @@ class SendCampaignSMS extends Model
                             $get_sms_status = $get_response->status.'|'.$get_response->sid;
                         }
 
-                    } catch (ConfigurationException | TwilioException $e) {
+                    } catch (ConfigurationException|TwilioException $e) {
                         $get_sms_status = $e->getMessage();
                     }
                     break;
@@ -3263,11 +5309,16 @@ class SendCampaignSMS extends Model
 
                 case 'WhatsAppChatApi':
 
-                    $data = [
+                    $parameters = [
                             'phone' => $phone,
                             'body'  => $message,
                     ];
-                    $json = json_encode($data);
+
+                    if ($media_url != null) {
+                        $parameters['filename'] = basename(parse_url($media_url)['path']);
+                    }
+
+                    $json = json_encode($parameters);
 
                     $url     = $gateway_url.'/message?token='.$sending_server->api_token;
                     $options = stream_context_create([
@@ -3286,7 +5337,7 @@ class SendCampaignSMS extends Model
 
                         if (isset($json_array) && is_array($json_array) && array_key_exists('sent', $json_array)) {
                             if ($json_array['sent'] == true) {
-                                $get_sms_status = 'Success|'.$json_array['queueNumber'];
+                                $get_sms_status = 'Delivered|'.$json_array['queueNumber'];
                             } else {
                                 $get_sms_status = $json_array['message'];
                             }
@@ -3300,8 +5351,233 @@ class SendCampaignSMS extends Model
 
                     break;
 
-                case 'WaApi':
+                case 'Whatsender':
 
+                    if ($media_url != null) {
+
+                        $file = [
+                                'url' => $media_url,
+                        ];
+
+                        $curl = curl_init();
+
+                        curl_setopt_array($curl, [
+                                CURLOPT_URL            => "https://api.whatsender.io/v1/files",
+                                CURLOPT_RETURNTRANSFER => true,
+                                CURLOPT_ENCODING       => "",
+                                CURLOPT_MAXREDIRS      => 10,
+                                CURLOPT_TIMEOUT        => 30,
+                                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                                CURLOPT_CUSTOMREQUEST  => "POST",
+                                CURLOPT_POSTFIELDS     => json_encode($file),
+                                CURLOPT_HTTPHEADER     => [
+                                        "Content-Type: application/json",
+                                        "Token: $sending_server->api_token",
+                                ],
+                        ]);
+
+                        $response       = curl_exec($curl);
+                        $err            = curl_error($curl);
+                        $get_sms_status = 'Invalid request';
+
+                        curl_close($curl);
+
+                        if ($err) {
+                            $get_sms_status = $err;
+                        } else {
+                            $get_data = json_decode($response, true);
+
+                            if (is_array($get_data)) {
+
+                                $file_id = null;
+
+                                if (array_key_exists('status', $get_data) && $get_data['status'] == 200) {
+                                    $file_id = $get_data['meta']['file'];
+                                } elseif (array_key_exists('0', $get_data) && array_key_exists('id', $get_data[0])) {
+                                    $file_id = $get_data[0]['id'];
+                                } else {
+                                    $get_sms_status = $get_data['message'];
+                                }
+
+                                if ($file_id) {
+
+                                    $parameters = [
+                                            'phone'   => '+'.$this->cl_phone,
+                                            'message' => $this->message,
+                                            'media'   => [
+                                                    'file' => $file_id,
+                                            ],
+                                    ];
+
+                                    $ch = curl_init();
+
+                                    curl_setopt_array($ch, [
+                                            CURLOPT_URL            => $gateway_url,
+                                            CURLOPT_RETURNTRANSFER => true,
+                                            CURLOPT_ENCODING       => "",
+                                            CURLOPT_MAXREDIRS      => 10,
+                                            CURLOPT_TIMEOUT        => 30,
+                                            CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                                            CURLOPT_CUSTOMREQUEST  => "POST",
+                                            CURLOPT_POSTFIELDS     => json_encode($parameters),
+                                            CURLOPT_HTTPHEADER     => [
+                                                    "Content-Type: application/json",
+                                                    "Token: $sending_server->api_token",
+                                            ],
+                                    ]);
+
+                                    $response = curl_exec($ch);
+                                    $err      = curl_error($ch);
+
+                                    curl_close($ch);
+
+                                    if ($err) {
+                                        $get_sms_status = $err;
+                                    } else {
+                                        $get_data = json_decode($response, true);
+                                        if (is_array($get_data) && array_key_exists('status', $get_data)) {
+                                            if ($get_data['status'] == 'queued') {
+                                                $get_sms_status = 'Delivered|'.$get_data['id'];
+                                            } else {
+                                                $get_sms_status = $get_data['message'];
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    $get_sms_status = $get_data['message'];
+                                }
+                            }
+                        }
+                    } else {
+                        $parameters = [
+                                'phone'   => '+'.$phone,
+                                'message' => $message,
+                        ];
+
+                        $curl = curl_init();
+
+                        curl_setopt_array($curl, [
+                                CURLOPT_URL            => $gateway_url,
+                                CURLOPT_RETURNTRANSFER => true,
+                                CURLOPT_ENCODING       => "",
+                                CURLOPT_MAXREDIRS      => 10,
+                                CURLOPT_TIMEOUT        => 30,
+                                CURLOPT_HTTP_VERSION   => CURL_HTTP_VERSION_1_1,
+                                CURLOPT_CUSTOMREQUEST  => "POST",
+                                CURLOPT_POSTFIELDS     => json_encode($parameters),
+                                CURLOPT_HTTPHEADER     => [
+                                        "Content-Type: application/json",
+                                        "Token: $sending_server->api_token",
+                                ],
+                        ]);
+
+                        $response = curl_exec($curl);
+                        $err      = curl_error($curl);
+
+                        curl_close($curl);
+
+                        if ($err) {
+                            $get_sms_status = $err;
+                        } else {
+                            $get_data = json_decode($response, true);
+                            if (is_array($get_data) && array_key_exists('status', $get_data)) {
+                                if ($get_data['status'] == 'queued') {
+                                    $get_sms_status = 'Delivered|'.$get_data['id'];
+                                } else {
+                                    $get_sms_status = $get_data['message'];
+                                }
+                            }
+                        }
+
+                    }
+
+                    break;
+
+                case 'WaApi':
+//
+//                    $parameters = [
+//                            'client_id' => $sending_server->c1,
+//                            'instance'  => $sending_server->c2,
+//                            'number'    => $phone,
+//                            'message'   => $message,
+//                            'type'      => 'text',
+//                    ];
+//
+//                    $ch = curl_init();
+//
+//                    curl_setopt($ch, CURLOPT_URL, $gateway_url);
+//                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+//                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+//                    curl_setopt($ch, CURLOPT_POST, 1);
+//
+//                    $headers   = [];
+//                    $headers[] = "Content-Type: application/json";
+//                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+//
+//                    $result = curl_exec($ch);
+//
+//
+//                    if (curl_errno($ch)) {
+//                        $get_sms_status = curl_error($ch);
+//                    } else {
+//                        $response = json_decode($result, true);
+//
+//                        dd($response);
+//
+//                        if (is_array($response) && array_key_exists('id', $response)) {
+//                            $get_sms_status = 'Delivered|'.$response['id'];
+//                        } elseif (is_array($response) && array_key_exists('errors', $response)) {
+//                            $get_sms_status = $response['errors'][0]['description'];
+//                        } else {
+//                            $get_sms_status = 'Unknown Error';
+//                        }
+//                    }
+//                    curl_close($ch);
+                    break;
+
+                case 'YooAPI':
+
+
+                    $parameters = [
+                            'client_id' => $sending_server->c1,
+                            'instance'  => $sending_server->c2,
+                            'number'    => $phone,
+                            'message'   => $message,
+                            'type'      => 'text',
+                    ];
+
+                    $ch = curl_init();
+
+                    curl_setopt($ch, CURLOPT_URL, $gateway_url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($parameters));
+                    curl_setopt($ch, CURLOPT_POST, 1);
+
+                    $headers   = [];
+                    $headers[] = "Content-Type: application/json";
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+                    $result = curl_exec($ch);
+
+
+                    if (curl_errno($ch)) {
+                        $get_sms_status = curl_error($ch);
+                    } else {
+                        $response = json_decode($result, true);
+
+                        if (is_array($response) && array_key_exists('status', $response)) {
+
+                            if ($response['status'] == false) {
+                                $get_sms_status = $response['message'];
+                            } else {
+                                $get_sms_status = 'Delivered';
+                            }
+
+                        } else {
+                            $get_sms_status = (string) $result;
+                        }
+                    }
+                    curl_close($ch);
                     break;
 
                 default:
@@ -3345,4 +5621,5 @@ class SendCampaignSMS extends Model
         return __('locale.exceptions.something_went_wrong');
 
     }
+
 }

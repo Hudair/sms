@@ -86,12 +86,31 @@
         </tr>
 
         <tr>
+            <td>type</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
+            </td>
+            <td>string</td>
+            <td>The type of the message. For text message you have to insert <code>whatsapp</code> as sms type.</td>
+        </tr>
+
+        <tr>
             <td>message</td>
             <td>
                 <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
             </td>
             <td>string</td>
             <td>The body of the SMS message.</td>
+        </tr>
+
+
+        <tr>
+            <td>schedule_time</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.no') }}</span></div>
+            </td>
+            <td>datetime</td>
+            <td>The scheduled date and time of the message in RFC3339 format <code>(Y-m-d H:i)</code></td>
         </tr>
 
 
@@ -106,6 +125,8 @@ curl -X POST {{ route('api.sms.send') }} \
      -H 'Authorization: Bearer 7|xs6pv2dspHJq8sWLhrpNFH5YLilMRQcVxLwSw2Sd' \
      -d "recipient=31612345678" \
      -d "sender_id=YourName" \
+     -d "type=whatsapp" \
+     -d "schedule_time=2021-12-20 07:00" \
      -d "message=This is a test message"
                                 </code>
                             </pre>

@@ -11,7 +11,7 @@ class RouletteWheel
      *
      * @param $a
      *
-     * @return mixed
+     * @return int|string
      */
     public static function generate($a)
     {

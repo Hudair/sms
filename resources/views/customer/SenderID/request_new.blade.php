@@ -26,8 +26,8 @@
                                     <div class="row">
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="sender_id" class="required">{{ __('locale.menu.Sender ID') }}</label>
+                                            <div class="mb-1">
+                                                <label for="sender_id" class="form-label required">{{ __('locale.menu.Sender ID') }}</label>
                                                 <input type="text" id="sender_id" class="form-control @error('sender_id') is-invalid @enderror" value="{{ old('sender_id') }}" name="sender_id" required placeholder="{{__('locale.labels.required')}}" autofocus>
                                                 @error('sender_id')
                                                 <div class="invalid-feedback">
@@ -39,8 +39,8 @@
 
                                         <div class="col-12">
                                             <fieldset class="form-group">
-                                                <label for="plan" class="required">{{__('locale.labels.select_plan')}}</label>
-                                                <select class="form-control select2" name="plan">
+                                                <label for="plan" class="form-label required">{{__('locale.labels.select_plan')}}</label>
+                                                <select class="form-select select2" name="plan">
                                                     @foreach($sender_id_plans as $plan)
                                                         <option value="{{$plan->id}}">
                                                             {{$plan->displayFrequencyTime()}}
@@ -57,10 +57,13 @@
                                             </fieldset>
                                         </div>
 
-                                        <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-send"></i> {{ __('locale.buttons.send') }}</button>
-                                        </div>
 
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-12">
+
+                                            <button type="submit" class="btn btn-primary mb-1"><i data-feather="send"></i> {{ __('locale.buttons.send') }}</button>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -86,11 +89,17 @@
     <script>
         $(document).ready(function () {
 
-            $(".select2").select2({
-                // the following code is used to disable x-scrollbar when click in select input and
-                // take 100% width in responsive also
-                dropdownAutoWidth: true,
-                width: '100%'
+            // Basic Select2 select
+            $(".select2").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
             });
 
             let firstInvalid = $('form').find('.is-invalid').eq(0);

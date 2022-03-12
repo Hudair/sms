@@ -25,59 +25,52 @@
                                     <div class="row">
 
                                         <div class="col-12">
-                                            <fieldset class="form-group">
-                                                <label for="user_id">{{__('locale.labels.select_customer')}}</label>
-                                                <select class="form-control customer" name="user_id">
+                                            <div class="mb-1">
+                                                <label for="user_id" class="form-label required">{{__('locale.labels.select_customer')}}</label>
+                                                <select class="form-select customer" name="user_id">
                                                     @foreach($customers as $customer)
-                                                        <option value="{{$customer->id}}"
-                                                                {{ Request::get('customer_id') == $customer->id ? 'selected': null }}
-                                                        >
+                                                        <option value="{{$customer->id}}" {{ Request::get('customer_id') == $customer->id ? 'selected': null }}>
                                                             {{$customer->displayName()}}
                                                         </option>
                                                     @endforeach
                                                 </select>
-                                            </fieldset>
+                                            </div>
 
                                             @error('user_id')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
 
                                         <div class="col-12">
-                                            <fieldset class="form-group">
-                                                <label for="plan_id">{{__('locale.labels.select_plan')}}</label>
-                                                <select class="form-control plan" name="plan_id">
+                                            <div class="mb-1">
+                                                <label for="plan_id" class="form-label required">{{__('locale.labels.select_plan')}}</label>
+                                                <select class="form-select plan" name="plan_id">
                                                     @foreach($plans as $plan)
                                                         <option value="{{$plan->id}}">{{ htmlspecialchars($plan->name)."|".htmlspecialchars(\App\Library\Tool::format_price($plan->price, $plan->currency->format)) }}</option>
                                                     @endforeach
                                                 </select>
-                                            </fieldset>
+                                            </div>
 
                                             @error('plan_id')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
 
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="end_period_last_days" class="required">{{ __('locale.subscription.subscription_period_end') }}</label>
+                                            <div class="mb-1">
+                                                <label for="end_period_last_days" class="form-label required">{{ __('locale.subscription.subscription_period_end') }}</label>
                                                 <input type="number" id="end_period_last_days" class="form-control text-right @error('end_period_last_days') is-invalid @enderror" value="10" name="end_period_last_days" required placeholder="{{__('locale.labels.required')}}">
+
                                                 @error('end_period_last_days')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
 
                                         <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-save"></i> {{ __('locale.buttons.create') }}</button>
+                                            <button type="submit" class="btn btn-primary mb-1"><i data-feather="save"></i> {{ __('locale.buttons.create') }}</button>
                                         </div>
 
                                     </div>
@@ -116,20 +109,30 @@
                 return $('<span>' + selectionText[0].substring(0, 100) + '</span>');
             }
 
-            $(".customer").select2({
-                // the following code is used to disable x-scrollbar when click in select input and
-                // take 100% width in responsive also
-                dropdownAutoWidth: true,
-                width: '100%'
+            $(".customer").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
             });
 
-            $(".plan").select2({
-                // the following code is used to disable x-scrollbar when click in select input and
-                // take 100% width in responsive also
-                dropdownAutoWidth: true,
-                width: '100%',
-                templateResult: formatSearch,
-                templateSelection: formatSelected
+            $(".plan").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    templateResult: formatSearch,
+                    templateSelection: formatSelected,
+                    dropdownParent: $this.parent()
+                });
             });
 
             let firstInvalid = $('form').find('.is-invalid').eq(0);

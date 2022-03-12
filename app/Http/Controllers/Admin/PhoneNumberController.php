@@ -73,13 +73,15 @@ class PhoneNumberController extends AdminBaseController
         $this->authorize('view phone_numbers');
 
         $columns = [
-                0 => 'uid',
-                1 => 'number',
-                2 => 'user_id',
-                3 => 'price',
-                4 => 'status',
-                5 => 'capabilities',
-                6 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'number',
+                4 => 'user_id',
+                5 => 'price',
+                6 => 'status',
+                7 => 'capabilities',
+                8 => 'action',
         ];
 
         $totalData = PhoneNumbers::count();
@@ -115,11 +117,11 @@ class PhoneNumberController extends AdminBaseController
                 $show = route('admin.phone-numbers.show', $number->uid);
 
                 if ($number->status == 'available') {
-                    $status = '<div class="chip chip-primary"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.available').'</div></div></div>';
+                    $status = '<span class="badge badge-light-primary text-uppercase">'.__('locale.labels.available').'</span>';
                 } elseif ($number->status == 'assigned') {
-                    $status = '<div class="chip chip-success"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.assigned').'</div></div></div>';
+                    $status = '<span class="badge badge-light-success text-uppercase">'.__('locale.labels.assigned').'</span>';
                 } else {
-                    $status = '<div class="chip chip-danger"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.expired').'</div></div></div>';
+                    $status = '<span class="badge badge-light-danger text-uppercase">'.__('locale.labels.expired').'</span>';
                 }
 
                 if ($number->user->is_admin) {
@@ -131,18 +133,23 @@ class PhoneNumberController extends AdminBaseController
                     $assign_to        = "<a href='$customer_profile' class='text-primary mr-1'>$customer_name</a>";
                 }
 
-                $nestedData['uid']          = $number->uid;
-                $nestedData['number']       = $number->number;
-                $nestedData['user_id']      = $assign_to;
-                $nestedData['price']        = "<div>
+
+                $nestedData['responsive_id'] = '';
+                $nestedData['avatar']        = route('admin.customers.avatar', $number->user->uid);
+                $nestedData['email']         = $number->user->email;
+                $nestedData['uid']           = $number->uid;
+                $nestedData['number']        = $number->number;
+                $nestedData['user_id']       = $assign_to;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($number->price, $number->currency->format)." </p>
                                                         <p class='text-muted'>".$number->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['status']       = $status;
-                $nestedData['capabilities'] = $number->getCapabilities();
-                $nestedData['action']       = "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>
-                                         <span class='action-delete text-danger' data-id='$number->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]                     = $nestedData;
+                $nestedData['status']        = $status;
+                $nestedData['capabilities']  = $number->getCapabilities();
+                $nestedData['edit']          = $show;
+                $nestedData['delete']        = $number->uid;
+
+                $data[] = $nestedData;
 
             }
         }
@@ -341,7 +348,7 @@ class PhoneNumberController extends AdminBaseController
 
                 return response()->json([
                         'status'  => 'success',
-                        'message' => __('locale.phone_numbers.available_phone_numbers'),
+                        'message' => __('locale.phone_numbers.phone_numbers_available'),
                 ]);
 
         }

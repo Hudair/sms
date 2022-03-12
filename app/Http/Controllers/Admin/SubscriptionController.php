@@ -65,13 +65,15 @@ class SubscriptionController extends AdminBaseController
         $this->authorize('view subscription');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'subscribed_by',
-                3 => 'start_at',
-                4 => 'end_at',
-                5 => 'status',
-                6 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'subscribed_by',
+                5 => 'start_at',
+                6 => 'end_at',
+                7 => 'status',
+                8 => 'action',
         ];
 
         $totalData = Subscription::count();
@@ -148,28 +150,34 @@ class SubscriptionController extends AdminBaseController
                 }
 
 
-                $return_url = "<a class='text-info mr-1' href=".route('admin.subscriptions.logs', $subscription->uid)." data-toggle='tooltip' data-placement='top' title=".__('locale.subscription.logs')."><i class='feather us-2x icon-bar-chart-2'></i></a>";
+                $is_active = false;
+                $is_ended  = false;
 
                 if ($subscription->isActive() || $subscription->isNew()) {
-                    $return_url .= "<span class='action-cancel text-warning' data-id='$subscription->uid' data-toggle='tooltip' data-placement='top' title=".__('locale.buttons.cancel')."><i class='feather us-2x icon-stop-circle'></i></span>";
+                    $is_active = true;
                 }
 
                 if ($subscription->isEnded()) {
-                    $return_url .= "<span class='action-delete text-danger' data-id='$subscription->uid' data-toggle='tooltip' data-placement='top' title=".__('locale.buttons.delete')."><i class='feather us-2x icon-trash'></i></span>";
+                    $is_ended = true;
                 }
 
+                $nestedData['responsive_id'] = '';
+                $nestedData['avatar']        = route('admin.customers.avatar', $subscription->user->uid);
+                $nestedData['email']         = $subscription->user->email;
                 $nestedData['uid']           = $subscription->uid;
                 $nestedData['name']          = $subscription->plan->name;
                 $nestedData['subscribed_by'] = "<a href='$customer_profile' class='text-primary mr-1'>$customer_name</a>";
                 $nestedData['start_at']      = $subscribed_on;
                 $nestedData['end_at']        = $end_at;
-                $nestedData['status']        = "<div class='chip chip-$color'>
-                                                    <div class='chip-body'>
-                                                        <div class='chip-text text-uppercase'> $status_label </div>
-                                                        </div>
-                                                    </div>";
-                $nestedData['action']        = $return_url;
-                $data[]                      = $nestedData;
+                $nestedData['logs']          = route('admin.subscriptions.logs', $subscription->uid);
+                $nestedData['logs_label']    = __('locale.subscription.logs');
+                $nestedData['is_active']     = $is_active;
+                $nestedData['is_ended']      = $is_ended;
+                $nestedData['cancel_label']  = __('locale.buttons.cancel');
+                $nestedData['delete_label']  = __('locale.buttons.delete');
+
+                $nestedData['status'] = "<span class='badge bg-$color'>$status_label</span>";
+                $data[]               = $nestedData;
 
             }
         }

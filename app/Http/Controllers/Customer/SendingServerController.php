@@ -67,12 +67,14 @@ class SendingServerController extends CustomerBaseController
         $this->authorize('create_sending_servers');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'type',
-                3 => 'quota_value',
-                4 => 'status',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'type',
+                5 => 'quota_value',
+                6 => 'status',
+                7 => 'action',
         ];
 
         $totalData = SendingServer::where('user_id', auth()->user()->id)->count();
@@ -125,29 +127,27 @@ class SendingServerController extends CustomerBaseController
                     }
                 }
 
-                $nestedData['uid']         = $sending_server->uid;
-                $nestedData['name']        = $sending_server->name;
-                $nestedData['type']        = "<div class='chip chip-$color'>
-                <div class='chip-body'>
-                    <div class='chip-text text-uppercase'> $sending_server->type </div>
-                    </div>
-                </div>";
-                $nestedData['quota_value'] = "<div> <p class='text-capitalize'>"
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $sending_server->uid;
+                $nestedData['name']          = $sending_server->name;
+                $nestedData['type']          = "<span class='badge text-uppercase bg-$color'>$sending_server->type</span>";
+                $nestedData['quota_value']   = "<div> <p class='text-capitalize'>"
                         .__('locale.sending_servers.sending_limit')
                         ." <span class='text-danger'>$sending_server->quota_value </span> "
                         .__('locale.sending_servers.per')
                         ." <span class='text-info'> $sending_server->quota_base $sending_server->quota_unit</span></p>  </div>";
-                $nestedData['status']      = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$sending_server->uid' data-id='$sending_server->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$sending_server->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')
-                        ."</span>
+
+
+                $nestedData['status'] = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$sending_server->uid' data-id='$sending_server->uid' name='status' $status>
+                <label class='form-check-label' for='status_$sending_server->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action']      = "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>
-                                         <span class='action-delete text-danger' data-id='$sending_server->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]                    = $nestedData;
+
+                $nestedData['edit'] = $show;
+                $data[]             = $nestedData;
 
             }
         }

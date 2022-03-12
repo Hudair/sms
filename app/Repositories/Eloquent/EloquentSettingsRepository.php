@@ -218,12 +218,35 @@ MAIL_ENCRYPTION='.$input['encryption'].'
      */
     public function pusherSettings(array $input): bool
     {
-        foreach ($input as $key => $value) {
-            $env_value = 'PUSHER_'.strtoupper($key);
-            AppConfig::setEnv($env_value, $value);
-        }
 
-        return true;
+        $app_id      = $input['app_id'];
+        $app_key     = $input['app_key'];
+        $app_secret  = $input['app_secret'];
+        $app_cluster = $input['app_cluster'];
+
+        $pusher_setting = 'PUSHER_APP_ID='.$app_id.'
+PUSHER_APP_KEY='.$app_key.'
+PUSHER_APP_SECRET='.$app_secret.'
+PUSHER_APP_CLUSTER='.$app_cluster.'
+';
+
+        // @ignoreCodingStandard
+        $env        = file_get_contents(base_path('.env'));
+        $rows       = explode("\n", $env);
+        $unwanted   = "PUSHER_APP_ID|PUSHER_APP_KEY|PUSHER_APP_SECRET|PUSHER_APP_CLUSTER";
+        $cleanArray = preg_grep("/$unwanted/i", $rows, PREG_GREP_INVERT);
+
+        $cleanString = implode("\n", $cleanArray);
+        $env         = $cleanString.$pusher_setting;
+
+        try {
+            file_put_contents(base_path('.env'), $env);
+
+            return true;
+
+        } catch (Exception $e) {
+            return false;
+        }
     }
 
     public function localization(array $input)

@@ -56,8 +56,10 @@ class LanguageController extends Controller
                 'locale' => $locale,
         ]);
 
-
-        return redirect()->back();
+        if (Auth::user()->active_portal == 'customer' && Auth::user()->is_customer == 1){
+            return redirect()->route('user.home');
+        }
+        return redirect()->route('admin.home');
     }
 
     public function languages()

@@ -22,7 +22,6 @@ use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use App\Exceptions\GeneralException;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Contracts\Auth\Authenticatable;
 use App\Repositories\Contracts\AccountRepository;
 use Illuminate\Support\Facades\Session;
@@ -100,6 +99,8 @@ class EloquentAccountRepository extends EloquentBaseRepository implements Accoun
                 'message'           => $user->displayName().' Registered',
         ]);
 
+        \Auth::login($user, true);
+
         return $user;
     }
 
@@ -116,7 +117,7 @@ class EloquentAccountRepository extends EloquentBaseRepository implements Accoun
     public function findOrCreateSocial($provider, $data): User
     {
         // Email can be not provided, so set default provider email.
-        $user_email = $data->getEmail() ?: "{$data->getId()}@{$provider}.com";
+        $user_email = $data->getEmail() ?: $data->getId()."@".$provider.".com";
 
         // Get user with this email or create new one.
         /** @var User $user */
@@ -188,13 +189,12 @@ class EloquentAccountRepository extends EloquentBaseRepository implements Accoun
     }
 
     /**
-     * @param $input
+     * @param  array  $input
      *
-     * @return mixed
+     * @return JsonResponse
      *
-     * @throws MassAssignmentException
      */
-    public function update(array $input)
+    public function update(array $input): JsonResponse
     {
 
         $availLocale = Session::get('availableLocale');
@@ -284,7 +284,7 @@ class EloquentAccountRepository extends EloquentBaseRepository implements Accoun
      *
      * @return JsonResponse
      */
-    public function payPayment(array $input)
+    public function payPayment(array $input): JsonResponse
     {
         $paymentMethod = PaymentMethods::where('status', true)->where('type', $input['payment_methods'])->first();
 

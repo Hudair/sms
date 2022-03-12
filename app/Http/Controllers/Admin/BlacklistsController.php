@@ -68,11 +68,13 @@ class BlacklistsController extends AdminBaseController
         $this->authorize('view blacklist');
 
         $columns = [
-                0 => 'uid',
-                1 => 'number',
-                2 => 'user_id',
-                3 => 'reason',
-                4 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'number',
+                4 => 'user_id',
+                5 => 'reason',
+                6 => 'actions',
         ];
 
         $totalData = Blacklists::count();
@@ -121,12 +123,13 @@ class BlacklistsController extends AdminBaseController
                     $assign_to        = "<a href='$customer_profile' class='text-primary mr-1'>$customer_name</a>";
                 }
 
-                $nestedData['uid']     = $blacklist->uid;
-                $nestedData['number']  = $blacklist->number;
-                $nestedData['user_id'] = $assign_to;
-                $nestedData['reason']  = $reason;
-                $nestedData['action']  = "<span class='action-delete text-danger' data-id='$blacklist->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]                = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $blacklist->uid;
+                $nestedData['number']        = $blacklist->number;
+                $nestedData['user_id']       = $assign_to;
+                $nestedData['reason']        = $reason;
+                $nestedData['delete']        = $blacklist->uid;
+                $data[]                      = $nestedData;
 
             }
         }

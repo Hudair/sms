@@ -10,9 +10,10 @@
 
 @section('page-style')
     <style>
-        .select2-container--classic .select2-selection--single {
+        .customized_select2 .select2-selection--single {
             border-left: 0;
             border-radius: 0 4px 4px 0;
+            min-height: 2.75rem !important;
         }
     </style>
 
@@ -41,18 +42,19 @@
                                     <div class="row">
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="title">{{ __('locale.labels.title') }}</label>
+                                            <div class="mb-1">
+                                                <label for="title" class="form-label">{{ __('locale.labels.title') }}</label>
                                                 <input type="text" id="title" class="form-control" value="{{ $keyword->title }}" readonly>
                                             </div>
                                         </div>
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="keyword_name">{{ __('locale.labels.keyword') }}</label>
+                                            <div class="mb-1">
+                                                <label for="keyword_name"  class="form-label">{{ __('locale.labels.keyword') }}</label>
                                                 <input type="text" id="keyword_name" class="form-control" value="{{ $keyword->keyword_name}}" readonly>
                                             </div>
                                         </div>
+
 
 
                                         @if(auth()->user()->customer->getOption('sender_id_verification') == 'yes')
@@ -61,91 +63,68 @@
                                             </div>
 
                                             @can('view_sender_id')
-                                                <div class="col-sm-6 col-12 mb-1">
-                                                    <fieldset>
+                                                <div class="col-md-6 col-12 customized_select2">
+                                                    <div class="mb-1">
+                                                        <label for="sender_id" class="form-label">{{ __('locale.labels.sender_id') }}</label>
                                                         <div class="input-group">
-                                                            <div class="input-group-prepend">
-                                                                <div class="input-group-text">
-                                                                    <div class="vs-radio-con">
-                                                                        <input type="radio"
-                                                                               name="originator"
-                                                                               @if( !is_numeric($keyword->sender_id) && !is_null($keyword->sender_id)) checked @endif
-                                                                               class="sender_id"
-                                                                               value="sender_id"
-                                                                        >
-                                                                        <span class="vs-radio vs-radio-sm">
-                                                                            <span class="vs-radio--border"></span>
-                                                                            <span class="vs-radio--circle"></span>
-                                                                        </span>
-                                                                    </div>
+                                                            <div class="input-group-text">
+                                                                <div class="form-check">
+                                                                    <input type="radio" class="form-check-input sender_id" name="originator" @if( !is_numeric($keyword->sender_id) && !is_null($keyword->sender_id)) checked @endif value="sender_id" id="sender_id_check"/>
+                                                                    <label class="form-check-label" for="sender_id_check"></label>
                                                                 </div>
-
-
-                                                                <select class="form-control select2" id="sender_id" name="sender_id" @if( is_numeric($keyword->sender_id) || is_null($keyword->sender_id)) disabled @endif>
-                                                                    <option>{{ __('locale.labels.sender_id') }}</option>
-                                                                    @foreach($sender_ids as $sender_id)
-                                                                        <option value="{{$sender_id->sender_id}}" {{ $sender_id->sender_id == $keyword->sender_id ? 'selected': null  }}> {{ $sender_id->sender_id }} </option>
-                                                                    @endforeach
-                                                                </select>
                                                             </div>
+
+                                                            <select class="form-select select2" id="sender_id" name="sender_id" @if( is_numeric($keyword->sender_id) || is_null($keyword->sender_id)) disabled @endif>
+                                                                @foreach($sender_ids as $sender_id)
+                                                                    <option value="{{$sender_id->sender_id}}" {{ $sender_id->sender_id == $keyword->sender_id ? 'selected': null  }}>
+                                                                        {{ $sender_id->sender_id }}
+                                                                    </option>
+                                                                @endforeach
+                                                            </select>
                                                         </div>
-                                                    </fieldset>
+                                                    </div>
                                                 </div>
                                             @endcan
 
                                             @can('view_numbers')
-                                                <div class="col-sm-6 col-12 mb-1">
-                                                    <fieldset>
+                                                <div class="col-md-6 col-12 customized_select2">
+                                                    <div class="mb-1">
+                                                        <label for="phone_number" class="form-label">{{ __('locale.menu.Phone Numbers') }}</label>
                                                         <div class="input-group">
-                                                            <div class="input-group-prepend">
-                                                                <div class="input-group-text">
-                                                                    <div class="vs-radio-con">
-                                                                        <input
-                                                                                type="radio"
-                                                                                name="originator"
-                                                                                class="phone_number"
-                                                                                @if( is_numeric($keyword->sender_id)) checked @endif
-                                                                                value="phone_number"
-                                                                        >
-                                                                        <span class="vs-radio vs-radio-sm">
-                                                                            <span class="vs-radio--border"></span>
-                                                                            <span class="vs-radio--circle"></span>
-                                                                        </span>
-                                                                    </div>
+                                                            <div class="input-group-text">
+                                                                <div class="form-check">
+                                                                    <input type="radio" class="form-check-input phone_number" @if( is_numeric($keyword->sender_id)) checked @endif value="phone_number" name="originator" id="phone_number_check"/>
+                                                                    <label class="form-check-label" for="phone_number_check"></label>
                                                                 </div>
-
-                                                                <select class="form-control select2" id="phone_number" name="phone_number" @if( !is_numeric($keyword->sender_id)) disabled @endif >
-                                                                    <option> {{ __('locale.labels.shared_number') }}</option>
-                                                                    @foreach($phone_numbers as $number)
-                                                                        <option value="{{ $number->number }}" {{ $number->number == $keyword->sender_id ? 'selected': null  }}> {{ $number->number }} </option>
-                                                                    @endforeach
-                                                                </select>
-
                                                             </div>
 
+                                                            <select class="form-select select2" @if( !is_numeric($keyword->sender_id)) disabled @endif id="phone_number" name="phone_number">
+                                                                @foreach($phone_numbers as $number)
+                                                                    <option value="{{ $number->number }}" {{ $number->number == $keyword->sender_id ? 'selected': null  }}> {{ $number->number }} </option>
+                                                                @endforeach
+                                                            </select>
                                                         </div>
-                                                    </fieldset>
+                                                    </div>
                                                 </div>
                                             @endcan
 
                                         @else
                                             <div class="col-12">
-                                                <div class="form-group">
-                                                    <label for="sender_id">{{__('locale.labels.sender_id')}}</label>
+                                                <div class="mb-1">
+                                                    <label for="sender_id" class="form-label">{{__('locale.labels.sender_id')}}</label>
                                                     <input type="text" id="sender_id" class="form-control @error('sender_id') is-invalid @enderror" value="{{ $keyword->sender_id }}" name="sender_id">
                                                     @error('sender_id')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
+                                                    <p><small class="text-danger">{{ $message }}</small></p>
                                                     @enderror
                                                 </div>
                                             </div>
                                         @endif
 
+
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="reply_text">{{__('locale.keywords.reply_text_recipient')}}</label>
-                                                <textarea class="form-control" rows="3" name="reply_text"> {{old('reply_text', isset($keyword->reply_text) ? $keyword->reply_text : null)}} </textarea>
+                                            <div class="mb-1">
+                                                <label for="reply_text" class="form-label">{{__('locale.keywords.reply_text_recipient')}}</label>
+                                                <textarea class="form-control" rows="3" name="reply_text"> {{old('reply_text', $keyword->reply_text ?? null)}} </textarea>
 
                                                 @error('reply_text')
                                                 <div class="text-danger">
@@ -156,9 +135,9 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="reply_voice">{{__('locale.keywords.reply_voice_recipient')}}</label>
-                                                <textarea class="form-control" rows="3" name="reply_voice"> {{old('reply_voice', isset($keyword->reply_voice) ? $keyword->reply_voice : null)}} </textarea>
+                                            <div class="mb-1">
+                                                <label for="reply_voice" class="form-label">{{__('locale.keywords.reply_voice_recipient')}}</label>
+                                                <textarea class="form-control" rows="3" name="reply_voice"> {{old('reply_voice', $keyword->reply_voice ?? null)}} </textarea>
 
                                                 @error('reply_voice')
                                                 <div class="text-danger">
@@ -170,31 +149,27 @@
 
                                         @if(isset($keyword->reply_mms))
                                             <div class="col-12">
-                                                <div class="form-group">
-                                                    <label>{{ __('locale.labels.mms_file') }}</label>
+                                                <div class="mb-1">
+                                                    <label  class="form-label">{{ __('locale.labels.mms_file') }}</label>
                                                     <p><a href="{{$keyword->reply_mms}}" target="_blank">{{$keyword->reply_mms}}</a></p>
                                                 </div>
                                             </div>
                                         @endif
 
                                         <div class="col-12">
-                                            <fieldset class="form-group">
-                                                <label for="reply_mms">{{ __('locale.keywords.reply_mms_recipient') }}</label>
-                                                <div class="custom-file">
-                                                    <input type="file" name="reply_mms" class="custom-file-input" id="reply_mms" accept="image/*">
-                                                    <label class="custom-file-label" for="reply_mms" data-browse="{{ __('locale.labels.browse') }}">{{__('locale.labels.choose_file')}}</label>
-
-                                                    @error('reply_mms')
-                                                    <div class="text-danger">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
+                                            <div class="mb-1">
+                                                <label for="reply_mms" class="form-label required">{{__('locale.labels.mms_file')}}</label>
+                                                <input type="file" name="reply_mms" class="form-control" id="reply_mms" accept="image/*,video/*"/>
+                                                @error('reply_mms')
+                                                <div class="text-danger">
+                                                    {{ $message }}
                                                 </div>
-                                            </fieldset>
+                                                @enderror
+                                            </div>
                                         </div>
 
                                         <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-save"></i> {{ __('locale.buttons.save') }}</button>
+                                            <button type="submit" class="btn btn-primary mb-1"><i data-feather="save"></i> {{ __('locale.buttons.save') }}</button>
                                         </div>
 
                                     </div>
@@ -233,10 +208,17 @@
             });
 
 
-            $(".select2").select2({
-                dropdownAutoWidth: true,
-                width: '100%',
-                theme: "classic"
+            // Basic Select2 select
+            $(".select2").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative" style="width: 80%"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
             });
 
             let firstInvalid = $('form').find('.is-invalid').eq(0);

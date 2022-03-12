@@ -36,8 +36,13 @@ class SmsBuilder
             int $timeout = 10000,
             bool $debug = false
     ) {
+
+        SmppClient::$smsNullTerminateOctetstrings = false;
+        Socket::$forceIpv4 = true;
+
         $this->transport = new Socket([$address], $port);
         $this->transport->setRecvTimeout($timeout);
+        $this->transport->setSendTimeout($timeout);
         $this->smppClient = new SmppClient($this->transport);
 
         // Activate binary hex-output of server interaction

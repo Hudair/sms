@@ -74,17 +74,17 @@ return [
         'view_numbers'              => [
                 'display_name' => 'read_numbers',
                 'category'     => 'Phone Numbers',
-                'default'      => false,
+                'default'      => true,
         ],
         'buy_numbers'               => [
                 'display_name' => 'buy_numbers',
                 'category'     => 'Phone Numbers',
-                'default'      => false,
+                'default'      => true,
         ],
         'release_numbers'           => [
                 'display_name' => 'release_numbers',
                 'category'     => 'Phone Numbers',
-                'default'      => false,
+                'default'      => true,
         ],
 
     //keywords module
@@ -222,7 +222,7 @@ return [
         'chat_box'                  => [
                 'display_name' => 'chat_box',
                 'category'     => 'Chat Box',
-                'default'      => false,
+                'default'      => true,
         ],
 
     //knowledge bases

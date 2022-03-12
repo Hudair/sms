@@ -24,7 +24,7 @@ class PostGeneralRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'app_name'        => 'required|max:12',
+                'app_name'        => 'required',
                 'app_title'       => 'required',
                 'company_address' => 'required',
                 'footer_text'     => 'required',

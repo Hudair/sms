@@ -8,6 +8,8 @@ use App\Console\Commands\CheckSenderID;
 use App\Console\Commands\CheckSubscription;
 use App\Console\Commands\CheckUserPreferences;
 use App\Console\Commands\RunCampaign;
+use App\Console\Commands\UpdateDemo;
+use App\Console\Commands\WhatsenderInbound;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -25,6 +27,8 @@ class Kernel extends ConsoleKernel
             CheckSenderID::class,
             CheckUserPreferences::class,
             RunCampaign::class,
+            UpdateDemo::class,
+            WhatsenderInbound::class,
     ];
 
     /**
@@ -42,6 +46,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('keywords:check')->daily();
         $schedule->command('numbers:check')->daily();
         $schedule->command('senderid:check')->daily();
+        $schedule->command('user:preferences')->daily();
         $schedule->command('user:preferences')->daily();
 
     }

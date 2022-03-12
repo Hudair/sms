@@ -25,6 +25,7 @@ class MMSCampaignBuilderRequest extends FormRequest
     {
         return [
                 'name'             => 'required',
+                'sending_server'   => 'required|exists:plans_sending_servers,sending_server_id',
                 'recipients'       => 'required_if:contact_groups,null|nullable',
                 'delimiter'        => 'required_if:recipients,true',
                 'mms_file'         => 'required|image',

@@ -109,13 +109,13 @@ class ImportJobHistory extends Model
         $status = $this->status;
 
         if ($status == self::STATUS_FAILED || $status == self::STATUS_CANCELLED) {
-            return '<div class="badge badge-danger text-uppercase mr-1 mb-1"><span>'.__('locale.labels.'.$status).'</span></div>';
+            return '<div class="badge bg-danger text-uppercase me-1 mb-1"><span>'.__('locale.labels.'.$status).'</span></div>';
         }
         if ($status == self::STATUS_PROCESSING) {
-            return '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.processing').'</span></div>';
+            return '<div class="badge bg-primary text-uppercase me-1 mb-1"><span>'.__('locale.labels.processing').'</span></div>';
         }
 
-        return '<div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.finished').'</span></div>';
+        return '<div class="badge bg-success text-uppercase me-1 mb-1"><span>'.__('locale.labels.finished').'</span></div>';
     }
 
     /**

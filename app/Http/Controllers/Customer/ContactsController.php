@@ -21,7 +21,9 @@ use App\Models\CsvData;
 use App\Models\ImportJobHistory;
 use App\Models\Keywords;
 use App\Models\PhoneNumbers;
+use App\Models\PlansSendingServer;
 use App\Models\Senderid;
+use App\Models\SendingServer;
 use App\Models\TemplateTags;
 use App\Repositories\Contracts\ContactsRepository;
 use App\Rules\Phone;
@@ -97,12 +99,14 @@ class ContactsController extends CustomerBaseController
         $this->authorize('view_contact_group');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'contacts',
-                3 => 'created_at',
-                4 => 'status',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'contacts',
+                5 => 'created_at',
+                6 => 'status',
+                7 => 'action',
         ];
 
         $totalData = ContactGroups::where('customer_id', auth()->user()->id)->count();
@@ -134,9 +138,6 @@ class ContactsController extends CustomerBaseController
         $data = [];
         if ( ! empty($contact_groups)) {
             foreach ($contact_groups as $group) {
-                $show   = route('customer.contacts.show', $group->uid);
-                $create = route('customer.contact.create', $group->uid);
-
 
                 if ($group->status === true) {
                     $status = 'checked';
@@ -144,39 +145,30 @@ class ContactsController extends CustomerBaseController
                     $status = '';
                 }
 
-                $action      = null;
-                $new_contact = __('locale.contacts.new_contact');
-                $copy        = __('locale.buttons.copy');
-                $edit        = __('locale.buttons.edit');
-                $delete      = __('locale.buttons.delete');
-
-                if (Auth::user()->can('create_contact')) {
-                    $action .= "<a href='$create' class='text-info mr-1' data-toggle='tooltip' data-placement='top' title='$new_contact'><i class='feather us-2x icon-plus-circle'></i></a>";
-                }
-
-                if (Auth::user()->can('update_contact_group')) {
-                    $action .= "<a href='$show' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$edit'><i class='feather us-2x icon-edit'></i></a>";
-                }
-
-                $action .= "<span class='action-copy text-success mr-1' data-id='$group->uid' data-value='$group->name' data-toggle='tooltip' data-placement='top' title='$copy'><i class='feather us-2x icon-copy'></i></span>";
-
-                if (Auth::user()->can('delete_contact_group')) {
-                    $action .= "<span class='action-delete text-danger' data-id='$group->uid' data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-                }
-
-                $nestedData['uid']        = $group->uid;
-                $nestedData['name']       = $group->name;
-                $nestedData['contacts']   = Tool::number_with_delimiter($group->subscribersCount($group->cache));
-                $nestedData['created_at'] = Tool::formatHumanTime($group->created_at);
-                $nestedData['status']     = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$group->uid' data-id='$group->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$group->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')."</span>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $group->uid;
+                $nestedData['name']          = $group->name;
+                $nestedData['contacts']      = Tool::number_with_delimiter($group->subscribersCount($group->cache));
+                $nestedData['created_at']    = Tool::formatHumanTime($group->created_at);
+                $nestedData['status']        = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$group->uid' data-id='$group->uid' name='status' $status>
+                <label class='form-check-label' for='status_$group->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action']     = $action;
-                $data[]                   = $nestedData;
+
+                $nestedData['show']              = route('customer.contacts.show', $group->uid);
+                $nestedData['show_label']        = __('locale.buttons.edit');
+                $nestedData['new_contact']       = route('customer.contact.create', $group->uid);
+                $nestedData['new_contact_label'] = __('locale.contacts.new_contact');
+                $nestedData['copy']              = __('locale.buttons.copy');
+                $nestedData['delete']            = __('locale.buttons.delete');
+                $nestedData['can_create']        = Auth::user()->can('create_contact');
+                $nestedData['can_update']        = Auth::user()->can('update_contact_group');
+                $nestedData['can_delete']        = Auth::user()->can('delete_contact_group');
+
+                $data[] = $nestedData;
 
             }
         }
@@ -296,7 +288,29 @@ class ContactsController extends CustomerBaseController
 
         $import_history = ImportJobHistory::where('import_id', $contact->uid)->where('type', 'import_contact')->cursor();
 
-        return view('customer.contactGroups.show', compact('breadcrumbs', 'contact', 'sender_ids', 'phone_numbers', 'contact_groups', 'template_tags', 'opt_in_keywords', 'opt_out_keywords', 'remain_opt_in_keywords', 'remain_opt_out_keywords', 'import_history'));
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('plain', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        return view('customer.contactGroups.show', compact('breadcrumbs', 'contact', 'sender_ids', 'phone_numbers', 'contact_groups', 'template_tags', 'opt_in_keywords', 'opt_out_keywords', 'remain_opt_in_keywords', 'remain_opt_out_keywords', 'import_history','sending_server'));
     }
 
 
@@ -528,6 +542,13 @@ class ContactsController extends CustomerBaseController
      */
     public function destroy(ContactGroups $contact): JsonResponse
     {
+        if (config('app.env') == 'demo') {
+            return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
         $this->authorize('delete_contact_group');
 
         $this->contactGroups->destroy($contact);
@@ -549,6 +570,13 @@ class ContactsController extends CustomerBaseController
 
     public function batchAction(Request $request): JsonResponse
     {
+
+        if (config('app.env') == 'demo') {
+            return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
 
         $action = $request->get('action');
         $ids    = $request->get('ids');
@@ -609,12 +637,14 @@ class ContactsController extends CustomerBaseController
         $this->authorize('view_contact');
 
         $columns = [
-                0 => 'uid',
-                1 => 'phone',
-                2 => 'name',
-                3 => 'created_at',
-                4 => 'status',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'phone',
+                4 => 'name',
+                5 => 'created_at',
+                6 => 'status',
+                7 => 'action',
         ];
 
         $totalData = Contacts::where('customer_id', auth()->user()->id)->where('group_id', $contact->id)->count();
@@ -647,10 +677,6 @@ class ContactsController extends CustomerBaseController
         if ( ! empty($contacts)) {
             foreach ($contacts as $singleContact) {
 
-                $conversion   = route('customer.reports.all', ['recipient' => $singleContact->phone]);
-                $send_message = route('customer.sms.quick_send', ['recipient' => $singleContact->phone]);
-                $show         = route('customer.contact.edit', ['contact' => $contact->uid, 'contact_id' => $singleContact->uid]);
-
                 if ($singleContact->status == 'subscribe') {
                     $status = 'checked';
                 } else {
@@ -658,41 +684,33 @@ class ContactsController extends CustomerBaseController
                 }
 
 
-                $action              = null;
-                $view_conversion     = __('locale.contacts.view_conversion');
-                $send_message_locale = __('locale.contacts.send_message');
-                $edit                = __('locale.buttons.edit');
-                $delete              = __('locale.buttons.delete');
-
-                if (Auth::user()->can('view_contact')) {
-                    $action .= "<a href='$conversion' class='text-info mr-1' data-toggle='tooltip' data-placement='top' title='$view_conversion'><i class='feather us-2x icon-message-square'></i></a>";
-                    $action .= "<a href='$send_message' class='text-info mr-1' data-toggle='tooltip' data-placement='top' title='$send_message_locale'><i class='feather us-2x icon-send'></i></a>";
-                }
-                if (Auth::user()->can('update_contact')) {
-                    $action .= "<a href='$show' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$edit'><i class='feather us-2x icon-edit'></i></a>";
-                }
-                if (Auth::user()->can('delete_contact')) {
-                    $action .= "<span class='action-delete text-danger' data-id='$singleContact->uid' data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-                }
-
                 $display_name = $singleContact->display_name();
                 if ($display_name == ' ') {
                     $display_name = __('locale.labels.no_name');
                 }
 
-                $nestedData['uid']        = $singleContact->uid;
-                $nestedData['phone']      = $singleContact->phone;
-                $nestedData['name']       = $display_name;
-                $nestedData['created_at'] = Tool::formatHumanTime($singleContact->created_at);
-                $nestedData['status']     = "<div class='custom-control custom-switch switch-lg-us custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$singleContact->uid' data-id='$singleContact->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$singleContact->uid'>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $singleContact->uid;
+                $nestedData['phone']         = $singleContact->phone;
+                $nestedData['name']          = $display_name;
+                $nestedData['created_at']    = Tool::formatHumanTime($singleContact->created_at);
+                $nestedData['status']        = "<div class='form-check form-switch form-check-primary form-switch-xl'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$singleContact->uid' data-id='$singleContact->uid' name='status' $status>
+                <label class='form-check-label' for='status_$singleContact->uid'>
                   <span class='switch-text-left'>".__('locale.labels.subscribe')."</span>
                   <span class='switch-text-right'>".__('locale.labels.unsubscribe')."</span>
                 </label>
               </div>";
-                $nestedData['action']     = $action;
-                $data[]                   = $nestedData;
+
+
+                $nestedData['show']             = route('customer.contact.edit', ['contact' => $contact->uid, 'contact_id' => $singleContact->uid]);
+                $nestedData['show_label']       = __('locale.buttons.edit');
+                $nestedData['conversion']       = route('customer.reports.all', ['recipient' => $singleContact->phone]);
+                $nestedData['conversion_label'] = __('locale.contacts.view_conversion');
+                $nestedData['send_sms']         = route('customer.sms.quick_send', ['recipient' => $singleContact->phone]);
+                $nestedData['send_sms_label']   = __('locale.contacts.send_message');
+                $nestedData['delete']           = __('locale.buttons.delete');;
+                $data[] = $nestedData;
 
             }
         }
@@ -732,7 +750,7 @@ class ContactsController extends CustomerBaseController
                 ]);
             }
 
-            return redirect()->route('customer.contacts.show', $contact->uid)->with([
+            return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                     'status'  => 'error',
                     'message' => __('locale.contacts.subscriber_per_list_max_quota', ['subscriber_per_list_max' => Auth::user()->customer->getOption('subscriber_per_list_max')]),
             ]);
@@ -758,7 +776,7 @@ class ContactsController extends CustomerBaseController
     public function storeContact(ContactGroups $contact, StoreContact $request): RedirectResponse
     {
         if (config('app.env') == 'demo') {
-            return redirect()->route('customer.contacts.show', $contact->uid)->with([
+            return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                     'status'  => 'error',
                     'message' => 'Sorry! This option is not available in demo mode',
             ]);
@@ -766,7 +784,7 @@ class ContactsController extends CustomerBaseController
 
         $this->contactGroups->storeContact($contact, $request->only('phone', 'first_name', 'last_name'));
 
-        return redirect()->route('customer.contacts.show', $contact->uid)->with([
+        return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                 'status'  => 'success',
                 'message' => __('locale.contacts.contact_successfully_added'),
         ]);
@@ -903,13 +921,13 @@ class ContactsController extends CustomerBaseController
 
         $status = $this->contactGroups->updateContact($contact, $request->except('_token'));
         if ($status) {
-            return redirect()->route('customer.contacts.show', $contact->uid)->with([
+            return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                     'status'  => 'success',
                     'message' => __('locale.contacts.contact_successfully_updated'),
             ]);
         }
 
-        return redirect()->route('customer.contacts.show', $contact->uid)->with([
+        return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                 'status'  => 'error',
                 'message' => __('locale.exceptions.something_went_wrong'),
         ]);
@@ -975,7 +993,7 @@ class ContactsController extends CustomerBaseController
         } elseif (isset($request->recipients) && $request->recipients != null) {
 
             if (config('app.env') == 'demo') {
-                return redirect()->route('customer.contacts.show', $contact->uid)->with([
+                return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                         'status'  => 'error',
                         'message' => 'Sorry! This option is not available in demo mode',
                 ]);
@@ -992,14 +1010,14 @@ class ContactsController extends CustomerBaseController
             } elseif ($request->delimiter == 'new_line') {
                 $recipients = explode("\n", $request->recipients);
             } else {
-                return redirect()->route('customer.contacts.show', $contact->uid)->with([
+                return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                         'status'  => 'error',
                         'message' => __('locale.labels.invalid_delimiter'),
                 ]);
             }
 
             if (isset($recipients) && is_array($recipients) && count($recipients) > 1000) {
-                return redirect()->route('customer.contacts.show', $contact->uid)->with([
+                return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                         'status'  => 'error',
                         'message' => __('locale.contacts.upload_maximum_1000_rows'),
                 ]);
@@ -1024,19 +1042,19 @@ class ContactsController extends CustomerBaseController
 
             $contact->updateCache('SubscribersCount');
 
-            return redirect()->route('customer.contacts.show', $contact->uid)->with([
+            return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                     'status'  => 'success',
                     'message' => __('locale.contacts.contact_successfully_imported'),
             ]);
 
         } else {
-            return redirect()->route('customer.contacts.show', $contact->uid)->with([
+            return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                     'status'  => 'error',
                     'message' => __('locale.exceptions.invalid_action'),
             ]);
         }
 
-        return redirect()->route('customer.contacts.show', $contact->uid)->with([
+        return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'contact'])->with([
                 'status'  => 'error',
                 'message' => __('locale.exceptions.something_went_wrong'),
         ]);
@@ -1124,13 +1142,13 @@ class ContactsController extends CustomerBaseController
 
             $contact->update(['batch_id' => $batch->id]);
 
-            return redirect()->route('customer.contacts.show', $contact->uid)->with([
+            return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'import_history'])->with([
                     'status'  => 'success',
                     'message' => __('locale.contacts.contact_successfully_imported_in_background'),
             ]);
 
         } catch (Throwable $e) {
-            return redirect()->route('customer.contacts.show', $contact->uid)->with([
+            return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'import_history'])->with([
                     'status'  => 'error',
                     'message' => $e->getMessage(),
             ]);
@@ -1396,7 +1414,7 @@ class ContactsController extends CustomerBaseController
         $contact->{$request->message_form} = $request->message;
         $contact->save();
 
-        return redirect()->route('customer.contacts.show', $contact->uid)->with([
+        return redirect()->route('customer.contacts.show', $contact->uid)->withInput(['tab' => 'message'])->with([
                 'status'  => 'success',
                 'message' => __('locale.contacts.contact_groups_message_information', ['message_from' => ucfirst(str_replace('_', ' ', $request->message_form))]),
         ]);
@@ -1580,7 +1598,7 @@ class ContactsController extends CustomerBaseController
 
     public function contactGroupsGenerator(): Generator
     {
-        foreach (ContactGroups::cursor() as $contactGroup) {
+        foreach (ContactGroups::where('customer_id', Auth::user()->id)->cursor() as $contactGroup) {
             yield $contactGroup;
         }
     }

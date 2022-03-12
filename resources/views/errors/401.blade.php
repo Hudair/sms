@@ -1,25 +1,35 @@
+@php
+    $configData = Helper::applClasses();
+@endphp
 @extends('layouts/fullLayoutMaster')
 
 @section('title', __('locale.http.401.title'))
 @section('code', '401')
 
+@section('page-style')
+    {{-- Page Css files --}}
+    <link rel="stylesheet" href="{{ asset(mix('css/base/pages/page-misc.css')) }}">
+@endsection
 @section('content')
-    <!-- maintenance -->
-    <section class="row flexbox-container">
-        <div class="col-12 d-flex justify-content-center">
-            <div class="card auth-card bg-transparent shadow-none rounded-0 mb-0 w-100">
-                <div class="card-content">
-                    <div class="card-body text-center">
-                        <img src="{{ asset('images/pages/not-authorized.png') }}" class="img-fluid align-self-center" alt="{{ config('app.name') }}">
-                        <h1 class="font-large-2 my-1">{{__('locale.http.401.title')}}!</h1>
-                        <p class="px-2">
-                            {{ __($exception->getMessage() ?: __('locale.http.401.description')) }}
-                        </p>
-                        <a class="btn btn-primary btn-lg mt-1" href="{{ route('login') }}">{{__('locale.labels.back_to_home')}}</a>
-                    </div>
-                </div>
+    <!-- Error page-->
+    <div class="misc-wrapper">
+
+        <a class="brand-logo" href="{{route('login')}}">
+            <img src="{{asset(config('app.logo'))}}" alt="{{config('app.name')}}"/>
+        </a>
+
+        <div class="misc-inner p-2 p-sm-3">
+            <div class="w-100 text-center">
+                <h2 class="mb-1">{{__('locale.http.401.title')}}!️</h2>
+                <p class="mb-2">{{ __($exception->getMessage() ?: __('locale.http.401.description')) }}</p>
+                <a class="btn btn-primary mb-2 btn-sm-block" href="{{ route('login') }}">{{__('locale.labels.back_to_home')}}</a>
+                @if($configData['theme'] === 'dark')
+                    <img class="img-fluid" src="{{asset('images/pages/error-dark.svg')}}" alt="Error page" />
+                @else
+                    <img class="img-fluid" src="{{asset('images/pages/error.svg')}}" alt="Error page" />
+                @endif
             </div>
         </div>
-    </section>
-    <!-- maintenance end -->
+    </div>
+    <!-- / Error page-->
 @endsection

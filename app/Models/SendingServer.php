@@ -51,6 +51,7 @@ class SendingServer extends Model
             'auth_token',
             'access_key',
             'access_token',
+            'secret_access',
             'api_key',
             'api_secret',
             'user_token',

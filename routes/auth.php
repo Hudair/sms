@@ -17,7 +17,6 @@ Route::group(
             Route::get('login', 'LoginController@showLoginForm')->name('login');
             Route::post('login', 'LoginController@login');
             Route::post('logout', 'LoginController@logout')->name('logout');
-            Route::get('avatar/{user}', 'LoginController@avatar')->name('user.avatar');
 
             Route::get('login/{provider}', 'LoginController@redirectToProvider')->name('social.login');
             Route::get('login/{provider}/callback', 'LoginController@handleProviderCallback')->name('social.callback');
@@ -28,7 +27,7 @@ Route::group(
             Route::get('password/reset/{token}', 'ResetPasswordController@showResetForm')->name('password.reset');
             Route::post('password/reset', 'ResetPasswordController@reset')->name('password.update');
 
-            //two step verification routes
+            //two-step verification routes
             Route::get('verify/resend', 'TwoFactorController@resend')->name('verify.resend');
             Route::get('verify/backup-code', 'TwoFactorController@backUpCode')->name('verify.backup');
             Route::post('verify/backup-code', 'TwoFactorController@updateBackUpCode');
@@ -94,6 +93,15 @@ Route::group(
             Route::post('account/notifications/{notification}/active', 'AccountController@notificationToggle')->name('account.notifications.toggle');
             Route::post('account/notifications/{notification}/delete', 'AccountController@deleteNotification')->name('account.notifications.delete');
             Route::post('notifications/batch_action', 'AccountController@notificationBatchAction')->name('account.notifications.batch_action');
+
+            //Registration Payment
+            Route::any('account/{user}/success/{plan}/{payment_method}', 'AccountController@successfulRegisterPayment')->name('registers.payment_success');
+            Route::any('account/{user}/cancel', 'AccountController@cancelledRegisterPayment')->name('registers.payment_cancel');
+            Route::post('account/{user}/braintree', 'AccountController@braintreeRegister')->name('registers.braintree');
+            Route::post('account/{user}/authorize-net', 'AccountController@authorizeNetRegister')->name('registers.authorize_net');
+            Route::any('callback/sslcommerz/register', 'AccountController@sslcommerzRegister')->name('callback.sslcommerz.register');
+            Route::any('callback/aamarpay/register', 'AccountController@aamarpayRegister')->name('callback.aamarpay.register');
+            Route::any('callback/flutterwave/register', 'AccountController@flutterwaveRegister')->name('callback.flutterwave.register');
 
             if (config('account.can_delete')) {
                 /*

@@ -1,1 +1,31 @@
-!function(o,n,t){"use strict";var i=Quill.import("formats/font");i.whitelist=["sofia","slabo","roboto","inconsolata","ubuntu"],Quill.register(i,!0);var r=new Quill("#snow-container .editor",{bounds:"#snow-container .editor",modules:{formula:!0,syntax:!0,toolbar:"#snow-container .quill-toolbar"},theme:"snow"});r.on("text-change",function(o,n,i){var e=r.container.firstChild.innerHTML;t("#hiddenArea").val(e)})}(window,document,jQuery);
+/*=========================================================================================
+	File Name: editor-quill.js
+	Description: Quill is a modern rich text editor built for compatibility and extensibility.
+==========================================================================================*/
+(function (window, document, $) {
+    'use strict';
+
+    var Font = Quill.import('formats/font');
+    Font.whitelist = ['sofia', 'slabo', 'roboto', 'inconsolata', 'ubuntu'];
+    Quill.register(Font, true);
+
+    // Snow Editor
+
+    var snowEditor = new Quill('#snow-container .editor', {
+        bounds: '#snow-container .editor',
+        modules: {
+            'formula': true,
+            'syntax': true,
+            'toolbar': '#snow-container .quill-toolbar'
+        },
+        theme: 'snow'
+    });
+
+
+
+    snowEditor.on('text-change', function(delta, oldDelta, source) {
+        var html = snowEditor.container.firstChild.innerHTML;
+        $("#hiddenArea").val(html);
+    });
+
+})(window, document, jQuery);

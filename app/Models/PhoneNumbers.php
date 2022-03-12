@@ -135,16 +135,16 @@ class PhoneNumbers extends Model
         $capabilities = json_decode($this->capabilities, true);
         foreach ($capabilities as $capability) {
             if ($capability == 'sms') {
-                $return_data .= '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.sms').'</span></div>';
+                $return_data .= '<span class="badge bg-primary text-uppercase me-1"><i data-feather="message-square" class="me-25"></i><span>'.__('locale.labels.sms').'</span></span>';
             }
             if ($capability == 'voice') {
-                $return_data .= '<div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.voice').'</span></div>';
+                $return_data .= '<span class="badge bg-success text-uppercase me-1"><i data-feather="phone-call" class="me-25"></i><span>'.__('locale.labels.voice').'</span></span>';
             }
             if ($capability == 'mms') {
-                $return_data .= '<div class="badge badge-info text-uppercase mr-1 mb-1"><span>'.__('locale.labels.mms').'</span></div>';
+                $return_data .= '<span class="badge bg-info text-uppercase me-1"><i data-feather="image" class="me-25"></i><span>'.__('locale.labels.mms').'</span></span>';
             }
             if ($capability == 'whatsapp') {
-                $return_data .= '<div class="badge badge-warning text-uppercase mb-1"><span>'.__('locale.labels.whatsapp').'</span></div>';
+                $return_data .= '<span class="badge bg-warning text-uppercase"><i data-feather="message-circle" class="me-25"></i><span>'.__('locale.labels.whatsapp').'</span></span>';
             }
         }
 

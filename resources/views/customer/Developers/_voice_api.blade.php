@@ -86,12 +86,49 @@
         </tr>
 
         <tr>
+            <td>type</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
+            </td>
+            <td>string</td>
+            <td>The type of the message. For text message you have to insert <code>voice</code> as sms type.</td>
+        </tr>
+
+        <tr>
+            <td>language</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
+            </td>
+            <td>string</td>
+            <td>The language in which the message needs to be read to the recipient. Possible values are: <code> cy-gb, da-dk, de-de, el-gr, en-au, en-gb, en-gb-wls, en-in, en-us, es-es, es-mx, es-us, fr-ca, fr-fr, id-id, is-is, it-it, ja-jp, ko-kr, ms-my, nb-no, nl-nl, pl-pl, pt-br, pt-pt, ro-ro, ru-ru, sv-se, ta-in, th-th, tr-tr, vi-vn, zh-cn, zh-hk.</code></td>
+        </tr>
+
+        <tr>
+            <td>gender</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
+            </td>
+            <td>string</td>
+            <td>The gender in which the messages needs to be read to the recipient. Possible values are: <code>male, female</code></td>
+        </tr>
+
+        <tr>
             <td>message</td>
             <td>
                 <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
             </td>
             <td>string</td>
             <td>The body of the SMS message.</td>
+        </tr>
+
+
+        <tr>
+            <td>schedule_time</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.no') }}</span></div>
+            </td>
+            <td>datetime</td>
+            <td>The scheduled date and time of the message in RFC3339 format <code>(Y-m-d H:i)</code></td>
         </tr>
 
 
@@ -106,6 +143,10 @@ curl -X POST {{ route('api.sms.send') }} \
      -H 'Authorization: Bearer 7|xs6pv2dspHJq8sWLhrpNFH5YLilMRQcVxLwSw2Sd' \
      -d "recipient=31612345678" \
      -d "sender_id=YourName" \
+     -d "type=voice" \
+     -d "language=en-gb" \
+     -d "gender=female" \
+     -d "schedule_time=2021-12-20 07:00" \
      -d "message=This is a test message"
                                 </code>
                             </pre>

@@ -3,77 +3,76 @@
 @section('title', __('locale.labels.invoice'))
 
 @section('page-style')
-    {{-- Page Css files --}}
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/invoice.css')) }}">
+    <link rel="stylesheet" href="{{asset('css/base/pages/app-invoice.css')}}">
 @endsection
+
 @section('content')
-    <!-- invoice functionality start -->
-    <section class="invoice-print mb-1">
-        <div class="row">
-            <div class="col-12 col-md-12 d-flex flex-column flex-md-row justify-content-end">
-                <button class="btn btn-primary btn-print mb-1 mb-md-0"><i class="feather icon-printer"></i> {{__('locale.labels.print')}}</button>
-                <a href="{{ route('customer.subscriptions.index') }}" class="btn btn-outline-primary  ml-0 ml-md-1"><i class="feather icon-arrow-left"></i> {{__('locale.labels.invoices')}}</a>
-            </div>
-        </div>
-    </section>
-    <!-- invoice functionality end -->
-    <section class="card invoice-page">
-        <div id="invoice-template" class="card-body">
-            <!-- Invoice Company Details -->
-            <div id="invoice-company-details" class="row">
-                <div class="col-md-6 col-sm-12 text-left pt-1">
-                    <div class="media pt-1">
-                        <img src="{{asset(config('app.logo'))}}" alt="{{config('app.name')}}" class=""/>
+    <section class="invoice-preview-wrapper">
+        <div class="row invoice-preview">
+            <!-- Invoice -->
+            <div class="col-xl-9 col-md-8 col-12">
+                <div class="card invoice-preview-card">
+                    <div class="card-body invoice-padding pb-0">
+                        <!-- Header starts -->
+                        <div class="d-flex justify-content-between flex-md-row flex-column invoice-spacing mt-0">
+                            <div>
+                                <div class="logo-wrapper">
+                                    <img src="{{asset(config('app.logo'))}}" alt="{{config('app.name')}}" class=""/>
+                                </div>
+                                <p class="card-text">{!! \App\Helpers\Helper::app_config('company_address') !!}</p>
+                            </div>
+                            <div class="mt-md-0 mt-2">
+                                <h4 class="invoice-title">
+                                    {{ __('locale.labels.invoice') }}
+                                    <span class="invoice-number">#{{ $invoice->id }}</span>
+                                </h4>
+                                <div class="invoice-date-wrapper">
+                                    <p class="invoice-date-title">{{ __('locale.labels.invoice_date') }}:</p>
+                                    <p class="invoice-date">{{ \App\Library\Tool::formatDate($invoice->created_at) }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Header ends -->
                     </div>
-                </div>
-                <div class="col-md-6 col-sm-12 text-right">
-                    <h1>{{__('locale.labels.invoice')}}</h1>
-                    <div class="invoice-details mt-2">
-                        <h6 class="text-uppercase">{{__('locale.labels.invoice_number')}}.</h6>
-                        <p>{{ $invoice->uid }}</p>
-                        <h6 class="mt-2 text-uppercase">{{ __('locale.labels.invoice_date') }}</h6>
-                        <p>{{ \App\Library\Tool::customerDateTime($invoice->created_at) }}</p>
-                    </div>
-                </div>
-            </div>
-            <!--/ Invoice Company Details -->
 
-            <!-- Invoice Recipient Details -->
-            <div id="invoice-customer-details" class="row pt-2">
-                <div class="col-sm-6 col-12 text-left">
-                    <h5>{{ __('locale.labels.recipient') }}</h5>
-                    <div class="recipient-info my-2">
-                        <p>{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
-                        <p>{{ auth()->user()->customer->financial_address }}</p>
-                        <p>{{ auth()->user()->customer->financial_city }}</p>
-                        <p>{{ auth()->user()->customer->financial_postcode }}</p>
-                        <p>{{ auth()->user()->customer->state }}</p>
-                        <p>{{ auth()->user()->customer->country }}</p>
-                    </div>
-                    <div class="recipient-contact pb-2">
-                        <p><i class="feather icon-mail"></i> {{ auth()->user()->email }}</p>
-                        <p><i class="feather icon-phone"></i> {{ auth()->user()->customer->phone }}</p>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-12 text-right">
-                    <h5>{{ config('app.name') }}</h5>
-                    <div class="company-info my-2">
-                        {!! \App\Helpers\Helper::app_config('company_address') !!}
-                    </div>
-                    <div class="company-contact">
-                        <p><i class="feather icon-mail"></i> {{ \App\Helpers\Helper::app_config('from_email') }}</p>
-                        @if(\App\Helpers\Helper::app_config('notification_phone'))
-                            <p><i class="feather icon-phone"></i> {{ \App\Helpers\Helper::app_config('notification_phone') }}</p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            <!--/ Invoice Recipient Details -->
+                    <hr class="invoice-spacing"/>
 
-            <!-- Invoice Items Details -->
-            <div id="invoice-items-details" class="pt-1 invoice-items-table">
-                <div class="row">
-                    <div class="table-responsive col-sm-12">
+                    <!-- Address and Contact starts -->
+                    <div class="card-body invoice-padding pt-0">
+                        <div class="row invoice-spacing">
+                            <div class="col-xl-8 p-0">
+                                <h6 class="mb-2">{{ __('locale.labels.recipient') }}:</h6>
+                                <h6 class="mb-25">{{ $invoice->user->displayName() }}</h6>
+                                <p class="card-text mb-25">{{ $invoice->user->customer->address }}</p>
+                                <p class="card-text mb-25">{{ $invoice->user->customer->state }}-{{ $invoice->user->customer->postcode }}</p>
+                                <p class="card-text mb-25">{{ $invoice->user->customer->city }}, {{ $invoice->user->customer->country }}</p>
+                                <p class="card-text mb-0">{{ $invoice->user->email }}</p>
+                            </div>
+                            <div class="col-xl-4 p-0 mt-xl-0 mt-2">
+                                <h6 class="mb-2">{{__('locale.labels.payment_details')}}:</h6>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td class="pe-1">{{ __('locale.labels.total') }}:</td>
+                                        <td><span class="fw-bold">{{ \App\Library\Tool::format_price($invoice->amount, $invoice->currency->format) }}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="pe-1">{{ __('locale.labels.paid_by') }}:</td>
+                                        <td>{{ $invoice->paymentMethod->name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="pe-1">{{ __('locale.labels.transaction_id') }}:</td>
+                                        <td style="word-break: break-all">{{ $invoice->transaction_id }}</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Address and Contact ends -->
+
+                    <!-- Invoice Description starts -->
+                    <div class="table-responsive">
                         <table class="table table-borderless">
                             <thead>
                             <tr class="text-uppercase">
@@ -93,52 +92,44 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <div class="card-body invoice-padding pb-0">
+                        <div class="row invoice-sales-total-wrapper">
+                            <div class="col-md-6 order-md-1 order-2 mt-md-0 mt-3">
+                                <p class="card-text mb-0"></p>
+                            </div>
+
+                            <div class="col-md-6 d-flex justify-content-end order-md-2 order-1">
+                                <div class="invoice-total-wrapper">
+                                    <div class="invoice-total-item">
+                                        <p class="invoice-total-title">{{ __('locale.labels.subtotal') }}:</p>
+                                        <p class="invoice-total-amount">{{ \App\Library\Tool::format_price($invoice->amount, $invoice->currency->format) }}</p>
+                                    </div>
+                                    <hr class="my-50"/>
+                                    <div class="invoice-total-item">
+                                        <p class="invoice-total-title">{{ __('locale.labels.total') }}:</p>
+                                        <p class="invoice-total-amount">{{ \App\Library\Tool::format_price($invoice->amount, $invoice->currency->format) }}</p>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Invoice Description ends -->
                 </div>
             </div>
-            <div id="invoice-total-details" class="invoice-total-table">
-                <div class="row">
-                    <div class="col-7 offset-5">
-                        <div class="table-responsive">
-                            <table class="table table-borderless">
-                                <tbody>
-                                <tr>
-                                    <th class="text-uppercase">{{ __('locale.labels.subtotal') }}</th>
-                                    <td>{{ \App\Library\Tool::format_price($invoice->amount, $invoice->currency->format) }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-uppercase">{{ __('locale.labels.delivery_charge') }}</th>
-                                    <td class="text-success">{{ __('locale.labels.free') }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-uppercase">{{ __('locale.labels.total') }}</th>
-                                    <td>{{ \App\Library\Tool::format_price($invoice->amount, $invoice->currency->format) }}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
+            <!-- /Invoice -->
+
+            <!-- Invoice Actions -->
+            <div class="col-xl-3 col-md-4 col-12 invoice-actions mt-md-0 mt-2">
+                <div class="card">
+                    <div class="card-body">
+                        <a class="btn btn-primary w-100 mb-75" href="{{ route('customer.invoices.print', $invoice->uid) }}" target="_blank"> <i data-feather="printer"></i> {{ __('locale.labels.print') }}</a>
                     </div>
                 </div>
             </div>
-
-            <!-- Invoice Footer -->
-            <div id="invoice-footer" class="text-right pt-3">
-                <p>{{ __('locale.subscription.invoice_successfully_paid') }}. {{ __('locale.labels.payment_information') }}
-                <p class="bank-details mb-0">
-                    <span class="mr-4">{{ __('locale.labels.paid_by') }}: <strong>{{ $invoice->paymentMethod->name }}</strong></span>
-                    <span>{{ __('locale.labels.transaction_id') }}: <strong>{{ $invoice->transaction_id }}</strong></span>
-                </p>
-            </div>
-            <!--/ Invoice Footer -->
+            <!-- /Invoice Actions -->
         </div>
     </section>
-@endsection
-@section('page-script')
-    <script>
-        $(document).ready(function () {
-            // print invoice with button
-            $(".btn-print").click(function () {
-                window.print();
-            });
-        });
-    </script>
+
 @endsection

@@ -98,7 +98,7 @@
                                 <div class="col-6 border-top border-right d-flex align-items-between flex-column py-1">
                                     <p class="mb-50">{{ __('locale.labels.total') }}</p>
                                     <p class="font-large-1 text-bold-700 mb-50">
-                                        {{ (Auth::user()->customer->getSendingQuota() == -1) ? __('locale.labels.unlimited') : \App\Library\Tool::format_number(Auth::user()->customer->getSendingQuota()) }}
+                                        {{ (Auth::user()->sms_unit == -1) ? __('locale.labels.unlimited') : \App\Library\Tool::format_number(Auth::user()->sms_unit) }}
                                     </p>
                                 </div>
                                 <div class="col-6 border-top d-flex align-items-between flex-column py-1">
@@ -617,12 +617,12 @@
 
         <script>
 
-            let CustomerSendingQuota = "{{ Auth::user()->customer->getSendingQuota() }}";
+            let CustomerSendingQuota = "{{ Auth::user()->sms_unit }}";
 
             if (CustomerSendingQuota === '-1') {
                 CustomerSendingQuota = '0'
             } else {
-                CustomerSendingQuota = "{{ Auth::user()->customer->getSendingQuotaUsage() != 0 ? Auth::user()->customer->getSendingQuotaUsage() / Auth::user()->customer->getSendingQuota() *100 : 0 }}"
+                CustomerSendingQuota = "{{ Auth::user()->customer->getSendingQuotaUsage() != 0 ? Auth::user()->customer->getSendingQuotaUsage() / Auth::user()->sms_unit *100 : 0 }}"
             }
 
             let CustomerMaxLists = "{{ Auth::user()->customer->getOption('list_max') }}";

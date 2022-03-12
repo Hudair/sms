@@ -24,18 +24,16 @@
     <div class="form-body">
         <form class="form form-vertical" action="{{ route('admin.settings.license') }}" method="post">
             @csrf
-            <div class="form-group">
-                <label for="license" class="required">Insert your purchase code</label>
+            <div class="mb-1">
+                <label for="license" class="form-label required">Insert your purchase code</label>
                 <input type="text" class="form-control" name="license" id="license" required>
-                <span class="text-primary">Enter the licence key (purchase code) then hit the Update button</span>
+                <p><small class="text-primary">Enter the licence key (purchase code) then hit the Update button</small></p>
                 @error('license')
-                <div class="invalid-feedback">
-                    {{ $message }}
-                </div>
+                <p><small class="text-danger">{{ $message }}</small></p>
                 @enderror
             </div>
 
-            <button type="submit" class="btn btn-primary btn-sm"><i class="feather icon-save"></i> {{ __('locale.buttons.update') }} </button>
+            <button type="submit" class="btn btn-primary btn-sm"><i data-feather="save"></i> {{ __('locale.buttons.update') }} </button>
 
         </form>
     </div>

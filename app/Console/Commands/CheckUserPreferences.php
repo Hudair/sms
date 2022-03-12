@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Notifications\SMSUnitRunningLow;
 use App\Notifications\SubscriptionExpire;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 class CheckUserPreferences extends Command
@@ -46,7 +45,7 @@ class CheckUserPreferences extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
 
         $users = User::where('is_customer', 1)->where('status', 1)->cursor();
@@ -124,8 +123,8 @@ class CheckUserPreferences extends Command
 
                 }
 
-                if ($subscription->getOption('credit_warning') == 1 && $user->customer->getSendingQuota() != '-1') {
-                    $remaining = $user->customer->getSendingQuota() - $user->customer->getSendingQuotaUsage();
+                if ($subscription->getOption('credit_warning') == 1 && $user->sms_unit != '-1') {
+                    $remaining = $user->sms_unit - $user->customer->getSendingQuotaUsage();
 
                     if ($remaining == $subscription->getOption('credit')) {
 

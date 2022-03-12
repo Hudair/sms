@@ -7,19 +7,22 @@
     {{-- vendor files --}}
 
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/sweetalert2.min.css')) }}">
+    <link rel='stylesheet' href="{{ asset(mix('vendors/css/forms/select/select2.min.css')) }}">
 
 @endsection
 
 @section('content')
     <section id="vertical-tabs">
-        <div class="row match-height">
-            <div class="col-6">
-                <div class="card overflow-hidden  pb-2">
+        <div class="row">
+            <div class="col-md-8 col-12">
+                <div class="card">
                     <div class="card-header"></div>
                     <div class="card-content">
                         <div class="card-body">
-                            <span class="btn btn-primary mr-1 mb-1 generate-token"><i class="feather icon-plus"></i> {{ __('locale.developers.regenerate_token') }}</span>
-                            <a href="{{ route('customer.developer.docs') }}" class="btn btn-outline-primary mb-1"><i class="feather icon-book"></i> {{ __('locale.developers.read_the_docs') }}</a>
+                            <span class="btn btn-primary me-1 mb-1 generate-token"><i data-feather="plus-square"></i> {{ __('locale.developers.regenerate_token') }}</span>
+                            <a href="#" class="btn btn-success me-1 mb-1" data-bs-toggle="modal" data-bs-target="#sendingServer"><i data-feather="server"></i> {{ __('locale.labels.sending_server') }}</a>
+
+                            <a href="{{ route('customer.developer.docs') }}" class="btn btn-outline-primary mb-1"><i data-feather="book"></i> {{ __('locale.developers.read_the_docs') }}</a>
                             <hr>
                             <div class="mt-2 row">
                                 <div class="col-12">
@@ -32,8 +35,7 @@
                                 <div class="col-12">
                                     <p class="font-medium-2">{{ __('locale.developers.api_token') }}</p>
                                     <span class="font-medium-2 text-primary" id="copy-to-clipboard-input">{{ Auth::user()->api_token }} </span>
-                                    <i class="feather icon-clipboard font-large-1 text-info" data-toggle="tooltip" data-placement="top"
-                                       title="{{ __('locale.labels.copy') }}" id="btn-copy"></i>
+                                    <span id="btn-copy" data-bs-toggle="tooltip" data-placement="top" title="{{ __('locale.labels.copy') }}"><i data-feather="clipboard" class="font-large-1 text-info cursor-pointer"></i></span>
 
                                 </div>
                             </div>
@@ -44,12 +46,15 @@
             </div>
         </div>
     </section>
+
+    @include('customer.Developers._sending_server')
 @endsection
 
 
 @section('vendor-script')
     {{-- vendor js files --}}
     <script src="{{ asset(mix('vendors/js/extensions/sweetalert2.all.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/forms/select/select2.full.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
 @endsection
 
@@ -67,6 +72,19 @@
 
         })
 
+        // Basic Select2 select
+        $(".select2").each(function () {
+            let $this = $(this);
+            $this.wrap('<div class="position-relative"></div>');
+            $this.select2({
+                // the following code is used to disable x-scrollbar when click in select input and
+                // take 100% width in responsive also
+                dropdownAutoWidth: true,
+                width: '100%',
+                dropdownParent: $this.parent()
+            });
+        });
+
         function copyToClipboard(text) {
 
             let textArea = document.createElement("textarea");
@@ -78,20 +96,20 @@
                 let successful = document.execCommand('copy');
                 let msg = successful ? 'Copied' : 'Failed to copy';
 
-                toastr.success(msg, 'Success!!', {
-                    positionClass: 'toast-top-right',
-                    containerId: 'toast-top-right',
-                    progressBar: true,
+                toastr['success'](msg, '{{__('locale.labels.success')}}!!', {
                     closeButton: true,
-                    newestOnTop: true
+                    positionClass: 'toast-top-right',
+                    progressBar: true,
+                    newestOnTop: true,
+                    rtl: isRtl
                 });
             } catch (err) {
-                toastr.info('Oops, unable to copy ' + err, 'Success!!', {
-                    positionClass: 'toast-top-right',
-                    containerId: 'toast-top-right',
-                    progressBar: true,
+                toastr['info']('Oops, unable to copy ' + err, '{{ __('locale.labels.warning') }}!', {
                     closeButton: true,
-                    newestOnTop: true
+                    positionClass: 'toast-top-right',
+                    progressBar: true,
+                    newestOnTop: true,
+                    rtl: isRtl
                 });
             }
             document.body.removeChild(textArea);
@@ -103,13 +121,13 @@
             Swal.fire({
                 title: "{{ __('locale.labels.are_you_sure') }}",
                 text: "{{ __('locale.labels.able_to_revert') }}",
-                type: 'warning',
+                icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
                 confirmButtonText: "{{ __('locale.labels.generate') }}",
-                confirmButtonClass: 'btn btn-danger',
-                cancelButtonClass: 'btn btn-primary ml-1',
+                customClass: {
+                    confirmButton: 'btn btn-primary',
+                    cancelButton: 'btn btn-outline-danger ms-1'
+                },
                 buttonsStyling: false,
             }).then(function (result) {
                 if (result.value) {
@@ -123,33 +141,33 @@
 
                             userText.text(data.token);
 
-                            toastr.success(data.message, "Success!!", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['success'](data.message, '{{__('locale.labels.success')}}!!', {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         },
                         error: function (reject) {
                             if (reject.status === 422) {
                                 let errors = reject.responseJSON.errors;
                                 $.each(errors, function (key, value) {
-                                    toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
+                                    toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                         closeButton: true,
-                                        newestOnTop: true
+                                        positionClass: 'toast-top-right',
+                                        progressBar: true,
+                                        newestOnTop: true,
+                                        rtl: isRtl
                                     });
                                 });
                             } else {
-                                toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                    positionClass: 'toast-top-right',
-                                    containerId: 'toast-top-right',
-                                    progressBar: true,
+                                toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                     closeButton: true,
-                                    newestOnTop: true
+                                    positionClass: 'toast-top-right',
+                                    progressBar: true,
+                                    newestOnTop: true,
+                                    rtl: isRtl
                                 });
                             }
                         }

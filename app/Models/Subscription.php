@@ -487,7 +487,7 @@ class Subscription extends Model
      */
     public function getPeriodEndsAt($startDate)
     {
-        // dose not support recurring, update ends at column
+        // does not support recurring, update ends at column
         $interval      = $this->plan->getBillableInterval();
         $intervalCount = $this->plan->getBillableIntervalCount();
 

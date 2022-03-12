@@ -16,9 +16,6 @@ use App\Repositories\Contracts\SenderIDRepository;
 use Braintree\Gateway;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -152,6 +149,12 @@ class EloquentSenderIDRepository extends EloquentBaseRepository implements Sende
             $input['frequency_unit']   = $limits['frequency_unit'];
         }
 
+        if ($senderid->status != 'active' && $input['status'] == 'active') {
+            $current                  = Carbon::now();
+            $input['validity_date']   = $current->add($senderid->frequency_unit, $senderid->frequency_amount);
+            $input['payment_claimed'] = true;
+        }
+
         if ( ! $senderid->update($input)) {
             throw new GeneralException(__('locale.exceptions.something_went_wrong'));
         }
@@ -163,14 +166,14 @@ class EloquentSenderIDRepository extends EloquentBaseRepository implements Sende
      * @param  Senderid  $senderid
      * @param  null  $user_id
      *
-     * @return bool|GeneralException
+     * @return bool
      * @throws GeneralException
      * @throws Exception
      */
     public function destroy(Senderid $senderid, $user_id = null)
     {
         if ($user_id) {
-            $exist = $senderid->where('user_id', $user_id)->first();
+            $exist = $senderid->where('sender_id', $senderid->sender_id)->where('user_id', $user_id)->first();
             if ($exist) {
                 if ( ! $exist->delete()) {
                     throw new GeneralException(__('locale.exceptions.something_went_wrong'));
@@ -198,7 +201,7 @@ class EloquentSenderIDRepository extends EloquentBaseRepository implements Sende
     public function batchDestroy(array $ids): bool
     {
         DB::transaction(function () use ($ids) {
-            // This wont call eloquent events, change to destroy if needed
+            // This won't call eloquent events, change to destroy if needed
             if ($this->query()->whereIn('uid', $ids)->delete()) {
                 return true;
             }

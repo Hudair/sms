@@ -3,17 +3,10 @@
 @section('title',__('locale.menu.All Settings'))
 
 @section('vendor-style')
-    <!-- vendor css files -->
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/nouislider.min.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/forms/select/select2.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/sweetalert2.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/ui/prism.min.css')) }}">
 @endsection
 
-@section('page-style')
-    <!-- Page css files -->
-    <link rel="stylesheet" href="{{ asset(mix('css/plugins/extensions/noui-slider.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('css/core/colors/palette-noui.css')) }}">
-@endsection
 
 @section('content')
 
@@ -29,58 +22,57 @@
                                 {{-- Gerenal --}}
                                 @can('general settings')
                                     <li class="nav-item">
-                                        <a class="nav-link active" id="general-tab-justified" data-toggle="tab" href="#general-just" role="tab"
-                                           aria-controls="general-just" aria-selected="true"><i class="feather icon-settings primary"></i> {{ __('locale.labels.general') }}</a>
+                                        <a class="nav-link @if (old('tab') == 'general' || old('tab') == null) active @endif" id="general-tab-justified" data-bs-toggle="tab" href="#general" role="tab"
+                                           aria-controls="general" aria-selected="true"><i data-feather="settings" class="primary"></i> {{ __('locale.labels.general') }}</a>
                                     </li>
                                 @endcan
 
                                 {{-- system email --}}
                                 @can('system_email settings')
                                     <li class="nav-item">
-                                        <a class="nav-link" id="system-email-tab-justified" data-toggle="tab" href="#system-email-just" role="tab"
-                                           aria-controls="system-email-just" aria-selected="true"><i class="feather icon-mail primary"></i> {{ __('locale.labels.system_email') }}</a>
+                                        <a class="nav-link {{ old('tab') == 'system_email' ? 'active':null }}" id="system-email-tab-justified" data-bs-toggle="tab" href="#system-email" role="tab"
+                                           aria-controls="system-email" aria-selected="true"><i data-feather="mail" class="primary"></i> {{ __('locale.labels.system_email') }}</a>
                                     </li>
                                 @endcan
 
                                 {{-- authentication --}}
                                 @can('authentication settings')
                                     <li class="nav-item">
-                                        <a class="nav-link" id="authentication-tab-justified" data-toggle="tab" href="#authentication-just" role="tab"
-                                           aria-controls="authentication-just" aria-selected="true"><i class="feather icon-lock primary"></i> {{ __('locale.labels.authentication') }}</a>
+                                        <a class="nav-link {{ old('tab') == 'authentication' ? 'active':null }}" id="authentication-tab-justified" data-bs-toggle="tab" href="#authentication" role="tab"
+                                           aria-controls="authentication" aria-selected="true"><i data-feather="lock" class="primary"></i> {{ __('locale.labels.authentication') }}</a>
                                     </li>
                                 @endcan
 
                                 {{-- notifications --}}
                                 @can('notifications settings')
                                     <li class="nav-item">
-                                        <a class="nav-link" id="notifications-tab-justified" data-toggle="tab" href="#notifications-just" role="tab"
-                                           aria-controls="notifications-just" aria-selected="true"><i class="feather icon-bell primary"></i> {{ __('locale.labels.notifications') }}</a>
+                                        <a class="nav-link {{ old('tab') == 'notifications' ? 'active':null }}" id="notifications-tab-justified" data-bs-toggle="tab" href="#notifications" role="tab"
+                                           aria-controls="notifications" aria-selected="true"><i data-feather="bell" class="primary"></i> {{ __('locale.labels.notifications') }}</a>
                                     </li>
                                 @endcan
 
                                 {{-- pusher --}}
                                 @can('pusher settings')
                                     <li class="nav-item">
-                                        <a class="nav-link" id="pusher-tab-justified" data-toggle="tab" href="#pusher-just" role="tab"
-                                           aria-controls="pusher-just" aria-selected="true"><i class="feather icon-message-square primary"></i> {{ __('locale.labels.pusher') }}</a>
+                                        <a class="nav-link {{ old('tab') == 'pusher' ? 'active':null }}" id="pusher-tab-justified" data-bs-toggle="tab" href="#pusher" role="tab"
+                                           aria-controls="pusher" aria-selected="true"><i data-feather="message-square" class="primary"></i> {{ __('locale.labels.pusher') }}</a>
                                     </li>
                                 @endcan
 
                                 {{-- Background job --}}
                                 @can('view background_jobs')
                                     <li class="nav-item">
-                                        <a class="nav-link" id="cron-job-tab-justified" data-toggle="tab" href="#cron-job-just" role="tab"
-                                           aria-controls="cron-job-just" aria-selected="true"><i class="feather icon-clock primary"></i> {{ __('locale.labels.cron_job') }}</a>
+                                        <a class="nav-link {{ old('tab') == 'cron_job' ? 'active':null }}" id="cron-job-tab-justified" data-bs-toggle="tab" href="#cron-job" role="tab"
+                                           aria-controls="cron-job" aria-selected="true"><i data-feather="clock" class="primary"></i> {{ __('locale.labels.cron_job') }}</a>
                                     </li>
                                 @endcan
 
                                 {{-- License --}}
-
                                 @if(config('app.env') != 'demo')
                                     @can('view purchase_code')
-                                        <li class="nav-item">
-                                            <a class="nav-link" id="license-tab-justified" data-toggle="tab" href="#license-just" role="tab"
-                                               aria-controls="license-just" aria-selected="true"><i class="feather icon-file-text primary"></i> {{ __('locale.labels.license') }}</a>
+                                        <li class="nav-item {{ old('tab') == 'license' ? 'active':null }}">
+                                            <a class="nav-link" id="license-tab-justified" data-bs-toggle="tab" href="#license" role="tab"
+                                               aria-controls="license" aria-selected="true"><i data-feather="file-text" class="primary"></i> {{ __('locale.labels.license') }}</a>
                                         </li>
                                     @endcan
                                 @endif
@@ -95,7 +87,7 @@
 
                                 {{-- Gerenal --}}
                                 @can('general settings')
-                                    <div class="tab-pane active" id="general-just" role="tabpanel" aria-labelledby="general-tab-justified">
+                                    <div class="tab-pane @if (old('tab') == 'general' || old('tab') == null) active @endif" id="general" role="tabpanel" aria-labelledby="general-tab-justified">
                                         @include('admin.settings.AllSettings._general')
                                     </div>
                                 @endcan
@@ -103,35 +95,35 @@
 
                                 {{-- system email --}}
                                 @can('system_email settings')
-                                    <div class="tab-pane" id="system-email-just" role="tabpanel" aria-labelledby="system-email-tab-justified">
+                                    <div class="tab-pane {{ old('tab') == 'system_email' ? 'active':null }}" id="system-email" role="tabpanel" aria-labelledby="system-email-tab-justified">
                                         @include('admin.settings.AllSettings._system_email')
                                     </div>
                                 @endcan
 
                                 {{-- authentication --}}
                                 @can('authentication settings')
-                                    <div class="tab-pane" id="authentication-just" role="tabpanel" aria-labelledby="authentication-tab-justified">
+                                    <div class="tab-pane {{ old('tab') == 'authentication' ? 'active':null }}" id="authentication" role="tabpanel" aria-labelledby="authentication-tab-justified">
                                         @include('admin.settings.AllSettings._authentication')
                                     </div>
                                 @endcan
 
                                 {{-- notifications --}}
                                 @can('notifications settings')
-                                    <div class="tab-pane" id="notifications-just" role="tabpanel" aria-labelledby="notifications-tab-justified">
+                                    <div class="tab-pane {{ old('tab') == 'notifications' ? 'active':null }}" id="notifications" role="tabpanel" aria-labelledby="notifications-tab-justified">
                                         @include('admin.settings.AllSettings._notifications')
                                     </div>
                                 @endcan
 
                                 {{-- pusher --}}
                                 @can('pusher settings')
-                                    <div class="tab-pane" id="pusher-just" role="tabpanel" aria-labelledby="pusher-tab-justified">
+                                    <div class="tab-pane {{ old('tab') == 'pusher' ? 'active':null }}" id="pusher" role="tabpanel" aria-labelledby="pusher-tab-justified">
                                         @include('admin.settings.AllSettings._pusher')
                                     </div>
                                 @endcan
 
                                 {{-- Background job --}}
                                 @can('view background_jobs')
-                                    <div class="tab-pane" id="cron-job-just" role="tabpanel" aria-labelledby="cron-job-tab-justified">
+                                    <div class="tab-pane {{ old('tab') == 'cron_tab' ? 'active':null }}" id="cron-job" role="tabpanel" aria-labelledby="cron-job-tab-justified">
                                         @include('admin.settings.AllSettings._background_jobs')
                                     </div>
                                 @endcan
@@ -139,7 +131,7 @@
                                 @if(config('app.env') != 'demo')
                                     {{-- License --}}
                                     @can('view purchase_code')
-                                        <div class="tab-pane" id="license-just" role="tabpanel" aria-labelledby="license-tab-justified">
+                                        <div class="tab-pane {{ old('tab') == 'license' ? 'active':null }}" id="license" role="tabpanel" aria-labelledby="license-tab-justified">
                                             @include('admin.settings.AllSettings._license')
                                         </div>
                                     @endcan
@@ -157,11 +149,7 @@
 @section('vendor-script')
     <!-- vendor files -->
     <script src="{{ asset(mix('vendors/js/forms/select/select2.full.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/wNumb.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/nouislider.min.js')) }}"></script>
-
-    <script src="{{ asset(mix('vendors/js/extensions/sweetalert2.all.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/ui/prism.min.js')) }}"></script>
 @endsection
 
 
@@ -169,38 +157,19 @@
 
     <script>
         $(document).ready(function () {
-
-            //show response message
-            function showResponseMessage(data) {
-
-                if (data.status === 'success') {
-                    toastr.success(data.message, 'Success!!', {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
-                        closeButton: true,
-                        newestOnTop: true
-                    });
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 5000);
-                } else {
-                    toastr.warning("{{__('locale.exceptions.something_went_wrong')}}", "{{__('locale.labels.attention')}}", {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
-                        closeButton: true,
-                        newestOnTop: true
-                    });
-                }
-            }
-
-            $(".select2").select2({
-                // the following code is used to disable x-scrollbar when click in select input and
-                // take 100% width in responsive also
-                dropdownAutoWidth: true,
-                width: '100%'
+            // Basic Select2 select
+            $(".select2").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
             });
+
 
             let firstInvalid = $('form').find('.is-invalid').eq(0);
 

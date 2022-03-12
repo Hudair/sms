@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property mixed data
  * @method static where(string $string, string $uid)
+ * @method static insert(array[] $subscriptionLogs)
  */
 class SubscriptionLog extends Model
 {

@@ -77,12 +77,14 @@ class SenderIDController extends AdminBaseController
         $this->authorize('view sender_id');
 
         $columns = [
-                0 => 'uid',
-                1 => 'sender_id',
-                2 => 'user_id',
-                3 => 'price',
-                4 => 'status',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'sender_id',
+                4 => 'user_id',
+                5 => 'price',
+                6 => 'status',
+                7 => 'action',
         ];
 
         $totalData = Senderid::count();
@@ -128,28 +130,30 @@ class SenderIDController extends AdminBaseController
                 }
 
                 if ($senderid->status == 'active') {
-                    $status = '<div class="chip chip-success"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.active').'</div></div></div>';
+                    $status = '<span class="badge bg-success text-uppercase">'.__('locale.labels.active').'</span>';
                 } elseif ($senderid->status == 'pending') {
-                    $status = '<div class="chip chip-primary"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.pending').'</div></div></div>';
+                    $status = '<span class="badge bg-primary text-uppercase">'.__('locale.labels.pending').'</span>';
                 } elseif ($senderid->status == 'payment_required') {
-                    $status = '<div class="chip chip-info"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.payment_required').'</div></div></div>';
+                    $status = '<span class="badge bg-info text-uppercase">'.__('locale.labels.payment_required').'</span>';
                 } elseif ($senderid->status == 'expired') {
-                    $status = '<div class="chip chip-warning"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.expired').'</div></div></div>';
+                    $status = '<span class="badge bg-warning text-uppercase">'.__('locale.labels.expired').'</span>';
                 } else {
-                    $status = '<div class="chip chip-danger"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.block').'</div></div></div>';
+                    $status = '<span class="badge bg-danger text-uppercase">'.__('locale.labels.block').'</span>';
                 }
 
-                $nestedData['uid']       = $senderid->uid;
-                $nestedData['sender_id'] = $senderid->sender_id;
-                $nestedData['user_id']   = $assign_to;
-                $nestedData['price']     = "<div>
+                $nestedData['responsive_id'] = '';
+                $nestedData['avatar']        = route('admin.customers.avatar', $senderid->user->uid);
+                $nestedData['email']         = $senderid->user->email;
+                $nestedData['uid']           = $senderid->uid;
+                $nestedData['sender_id']     = $senderid->sender_id;
+                $nestedData['user_id']       = $assign_to;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($senderid->price, $senderid->currency->format)." </p>
                                                         <p class='text-muted'>".$senderid->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['status']    = $status;
-                $nestedData['action']    = "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>
-                                         <span class='action-delete text-danger' data-id='$senderid->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]                  = $nestedData;
+                $nestedData['status']        = $status;
+                $nestedData['edit']          = $show;
+                $data[]                      = $nestedData;
 
             }
         }
@@ -428,10 +432,12 @@ class SenderIDController extends AdminBaseController
         $this->authorize('view sender_id');
 
         $columns = [
-                0 => 'uid',
-                1 => 'price',
-                2 => 'renew',
-                3 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'price',
+                4 => 'renew',
+                5 => 'action',
         ];
 
         $totalData = SenderidPlan::count();
@@ -464,12 +470,12 @@ class SenderIDController extends AdminBaseController
         $data = [];
         if ( ! empty($sender_ids_plan)) {
             foreach ($sender_ids_plan as $plan) {
-                $nestedData['uid']   = $plan->uid;
-                $nestedData['price'] = Tool::format_price($plan->price, $plan->currency->format);
-                $nestedData['renew'] = __('locale.labels.every').' '.$plan->displayFrequencyTime();
 
-                $nestedData['action'] = "<span class='action-delete text-danger' data-id='$plan->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]               = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $plan->uid;
+                $nestedData['price']         = Tool::format_price($plan->price, $plan->currency->format);
+                $nestedData['renew']         = __('locale.labels.every').' '.$plan->displayFrequencyTime();
+                $data[]                      = $nestedData;
 
             }
         }

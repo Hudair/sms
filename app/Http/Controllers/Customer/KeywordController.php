@@ -69,12 +69,14 @@ class KeywordController extends CustomerBaseController
         $this->authorize('view_keywords');
 
         $columns = [
-                0 => 'uid',
-                1 => 'title',
-                2 => 'keyword_name',
-                4 => 'price',
-                5 => 'status',
-                6 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'title',
+                4 => 'keyword_name',
+                5 => 'price',
+                6 => 'status',
+                7 => 'actions',
         ];
 
         $totalData = Keywords::where('user_id', Auth::user()->id)->count();
@@ -106,40 +108,39 @@ class KeywordController extends CustomerBaseController
         $data = [];
         if ( ! empty($keywords)) {
             foreach ($keywords as $keyword) {
-                $show     = route('customer.keywords.show', $keyword->uid);
-                $checkout = route('customer.keywords.pay', $keyword->uid);
 
-                $edit       = __('locale.buttons.edit');
-                $release    = __('locale.labels.release');
-                $renew      = __('locale.labels.renew');
-                $remove_mms = __('locale.buttons.remove_mms');
-
-                $action_url = '';
-
-                $action_url .= "<span class='action-release text-danger mr-1' data-id='$keyword->uid'  data-toggle='tooltip' data-placement='top' title='$release'><i class='feather us-2x icon-minus-square'></i></span>";
-
+                $is_assigned = false;
                 if ($keyword->status == 'assigned') {
-                    $status     = '<div class="chip chip-success"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.assigned').'</div></div></div>';
-                    $action_url .= "<a href='$show' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$edit'><i class='feather us-2x icon-edit' ></i></a>";
-                    if ($keyword->reply_mms) {
-                        $action_url .= "<span class='action-remove-sms text-warning' data-id='$keyword->uid' data-toggle='tooltip' data-placement='top' title='$remove_mms'><i class='feather us-2x icon-delete'></i></span>";
-                    }
+                    $is_assigned = true;
+                    $status      = '<span class="badge bg-success text-uppercase">'.__('locale.labels.assigned').'</span>';
                 } else {
-                    $status     = '<div class="chip chip-danger"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.expired').'</div></div></div>';
-                    $action_url .= "<a href='$checkout' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$renew' ><i class='feather us-2x icon-refresh-cw' ></i></a>";
+                    $status = '<span class="badge bg-danger text-uppercase">'.__('locale.labels.expired').'</span>';
                 }
 
+                $reply_mms = false;
+                if ($keyword->reply_mms) {
+                    $reply_mms = true;
+                }
 
-                $nestedData['uid']          = $keyword->uid;
-                $nestedData['title']        = $keyword->title;
-                $nestedData['keyword_name'] = $keyword->keyword_name;
-                $nestedData['price']        = "<div>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $keyword->uid;
+                $nestedData['title']         = $keyword->title;
+                $nestedData['keyword_name']  = $keyword->keyword_name;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($keyword->price, $keyword->currency->format)." </p>
                                                         <p class='text-muted'>".$keyword->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['status']       = $status;
-                $nestedData['action']       = $action_url;
-                $data[]                     = $nestedData;
+                $nestedData['status']        = $status;
+                $nestedData['is_assigned']   = $is_assigned;
+
+                $nestedData['reply_mms']   = $reply_mms;
+                $nestedData['remove_mms']  = __('locale.buttons.remove_mms');
+                $nestedData['show_label']  = __('locale.buttons.edit');
+                $nestedData['show']        = route('customer.keywords.show', $keyword->uid);
+                $nestedData['renew_label'] = __('locale.labels.renew');
+                $nestedData['renew']       = route('customer.keywords.pay', $keyword->uid);
+                $nestedData['release']     = __('locale.labels.release');
+                $data[]                    = $nestedData;
 
             }
         }
@@ -189,11 +190,13 @@ class KeywordController extends CustomerBaseController
         $this->authorize('buy_keywords');
 
         $columns = [
-                0 => 'uid',
-                1 => 'title',
-                2 => 'keyword_name',
-                4 => 'price',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'title',
+                4 => 'keyword_name',
+                5 => 'price',
+                6 => 'actions',
         ];
 
         $totalData = Keywords::where('status', 'available')->count();
@@ -225,17 +228,18 @@ class KeywordController extends CustomerBaseController
         $data = [];
         if ( ! empty($keywords)) {
             foreach ($keywords as $keyword) {
-                $checkout = route('customer.keywords.pay', $keyword->uid);
 
-                $nestedData['uid']          = null;
-                $nestedData['title']        = $keyword->title;
-                $nestedData['keyword_name'] = $keyword->keyword_name;
-                $nestedData['price']        = "<div>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $keyword->uid;
+                $nestedData['title']         = $keyword->title;
+                $nestedData['buy']           = __('locale.labels.buy');
+                $nestedData['keyword_name']  = $keyword->keyword_name;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($keyword->price, $keyword->currency->format)." </p>
                                                         <p class='text-muted'>".$keyword->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['action']       = "<a href='$checkout' class='text-primary mr-1'><i class='feather us-2x icon-shopping-bag' ></i>".__('locale.labels.buy')."</a>";
-                $data[]                     = $nestedData;
+                $nestedData['checkout']      = route('customer.keywords.pay', $keyword->uid);
+                $data[]                      = $nestedData;
 
             }
         }
@@ -274,8 +278,8 @@ class KeywordController extends CustomerBaseController
         ];
 
         if (Auth::user()->customer->getOption('sender_id_verification') == 'yes') {
-            $sender_ids    = Senderid::where('user_id', auth()->user()->id)->cursor();
-            $phone_numbers = PhoneNumbers::where('user_id', auth()->user()->id)->cursor();
+            $sender_ids    = Senderid::where('user_id', auth()->user()->id)->where('status', 'active')->cursor();
+            $phone_numbers = PhoneNumbers::where('user_id', auth()->user()->id)->where('status', 'assigned')->cursor();
         } else {
             $sender_ids    = null;
             $phone_numbers = null;
@@ -434,7 +438,7 @@ class KeywordController extends CustomerBaseController
 
         $payment_methods = PaymentMethods::where('status', true)->cursor();
 
-        return view('customer.Keywords.checkout', compact('breadcrumbs', 'pageConfigs', 'keyword', 'payment_methods'));
+        return view('customer.keywords.checkout', compact('breadcrumbs', 'pageConfigs', 'keyword', 'payment_methods'));
     }
 
 
@@ -451,55 +455,47 @@ class KeywordController extends CustomerBaseController
 
         $data = $this->keywords->payPayment($keyword, $request->except('_token'));
 
-        if (isset($data)) {
+        if ($data->getData()->status == 'success') {
 
-            if ($data->getData()->status == 'success') {
-
-                if ($request->payment_methods == 'braintree') {
-                    return view('customer.Payments.braintree', [
-                            'token'    => $data->getData()->token,
-                            'keyword'  => $keyword,
-                            'post_url' => route('customer.keywords.braintree', $keyword->uid),
-                    ]);
-                }
-
-                if ($request->payment_methods == 'stripe') {
-                    return view('customer.Payments.stripe', [
-                            'session_id'      => $data->getData()->session_id,
-                            'publishable_key' => $data->getData()->publishable_key,
-                            'keyword'         => $keyword,
-                    ]);
-                }
-
-                if ($request->payment_methods == 'authorize_net') {
-
-                    $months = [1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'];
-
-                    return view('customer.Payments.authorize_net', [
-                            'months'   => $months,
-                            'keyword'  => $keyword,
-                            'post_url' => route('customer.keywords.authorize_net', $keyword->uid),
-                    ]);
-                }
-
-                if ($request->payment_methods == 'offline_payment') {
-                    return view('customer.Payments.offline', [
-                            'data' => $data->getData()->data,
-                    ]);
-                }
-
-                return redirect()->to($data->getData()->redirect_url);
+            if ($request->payment_methods == 'braintree') {
+                return view('customer.Payments.braintree', [
+                        'token'    => $data->getData()->token,
+                        'keyword'  => $keyword,
+                        'post_url' => route('customer.keywords.braintree', $keyword->uid),
+                ]);
             }
 
-            return redirect()->route('customer.keywords.pay', $keyword->uid)->with([
-                    'status'  => 'error',
-                    'message' => $data->getData()->message,
-            ]);
+            if ($request->payment_methods == 'stripe') {
+                return view('customer.Payments.stripe', [
+                        'session_id'      => $data->getData()->session_id,
+                        'publishable_key' => $data->getData()->publishable_key,
+                        'keyword'         => $keyword,
+                ]);
+            }
+
+            if ($request->payment_methods == 'authorize_net') {
+
+                $months = [1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun', 7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'];
+
+                return view('customer.Payments.authorize_net', [
+                        'months'   => $months,
+                        'keyword'  => $keyword,
+                        'post_url' => route('customer.keywords.authorize_net', $keyword->uid),
+                ]);
+            }
+
+            if ($request->payment_methods == 'offline_payment') {
+                return view('customer.Payments.offline', [
+                        'data' => $data->getData()->data,
+                ]);
+            }
+
+            return redirect()->to($data->getData()->redirect_url);
         }
 
         return redirect()->route('customer.keywords.pay', $keyword->uid)->with([
                 'status'  => 'error',
-                'message' => __('locale.exceptions.something_went_wrong'),
+                'message' => $data->getData()->message,
         ]);
 
     }

@@ -38,14 +38,14 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => null,
+            'retry_after' => 3600,
         ],
 
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => 'localhost',
             'queue' => 'default',
-            'retry_after' => 600,
+            'retry_after' => 9000,
             'block_for' => 0,
         ],
 

@@ -60,7 +60,7 @@ class AppConfig extends Model
                 ],
                 [
                         'setting' => 'from_email',
-                        'value'   => 'info@arabcode.online',
+                        'value'   => 'akasham67@gmail.com',
                 ],
                 [
                         'setting' => 'from_name',
@@ -244,7 +244,7 @@ class AppConfig extends Model
                 ],
                 [
                         'setting' => 'notification_email',
-                        'value'   => 'info@arabcode.online',
+                        'value'   => 'akasham67@gmail.com',
                 ],
                 [
                         'setting' => 'sender_id_notification_email',
@@ -364,11 +364,7 @@ class AppConfig extends Model
         $file_path = base_path('.env');
         $data      = file($file_path);
         $data      = array_map(function ($data) use ($key, $value) {
-            if (stristr($value, ' ')) {
-                return stristr($data, $key) ? "$key=\"$value\"\n" : $data;
-            } else {
-                return stristr($data, $key) ? "$key=$value\n" : $data;
-            }
+            return stristr($data, $key) ? "$key=\"$value\"\n" : $data;
         }, $data);
 
         // Write file

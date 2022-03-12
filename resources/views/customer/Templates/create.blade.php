@@ -33,9 +33,9 @@
                                     <div class="row">
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="name" class="required">{{ __('locale.labels.name') }}</label>
-                                                <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name',  isset($template->name) ? $template->name : null) }}" name="name" required placeholder="{{__('locale.labels.required')}}" autofocus>
+                                            <div class="mb-1">
+                                                <label for="name" class="form-label required">{{ __('locale.labels.name') }}</label>
+                                                <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name',  $template->name ?? null) }}" name="name" required placeholder="{{__('locale.labels.required')}}" autofocus>
                                                 @error('name')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -46,9 +46,9 @@
 
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label>{{__('locale.labels.available_tag')}}</label>
-                                                <select class="form-control select2" id="available_tag">
+                                            <div class="mb-1">
+                                                <label class="form-label">{{__('locale.labels.available_tag')}}</label>
+                                                <select class="form-select select2" id="available_tag">
                                                     <option value="phone">{{ __('locale.labels.phone') }}</option>
                                                     <option value="first_name">{{ __('locale.labels.first_name') }}</option>
                                                     <option value="last_name">{{ __('locale.labels.last_name') }}</option>
@@ -70,12 +70,12 @@
 
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="text_message" class="required">{{__('locale.labels.message')}}</label>
-                                                <textarea class="form-control" name="message" rows="5" id="text_message">{{ old('message',  isset($template->message) ? $template->message : null) }}</textarea>
+                                            <div class="mb-1">
+                                                <label for="message" class="form-label required">{{__('locale.labels.message')}}</label>
+                                                <textarea class="form-control" name="message" rows="5" id="message">{{ old('message',  $template->message ?? null) }}</textarea>
 
                                                 <small class="text-primary text-uppercase" id="remaining">160 {{ __('locale.labels.characters_remaining') }}</small>
-                                                <small class="text-primary text-uppercase pull-right" id="messages">1 {{ __('locale.labels.message') }} (s)</small>
+                                                <small class="text-primary text-uppercase float-end" id="messages">1 {{ __('locale.labels.message') }} (s)</small>
                                                 @error('message')
                                                 <div class="invalid-feedback">
                                                     {{ $message }}
@@ -86,8 +86,8 @@
 
 
                                         <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-save"></i> {{ __('locale.buttons.save') }}</button>
-                                            <button type="reset" class="btn btn-outline-warning mr-1 mb-1"><i class="feather icon-refresh-cw"></i> {{ __('locale.buttons.reset') }}</button>
+                                            <button type="submit" class="btn btn-primary me-1 mb-1"><i data-feather="save"></i> {{ __('locale.buttons.save') }}</button>
+                                            <button type="reset" class="btn btn-outline-warning mb-1"><i data-feather="refresh-cw"></i> {{ __('locale.buttons.reset') }}</button>
                                         </div>
 
                                     </div>
@@ -109,16 +109,43 @@
 @endsection
 
 @section('page-script')
-
+    <script src="{{ asset(mix('js/scripts/sms-counter.js')) }}"></script>
     <script>
         $(document).ready(function () {
-            let $get_msg = $("#text_message"),
-                maxCharInitial = 160,
-                maxChar = 157,
-                messages = 1,
-                $remaining = $('#remaining'),
+
+            // Basic Select2 select
+            $(".select2").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
+            });
+
+
+            let $remaining = $('#remaining'),
                 $messages = $remaining.next(),
-                merge_state = $('#available_tag');
+                $get_msg = $("#message"),
+                merge_state = $('#available_tag'),
+                firstInvalid = $('form').find('.is-invalid').eq(0);
+
+            if (firstInvalid.length) {
+                $('body, html').stop(true, true).animate({
+                    'scrollTop': firstInvalid.offset().top - 200 + 'px'
+                }, 200);
+            }
+
+            function get_character() {
+                if ($get_msg[0].value !== null) {
+                    let data = SmsCounter.count($get_msg[0].value, true);
+                    $remaining.text(data.remaining + " {!! __('locale.labels.characters_remaining') !!}");
+                    $messages.text(data.messages + " {!! __('locale.labels.message') !!}" + '(s)');
+                }
+            }
 
             merge_state.on('change', function () {
                 const caretPos = $get_msg[0].selectionStart;
@@ -129,46 +156,9 @@
                 }
 
                 $get_msg.val(textAreaTxt.substring(0, caretPos) + txtToAdd + textAreaTxt.substring(caretPos));
-
-                get_character();
             });
-
-            function get_character() {
-                let totalChar = $get_msg[0].value.length;
-                let remainingChar;
-
-                if (totalChar <= maxCharInitial) {
-                    remainingChar = maxCharInitial - totalChar;
-                    messages = 1;
-                } else {
-                    totalChar = totalChar - maxCharInitial;
-                    messages = Math.ceil(totalChar / maxChar);
-                    remainingChar = messages * maxChar - totalChar;
-                    messages = messages + 1;
-                }
-
-                $remaining.text(remainingChar + " {!! __('locale.labels.characters_remaining')!!}");
-                $messages.text(messages + " {!! __('locale.labels.message') !!}" + '(s)');
-            }
-
-            $(".select2").select2({
-                dropdownAutoWidth: true,
-                width: '100%',
-                theme: "classic"
-            });
-
-            let firstInvalid = $('form').find('.is-invalid').eq(0);
-
-            if (firstInvalid.length) {
-                $('body, html').stop(true, true).animate({
-                    'scrollTop': firstInvalid.offset().top - 200 + 'px'
-                }, 200);
-            }
 
             $get_msg.keyup(get_character);
-
         });
-
-
     </script>
 @endsection

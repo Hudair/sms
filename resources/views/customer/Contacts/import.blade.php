@@ -2,24 +2,6 @@
 
 @section('title', __('locale.contacts.import_contact'))
 
-@section('page-style')
-    <style>
-        input[type=radio] {
-            box-sizing: border-box;
-            padding: 0;
-            position: absolute;
-            pointer-events: none;
-            clip: rect(0, 0, 0, 0);
-        }
-
-        label.active.btn {
-            color: #ffffff !important;
-            background-color: #7E57C2 !important;
-            border-color: #7E57C2 !important;
-        }
-    </style>
-@endsection
-
 @section('content')
     <!-- Basic Vertical form layout section start -->
     <section id="basic-vertical-layouts">
@@ -39,11 +21,10 @@
                                 <div class="row">
 
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <div class='custom-control custom-switch switch-lg-us custom-switch-primary'>
-                                                <input type="checkbox" class="custom-control-input" name="option_toggle"
-                                                       id="option_toggle" checked>
-                                                <label class="custom-control-label" for="option_toggle">
+                                        <div class="mb-1">
+                                            <div class='form-check form-switch form-check-primary form-switch-xl'>
+                                                <input type="checkbox" class="form-check-input" name="option_toggle" id="option_toggle" checked>
+                                                <label class="form-check-label" for="option_toggle">
                                                     <span class="switch-text-left">{{__('locale.labels.import_file')}}</span>
                                                     <span class="switch-text-right">{{__('locale.labels.paste_text')}}</span>
                                                 </label>
@@ -52,19 +33,17 @@
 
                                         <div class="import_file">
 
-                                            <div class="form-group">
+                                            <div class="mb-1 mt-2">
                                                 <p class="text-uppercase">{{ __('locale.labels.sample_file') }}</p>
-                                                <a href="{{route('sample.file')}}"
-                                                   class="btn btn-primary px-1 py-1 waves-effect waves-light btn-md text-bold-500"><i
-                                                            class="feather icon-file-text"></i> {{ __('locale.labels.download_sample_file') }}
+                                                <a href="{{route('sample.file')}}" class="btn btn-primary fw-bold text-uppercase">
+                                                    <i data-feather="file-text"></i> {{ __('locale.labels.download_sample_file') }}
                                                 </a>
 
                                             </div>
-                                            <div class="form-group">
-                                                <label for="import_file">{{ __('locale.labels.import_file') }}</label>
+                                            <div class="mb-1">
+                                                <label for="import_file" class="form-label">{{ __('locale.labels.import_file') }}</label>
                                                 <div class="us-file-zone us-clickable">
-                                                    <input type="file" name="import_file" class="us-file upload-file"
-                                                           id="import_file" accept="text/csv">
+                                                    <input type="file" name="import_file" class="us-file upload-file" id="import_file" accept="text/csv">
                                                     <div class="us-file-message">{{__('locale.filezone.click_here_to_upload')}}
                                                     </div>
                                                     <div class="us-file-footer">
@@ -81,64 +60,48 @@
                                             </div>
 
 
-                                            <div class="form-group">
-                                                <div class="vs-checkbox-con vs-checkbox-primary">
-                                                    <input type="checkbox" checked value="true" name="header">
-                                                    <span class="vs-checkbox vs-checkbox-lg">
-                                                        <span class="vs-checkbox--check">
-                                                            <i class="vs-icon feather icon-check"></i>
-                                                        </span>
-                                                    </span>
-                                                    <span class="">{{ __('locale.filezone.file_contains_header_row') }}?</span>
+                                            <div class="mb-1">
+                                                <div class="form-check me-3 me-lg-5">
+                                                    <input type="checkbox" checked value="true" name="header" class="form-check-input">
+                                                    <label class="form-check-label">{{ __('locale.filezone.file_contains_header_row') }}?</label>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="paste_text">
 
-                                            <div class="form-group">
-                                                <label for="recipients">{{ __('locale.labels.paste_text') }}</label>
-                                                <span class="text-uppercase pull-right">{{ __('locale.labels.total_number_of_recipients') }}:
-                                                    <span class="number_of_recipients bold text-success m-r-5">0</span></span>
+                                            <div class="mb-1">
+                                                <label for="recipients" class="form-label">{{ __('locale.labels.paste_text') }}</label>
+                                                <span class="text-uppercase float-end">{{ __('locale.labels.total_number_of_recipients') }}:
+                                                    <span class="number_of_recipients bold text-success me-5">0</span></span>
                                                 <textarea class="form-control" id="recipients" name="recipients" rows="6"></textarea>
                                                 <p><small class="text-primary">{!! __('locale.description.paste_text') !!} {!! __('locale.contacts.include_country_code_for_successful_import') !!}</small></p>
                                             </div>
 
-                                            <div class="form-group">
-                                                <label for="delimiter">{{ __('locale.labels.choose_delimiter') }}</label><br>
-                                                <div class="btn-group btn-group-sm" data-toggle="buttons">
+                                            <div class="mb-1">
+                                                <div class="btn-group btn-group-sm recipients" role="group">
+                                                    <input type="radio" class="btn-check" name="delimiter" value="," id="comma" autocomplete="off" checked/>
+                                                    <label class="btn btn-outline-primary" for="comma">, ({{ __('locale.labels.comma') }})</label>
 
-                                                    <label class="btn btn-outline-primary active">
-                                                        <input type="radio" name="delimiter" value="," checked>,
-                                                        ({{ __('locale.labels.comma') }})
-                                                    </label>
+                                                    <input type="radio" class="btn-check" name="delimiter" value=";" id="semicolon" autocomplete="off"/>
+                                                    <label class="btn btn-outline-primary" for="semicolon">; ({{ __('locale.labels.semicolon') }})</label>
 
-                                                    <label class="btn btn-outline-primary">
-                                                        <input type="radio" name="delimiter" value=";">;
-                                                        ({{ __('locale.labels.semicolon') }})
-                                                    </label>
+                                                    <input type="radio" class="btn-check" name="delimiter" value="|" id="bar" autocomplete="off"/>
+                                                    <label class="btn btn-outline-primary" for="bar">| ({{ __('locale.labels.bar') }})</label>
 
-                                                    <label class="btn btn-outline-primary">
-                                                        <input type="radio" name="delimiter" value="|">|
-                                                        ({{ __('locale.labels.bar') }})
-                                                    </label>
+                                                    <input type="radio" class="btn-check" name="delimiter" value="tab" id="tab" autocomplete="off"/>
+                                                    <label class="btn btn-outline-primary" for="tab">{{ __('locale.labels.tab') }}</label>
 
-                                                    <label class="btn btn-outline-primary">
-                                                        <input type="radio" name="delimiter" value="tab">{{__('locale.labels.tab')}}
-                                                    </label>
-
-                                                    <label class="btn btn-outline-primary">
-                                                        <input type="radio" name="delimiter" value="new_line">{{ __('locale.labels.new_line') }}
-                                                    </label>
-
-                                                    @error('delimiter')
-                                                    <div class="invalid-feedback">
-                                                        {{ $message }}
-                                                    </div>
-                                                    @enderror
+                                                    <input type="radio" class="btn-check" name="delimiter" value="new_line" id="new_line" autocomplete="off"/>
+                                                    <label class="btn btn-outline-primary" for="new_line">{{ __('locale.labels.new_line') }}</label>
 
                                                 </div>
+
+                                                @error('delimiter')
+                                                <p><small class="text-danger">{{ $message }}</small></p>
+                                                @enderror
                                             </div>
+
                                         </div>
 
 
@@ -147,8 +110,8 @@
 
                                 <div class="row">
                                     <div class="col-12">
-                                        <button type="submit" class="btn btn-primary mr-1 mb-1">
-                                            <i class="feather icon-save"></i> {{__('locale.buttons.save')}}
+                                        <button type="submit" class="btn btn-primary mt-2 mb-1">
+                                            <i data-feather="save"></i> {{__('locale.buttons.save')}}
                                         </button>
                                     </div>
                                 </div>

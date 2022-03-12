@@ -1,19 +1,22 @@
-<div id="data-list-view" class="data-list-view-header invoices ml-1">
-    {{-- DataTable starts --}}
-    <div class="table-responsive">
-        <table class="table data-list-view">
-            <thead>
-            <tr>
-                <th>{{__('locale.labels.date')}}</th>
-                <th>{{__('locale.labels.invoice_number')}} </th>
-                <th>{{__('locale.labels.type')}}</th>
-                <th>{{__('locale.labels.details')}}</th>
-                <th>{{__('locale.labels.amount')}}</th>
-                <th>{{__('locale.labels.status')}}</th>
-                <th></th>
-            </tr>
-            </thead>
-        </table>
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <table class="table datatables-basic">
+                <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th>{{ __('locale.labels.id') }}</th>
+                    <th>#</th>
+                    <th>{{__('locale.labels.date')}}</th>
+                    <th>{{__('locale.labels.type')}}</th>
+                    <th>{{__('locale.labels.details')}}</th>
+                    <th>{{__('locale.labels.amount')}}</th>
+                    <th>{{__('locale.labels.status')}}</th>
+                    <th></th>
+                </tr>
+                </thead>
+            </table>
+        </div>
     </div>
-    {{-- DataTable ends --}}
 </div>

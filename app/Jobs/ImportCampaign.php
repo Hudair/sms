@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Library\SMSCounter;
 use App\Library\Tool;
 use App\Models\Campaigns;
 use App\Models\User;
@@ -12,6 +13,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberUtil;
+use Throwable;
 
 class ImportCampaign implements ShouldQueue
 {
@@ -49,6 +53,7 @@ class ImportCampaign implements ShouldQueue
      * Execute the job.
      *
      * @return void
+     * @throws NumberParseException
      */
     public function handle()
     {
@@ -72,23 +77,6 @@ class ImportCampaign implements ShouldQueue
 
         $cost       = 0;
         $total_unit = 0;
-
-        if ($campaign->sms_type == 'plain' || $campaign->sms_type == 'unicode') {
-            $cost = $user->customer->getOption('plain_sms');
-        }
-
-        if ($campaign->sms_type == 'voice') {
-            $cost = $user->customer->getOption('voice_sms');
-        }
-
-        if ($campaign->sms_type == 'mms') {
-            $cost = $user->customer->getOption('mms_sms');
-        }
-
-        if ($campaign->sms_type == 'whatsapp') {
-            $cost = $user->customer->getOption('whatsapp_sms');
-        }
-
 
         if ($cutting_system == 'yes') {
             $cutting_value = $user->customer->getOption('cutting_value');
@@ -118,10 +106,12 @@ class ImportCampaign implements ShouldQueue
 
         $key = 0;
 
-        collect($cutting_array)->chunk(1000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, $campaign, $db_fields, $user, &$key, &$total_unit) {
+        $sending_server = $campaign->getSendingServers();
+        $coverage       = $campaign->getCoverage();
 
-            $sending_server = $campaign->pickSendingServer();
-            $sender_id      = $campaign->pickSenderIds();
+        collect($cutting_array)->chunk(1000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, $campaign, $db_fields, $user, &$key, &$total_unit, $sending_server, $coverage) {
+
+            $sender_id = $campaign->pickSenderIds();
 
             foreach ($lines as $line) {
                 $data = array_combine($db_fields, $line);
@@ -133,59 +123,76 @@ class ImportCampaign implements ShouldQueue
 
                 $sms_type = $campaign->sms_type;
 
-                if ($sms_type == 'plain') {
-                    if (strlen($message) != strlen(utf8_decode($message))) {
-                        $sms_type = 'unicode';
+                $phoneUtil         = PhoneNumberUtil::getInstance();
+                $phoneNumberObject = $phoneUtil->parse('+'.$data['phone']);
+                $country_code      = $phoneNumberObject->getCountryCode();
+
+                if (is_array($coverage) && array_key_exists($country_code, $coverage)) {
+                    if ($sms_type == 'plain' || $sms_type == 'unicode') {
+                        $cost = $coverage[$country_code]['plain_sms'];
                     }
 
-                    if ($sms_type == 'unicode') {
-                        $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
+                    if ($sms_type == 'voice') {
+                        $cost = $coverage[$country_code]['voice_sms'];
+                    }
 
-                        if ($length_count <= 70) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 67;
+                    if ($sms_type == 'mms') {
+                        $cost = $coverage[$country_code]['mms_sms'];
+                    }
+
+                    if ($sms_type == 'whatsapp') {
+                        $cost = $coverage[$country_code]['whatsapp_sms'];
+                    }
+
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    if ($sms_type == 'plain') {
+                        if ($message_data->encoding == 'UTF16') {
+                            $sms_type = 'unicode';
                         }
-                    } else {
-                        $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                        if ($length_count <= 160) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 157;
-                        }
                     }
-                } elseif ($sms_type == 'unicode') {
-                    $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
 
-                    if ($length_count <= 70) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 67;
-                    }
+                    $sms_price  = $cost * $sms_count;
+                    $total_unit += (int) $sms_price;
+
+                    $key++;
+
+
+                    $preparedData['id']        = $key;
+                    $preparedData['user_id']   = $user->id;
+                    $preparedData['phone']     = $data['phone'];
+                    $preparedData['sender_id'] = $sender_id;
+                    $preparedData['message']   = $message;
+                    $preparedData['sms_type']  = $sms_type;
+                    $preparedData['cost']      = (int) $sms_price;
+                    $preparedData['status']    = 'Delivered';
                 } else {
-                    $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                    if ($length_count <= 160) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 157;
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    if ($sms_type == 'plain') {
+                        if ($message_data->encoding == 'UTF16') {
+                            $sms_type = 'unicode';
+                        }
                     }
+
+                    $sms_price  = 1 * $sms_count;
+                    $total_unit += (int) $sms_price;
+
+                    $key++;
+
+                    $preparedData['id']        = $key;
+                    $preparedData['user_id']   = $user->id;
+                    $preparedData['phone']     = $data['phone'];
+                    $preparedData['sender_id'] = $sender_id;
+                    $preparedData['message']   = $message;
+                    $preparedData['sms_type']  = $sms_type;
+                    $preparedData['cost']      = (int) $sms_price;
+                    $preparedData['status']    = "Permission to send an SMS has not been enabled for the region indicated by the 'To' number: ".$data['phone'];
                 }
-
-                $sms_count  = ceil($sms_count);
-                $sms_price  = $cost * $sms_count;
-                $total_unit += (int) $sms_price;
-
-                $key++;
-
-
-                $preparedData['id']             = $key;
-                $preparedData['user_id']        = $user->id;
-                $preparedData['phone']          = $data['phone'];
-                $preparedData['sender_id']      = $sender_id;
-                $preparedData['message']        = $message;
-                $preparedData['sms_type']       = $sms_type;
-                $preparedData['cost']           = (int) $sms_price;
-                $preparedData['status']         = 'Delivered';
                 $preparedData['campaign_id']    = $campaign->id;
                 $preparedData['sending_server'] = $sending_server;
 
@@ -193,70 +200,90 @@ class ImportCampaign implements ShouldQueue
             }
         });
 
-        collect($insertData)->chunk(5000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, $campaign, $db_fields, $user, &$key, &$total_unit) {
+        collect($insertData)->chunk(1000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, $campaign, $db_fields, $user, &$key, &$total_unit, $sending_server, $coverage) {
 
-            $sending_server = $campaign->pickSendingServer();
-            $sender_id      = $campaign->pickSenderIds();
+            $sender_id = $campaign->pickSenderIds();
 
             foreach ($lines as $line) {
-                $data     = array_combine($db_fields, $line);
-                $message  = $data['message'];
-                $sms_type = $campaign->sms_type;
+                $data = array_combine($db_fields, $line);
 
-
-                if ($sms_type == 'plain') {
-                    if (strlen($message) != strlen(utf8_decode($message))) {
-                        $sms_type = 'unicode';
-                    }
-
-                    if ($sms_type == 'unicode') {
-                        $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
-
-                        if ($length_count <= 70) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 67;
-                        }
-                    } else {
-                        $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                        if ($length_count <= 160) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 157;
-                        }
-                    }
-                } elseif ($sms_type == 'unicode') {
-                    $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
-
-                    if ($length_count <= 70) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 67;
-                    }
-                } else {
-                    $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                    if ($length_count <= 160) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 157;
-                    }
+                $message = null;
+                if (isset($data['message'])) {
+                    $message = $data['message'];
                 }
 
-                $sms_count = ceil($sms_count);
-                $sms_price = $cost * $sms_count;
+                $sms_type = $campaign->sms_type;
 
-                $total_unit += (int) $sms_price;
-                $key++;
+                $phoneUtil         = PhoneNumberUtil::getInstance();
+                $phoneNumberObject = $phoneUtil->parse('+'.$data['phone']);
+                $country_code      = $phoneNumberObject->getCountryCode();
+
+                if (is_array($coverage) && array_key_exists($country_code, $coverage)) {
+                    if ($sms_type == 'plain' || $sms_type == 'unicode') {
+                        $cost = $coverage[$country_code]['plain_sms'];
+                    }
+
+                    if ($sms_type == 'voice') {
+                        $cost = $coverage[$country_code]['voice_sms'];
+                    }
+
+                    if ($sms_type == 'mms') {
+                        $cost = $coverage[$country_code]['mms_sms'];
+                    }
+
+                    if ($sms_type == 'whatsapp') {
+                        $cost = $coverage[$country_code]['whatsapp_sms'];
+                    }
+
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    if ($sms_type == 'plain') {
+                        if ($message_data->encoding == 'UTF16') {
+                            $sms_type = 'unicode';
+                        }
+                    }
+
+                    $sms_price  = $cost * $sms_count;
+                    $total_unit += (int) $sms_price;
+
+                    $key++;
 
 
-                $preparedData['id']             = $key;
-                $preparedData['user_id']        = $user->id;
-                $preparedData['phone']          = $data['phone'];
-                $preparedData['sender_id']      = $sender_id;
-                $preparedData['message']        = $message;
-                $preparedData['sms_type']       = $sms_type;
-                $preparedData['cost']           = (int) $sms_price;
-                $preparedData['status']         = null;
+                    $preparedData['id']        = $key;
+                    $preparedData['user_id']   = $user->id;
+                    $preparedData['phone']     = $data['phone'];
+                    $preparedData['sender_id'] = $sender_id;
+                    $preparedData['message']   = $message;
+                    $preparedData['sms_type']  = $sms_type;
+                    $preparedData['cost']      = (int) $sms_price;
+                    $preparedData['status']    = null;
+                } else {
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    if ($sms_type == 'plain') {
+                        if ($message_data->encoding == 'UTF16') {
+                            $sms_type = 'unicode';
+                        }
+                    }
+
+                    $sms_price  = 1 * $sms_count;
+                    $total_unit += (int) $sms_price;
+
+                    $key++;
+
+                    $preparedData['id']        = $key;
+                    $preparedData['user_id']   = $user->id;
+                    $preparedData['phone']     = $data['phone'];
+                    $preparedData['sender_id'] = $sender_id;
+                    $preparedData['message']   = $message;
+                    $preparedData['sms_type']  = $sms_type;
+                    $preparedData['cost']      = (int) $sms_price;
+                    $preparedData['status']    = "Permission to send an SMS has not been enabled for the region indicated by the 'To' number: ".$data['phone'];
+                }
                 $preparedData['campaign_id']    = $campaign->id;
                 $preparedData['sending_server'] = $sending_server;
 
@@ -264,16 +291,18 @@ class ImportCampaign implements ShouldQueue
             }
         });
 
-        if ($total_unit > $user->sms_unit) {
+        if ($user->sms_unit != '-1' && $total_unit > $user->sms_unit) {
             $campaign->failed(sprintf("Campaign `%s` (%s) halted, customer exceeds sms credit", $campaign->campaign_name, $campaign->uid));
             sleep(60);
         } else {
             try {
                 $failed_cost = 0;
 
-                $user->update([
-                        'sms_unit' => $user->sms_unit - $total_unit,
-                ]);
+                if ($user->sms_unit != '-1') {
+                    $user->update([
+                            'sms_unit' => $user->sms_unit - $total_unit,
+                    ]);
+                }
 
                 $campaign->processing();
 
@@ -312,9 +341,11 @@ class ImportCampaign implements ShouldQueue
                 unset($user);
                 $user = User::find($this->customer_id);
 
-                $user->update([
-                        'sms_unit' => $user->sms_unit + $failed_cost,
-                ]);
+                if ($user->sms_unit != '-1') {
+                    $user->update([
+                            'sms_unit' => $user->sms_unit + $failed_cost,
+                    ]);
+                }
 
                 $campaign->delivered();
 
@@ -322,7 +353,17 @@ class ImportCampaign implements ShouldQueue
                 $campaign->failed($exception->getMessage());
             } finally {
                 $campaign::resetServerPools();
+                $campaign->delivered();
             }
         }
+    }
+
+    /**
+     * @param  Throwable  $exception
+     */
+    public function failed(Throwable $exception)
+    {
+        $campaign = Campaigns::find($this->campaign_id);
+        $campaign->failed($exception->getMessage());
     }
 }

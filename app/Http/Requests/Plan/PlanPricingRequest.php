@@ -25,14 +25,6 @@ class PlanPricingRequest extends FormRequest
     {
         return [
                 'per_unit_price'       => 'required|min:0',
-                'plain_sms'            => 'required|integer|min:0',
-                'receive_plain_sms'    => 'required|integer|min:0',
-                'voice_sms'            => 'required|integer|min:0',
-                'receive_voice_sms'    => 'required|integer|min:0',
-                'mms_sms'              => 'required|integer|min:0',
-                'receive_mms_sms'      => 'required|integer|min:0',
-                'whatsapp_sms'         => 'required|integer|min:0',
-                'receive_whatsapp_sms' => 'required|integer|min:0',
         ];
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property mixed        subscription_id
  * @property mixed|string status
  * @method static where(string $string, string $uid)
+ * @method static insert(array[] $subscriptionTransaction)
  */
 class SubscriptionTransaction extends Model
 {

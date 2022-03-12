@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static offset(mixed $start)
  * @method static count()
  * @method static whereIn(string $string, mixed $ids)
+ * @method static insert(array[] $invoices)
  */
 class Invoices extends Model
 {
@@ -116,7 +117,7 @@ class Invoices extends Model
      */
     public function getStatus(): string
     {
-        return '<div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.paid').'</span></div>';
+        return '<span class="badge rounded-pill badge-light-success text-capitalize mr-1 mb-1">'.__('locale.labels.paid').'</span>';
     }
 
     public function scopeCurrentMonth($query)

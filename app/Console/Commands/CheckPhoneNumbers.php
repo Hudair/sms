@@ -37,7 +37,7 @@ class CheckPhoneNumbers extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
 
         $phoneNumbers = PhoneNumbers::where('status', 'assigned')->where('validity_date', "<", Carbon::now()->endOfDay())->cursor();

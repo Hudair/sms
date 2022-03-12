@@ -27,8 +27,8 @@
                                 <div class="row">
 
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="subject" class="required">{{ __('locale.labels.subject') }}</label>
+                                        <div class="mb-1">
+                                            <label for="subject" class="form-label required">{{ __('locale.labels.subject') }}</label>
                                             <input type="text" id="subject" class="form-control @error('subject') is-invalid @enderror" value="{{ $template->subject  }}" name="subject" required>
                                             @error('subject')
                                             <div class="invalid-feedback">
@@ -39,8 +39,8 @@
                                     </div>
 
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="message" class="required">{{ __('locale.labels.message') }}</label>
+                                        <div class="mb-1">
+                                            <label for="message" class="form-label required">{{ __('locale.labels.message') }}</label>
                                             @include('plugins.editor', ['content' => $template->content])
                                             <textarea name="content" style="display:none" id="hiddenArea"></textarea>
                                         </div>
@@ -48,7 +48,7 @@
 
 
                                     <div class="col-12 mt-2">
-                                        <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-save"></i> {{ __('locale.buttons.save') }}</button>
+                                        <button type="submit" class="btn btn-primary mr-1 mb-1"><i data-feather="save"></i> {{ __('locale.buttons.save') }}</button>
                                     </div>
 
                                 </div>

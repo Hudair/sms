@@ -1,60 +1,92 @@
+@php
+    $configData = Helper::applClasses();
+@endphp
+
 @extends('layouts/fullLayoutMaster')
 
 @section('title', __('locale.auth.forgot_password'))
 
 @section('page-style')
-{{-- Page Css files --}}
-<link rel="stylesheet" href="{{ asset(mix('css/pages/authentication.css')) }}">
+    {{-- Page Css files --}}
+    <link rel="stylesheet" href="{{ asset(mix('css/base/pages/authentication.css')) }}">
 @endsection
+
 @section('content')
-<section class="row flexbox-container">
-  <div class="col-xl-7 col-md-9 col-10 d-flex justify-content-center px-0">
-    <div class="card bg-authentication rounded-0 mb-0">
-      <div class="row m-0">
-        <div class="col-lg-6 d-lg-block d-none text-center align-self-center">
-          <img src="{{ asset('images/pages/forgot-password.png') }}" alt="branding logo">
-        </div>
-        <div class="col-lg-6 col-12 p-0">
-          <div class="card rounded-0 mb-0 px-2 py-1">
-            <div class="card-header pb-1">
-              <div class="card-title">
-                <h4 class="mb-0">{{ __('locale.auth.recover_your_password') }}</h4>
-              </div>
+
+    <div class="auth-wrapper auth-cover">
+        <div class="auth-inner row m-0">
+            <!-- Brand logo-->
+            <a class="brand-logo" href="{{route('login')}}">
+                <img src="{{asset(config('app.logo'))}}" alt="{{config('app.name')}}"/>
+            </a>
+            <!-- /Brand logo-->
+
+
+            <!-- Left Text-->
+            <div class="d-none d-lg-flex col-lg-8 align-items-center p-5">
+                <div class="w-100 d-lg-flex align-items-center justify-content-center px-5">
+                    @if($configData['theme'] === 'dark')
+                        <img class="img-fluid" src="{{asset('images/pages/forgot-password-v2-dark.svg')}}" alt="{{config('app.name')}}"/>
+                    @else
+                        <img class="img-fluid" src="{{asset('images/pages/forgot-password-v2.svg')}}" alt="{{config('app.name')}}"/>
+                    @endif
+                </div>
             </div>
-            <p class="px-2 mb-0">{{ __('locale.auth.recover_password_instructions') }}</p>
-            <div class="card-content">
-              <div class="card-body">
+            <!-- /Left Text-->
 
-                <form method="POST" action="{{ route('password.email') }}">
-                  @csrf
-                  <div class="form-label-group">
-                    <!-- <input type="email" id="inputEmail" class="form-control" placeholder="Email"> -->
-                    <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" placeholder="{{ __('locale.labels.email') }}" required autocomplete="email"
-                      autofocus>
+            <!-- Forgot password-->
+            <div class="d-flex col-lg-4 align-items-center auth-bg px-2 p-lg-5">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
+                    <h2 class="card-title fw-bold mb-1">{{ __('locale.auth.recover_your_password') }}</h2>
+                    <p class="card-text mb-2">{{ __('locale.auth.recover_password_instructions') }}</p>
+                    <form class="auth-forgot-password-form mt-2" method="POST" action="{{ route('password.email') }}">
+                        @csrf
+                        <div class="mb-1">
+                            <label class="form-label" for="email">{{ __('locale.labels.email') }}</label>
+                            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" placeholder="{{ __('locale.labels.email') }}" required autocomplete="email" autofocus>
 
-                    <label for="email">{{ __('locale.labels.email') }}</label>
 
-                    @error('email')
-                    <span class="invalid-feedback" role="alert">
-                      <strong>{{ $message }}</strong>
-                    </span>
-                    @enderror
-                  </div>
+                            @error('email')
+                            <span class="invalid-feedback" role="alert">
+                              <strong>{{ $message }}</strong>
+                            </span>
+                            @enderror
+                        </div>
 
-                  <div class="float-md-left d-block mb-1">
-                    <a href="{{url('login')}}" class="btn btn-outline-primary btn-block px-75">{{ __('locale.auth.back_to_login') }}</a>
-                  </div>
-                  <div class="float-md-right d-block mb-1">
-                    <button type="submit" class="btn btn-primary btn-block px-75">{{ __('locale.auth.recover_password') }}</button>
-                  </div>
-                </form>
 
-              </div>
+                        @if(config('no-captcha.login'))
+                            <div class="mb-1">
+                                {{ no_captcha()->input('g-recaptcha-response') }}
+                            </div>
+                        @endif
+
+                        <button type="submit" class="btn btn-primary w-100" tabindex="2">{{ __('locale.auth.recover_password') }}</button>
+                    </form>
+                    <p class="text-center mt-2">
+                        <a href="{{url('login')}}">
+                            <i data-feather="chevron-left"></i> {{ __('locale.auth.back_to_login') }}
+                        </a>
+                    </p>
+                </div>
             </div>
-          </div>
+            <!-- /Forgot password-->
+
         </div>
-      </div>
     </div>
-  </div>
-</section>
 @endsection
+
+
+@if(config('no-captcha.login'))
+    @push('scripts')
+        {{ no_captcha()->script() }}
+        {{ no_captcha()->getApiScript() }}
+
+        <script>
+            grecaptcha.ready(() => {
+                window.noCaptcha.render('login', (token) => {
+                    document.querySelector('#g-recaptcha-response').value = token;
+                });
+            });
+        </script>
+    @endpush
+@endif

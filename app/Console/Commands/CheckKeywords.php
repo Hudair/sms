@@ -37,7 +37,7 @@ class CheckKeywords extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $keywords = Keywords::where('status', 'assigned')->where('validity_date', "<", Carbon::now()->endOfDay())->cursor();
 

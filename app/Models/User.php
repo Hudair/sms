@@ -58,6 +58,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'provider_id',
             'email_verified_at',
             'two_factor_backup_code',
+            'api_sending_server',
     ];
 
     /**

@@ -1,7 +1,9 @@
 @if(! \App\Helpers\Helper::exec_enabled())
-    <div class="alert alert-danger alert-dismissible" role="alert">
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        {{$get_message}}
+    <div class="alert alert-primary alert-dismissible fade show" role="alert">
+        <div class="alert-body">
+            {{$get_message}}
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 
@@ -13,17 +15,12 @@
     <div class="form-body">
 
         @foreach($paths as $p)
-            <fieldset>
-                <div class="vs-radio-con vs-radio-primary">
-                    <input type="radio" name="php_bin_path" value="{{$p}}" @if($p == $server_php_path) checked @endif>
-                    <span class="vs-radio">
-                      <span class="vs-radio--border"></span>
-                      <span class="vs-radio--circle"></span>
-                    </span>
-                    <span class="">{{$p}}</span>
+            <div class="mb-1">
+                <div class="form-check form-check-inline">
+                    <input type="radio" class="form-check-input" name="php_bin_path" value="{{$p}}" @if($p == $server_php_path) checked @endif>
+                    <label class="form-label">{{$p}}</label>
                 </div>
-            </fieldset>
-
+            </div>
         @endforeach
 
     </div>

@@ -17,7 +17,6 @@ use App\Models\User;
 use Braintree\Gateway;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,7 +47,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * successful sender id purchase using paypal
+     * successful sender id purchase using PayPal
      *
      * @param  Senderid  $senderid
      * @param  Request  $request
@@ -494,6 +493,15 @@ class PaymentController extends Controller
                                             $user->save();
                                         }
 
+
+                                        $subscription = $user->customer->activeSubscription();
+
+                                        $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                                'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                                'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                                'amount'                 => $request->sms_unit.' sms units',
+                                        ]);
+
                                         return redirect()->route('user.home')->with([
                                                 'status'  => 'success',
                                                 'message' => __('locale.payment_gateways.payment_successfully_made'),
@@ -566,6 +574,14 @@ class PaymentController extends Controller
                                         $user->save();
                                     }
 
+                                    $subscription = $user->customer->activeSubscription();
+
+                                    $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                            'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                            'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                            'amount'                 => $request->sms_unit.' sms units',
+                                    ]);
+
                                     return redirect()->route('user.home')->with([
                                             'status'  => 'success',
                                             'message' => __('locale.payment_gateways.payment_successfully_made'),
@@ -619,6 +635,14 @@ class PaymentController extends Controller
                                 $user->sms_unit += $request->sms_unit;
                                 $user->save();
                             }
+
+                            $subscription = $user->customer->activeSubscription();
+
+                            $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                    'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                    'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                    'amount'                 => $request->sms_unit.' sms units',
+                            ]);
 
                             return redirect()->route('user.home')->with([
                                     'status'  => 'success',
@@ -675,6 +699,15 @@ class PaymentController extends Controller
                                             $user->sms_unit += $request->sms_unit;
                                             $user->save();
                                         }
+
+                                        $subscription = $user->customer->activeSubscription();
+
+                                        $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                                'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                                'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                                'amount'                 => $request->sms_unit.' sms units',
+                                        ]);
+
 
                                         return redirect()->route('user.home')->with([
                                                 'status'  => 'success',
@@ -739,6 +772,13 @@ class PaymentController extends Controller
                                     $user->sms_unit += $request->sms_unit;
                                     $user->save();
                                 }
+                                $subscription = $user->customer->activeSubscription();
+
+                                $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                        'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                        'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                        'amount'                 => $request->sms_unit.' sms units',
+                                ]);
 
                                 return redirect()->route('user.home')->with([
                                         'status'  => 'success',
@@ -812,6 +852,13 @@ class PaymentController extends Controller
                                 $user->sms_unit += $request->sms_unit;
                                 $user->save();
                             }
+                            $subscription = $user->customer->activeSubscription();
+
+                            $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                    'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                    'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                    'amount'                 => $request->sms_unit.' sms units',
+                            ]);
 
                             return redirect()->route('user.home')->with([
                                     'status'  => 'success',
@@ -1068,6 +1115,14 @@ class PaymentController extends Controller
                             $user->save();
                         }
 
+                        $subscription = $user->customer->activeSubscription();
+
+                        $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                'amount'                 => $request->sms_unit.' sms units',
+                        ]);
+
                         return redirect()->route('user.home')->with([
                                 'status'  => 'success',
                                 'message' => __('locale.payment_gateways.payment_successfully_made'),
@@ -1110,7 +1165,7 @@ class PaymentController extends Controller
     public function paystack(Request $request): RedirectResponse
     {
 
-        $paymentMethod = PaymentMethods::where('status', true)->where('type', 'authorize_net')->first();
+        $paymentMethod = PaymentMethods::where('status', true)->where('type', 'paystack')->first();
 
         if ($paymentMethod) {
             $credentials = json_decode($paymentMethod->options);
@@ -1221,9 +1276,16 @@ class PaymentController extends Controller
                     if ($invoice) {
 
                         if ($user->sms_unit != '-1') {
-                            $user->sms_unit += $request->sms_unit;
+                            $user->sms_unit += $tranx->data->metadata->sms_unit;
                             $user->save();
                         }
+                        $subscription = $user->customer->activeSubscription();
+
+                        $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                'title'                  => 'Add '.$tranx->data->metadata->sms_unit.' sms units',
+                                'amount'                 => $tranx->data->metadata->sms_unit.' sms units',
+                        ]);
 
                         return redirect()->route('user.home')->with([
                                 'status'  => 'success',
@@ -1236,7 +1298,6 @@ class PaymentController extends Controller
                             'message' => __('locale.exceptions.something_went_wrong'),
                     ]);
                 }
-
                 if ($request_type == 'number_payment') {
 
                     $number = PhoneNumbers::findByUid($tranx->data->metadata->number_id);
@@ -1307,6 +1368,94 @@ class PaymentController extends Controller
                             'message' => __('locale.exceptions.something_went_wrong'),
                     ]);
                 }
+                if ($request_type == 'subscription_payment') {
+
+                    $plan = Plan::where('uid', $tranx->data->metadata->plan_id)->first();
+
+                    if ($plan) {
+                        $invoice = Invoices::create([
+                                'user_id'        => $tranx->data->metadata->user_id,
+                                'currency_id'    => $plan->currency_id,
+                                'payment_method' => $paymentMethod->id,
+                                'amount'         => $plan->price,
+                                'type'           => Invoices::TYPE_SUBSCRIPTION,
+                                'description'    => __('locale.subscription.payment_for_plan').' '.$plan->name,
+                                'transaction_id' => $reference,
+                                'status'         => Invoices::STATUS_PAID,
+                        ]);
+
+                        if ($invoice) {
+                            if (Auth::user()->customer->activeSubscription()) {
+                                Auth::user()->customer->activeSubscription()->cancelNow();
+                            }
+
+                            if (Auth::user()->customer->subscription) {
+                                $subscription = Auth::user()->customer->subscription;
+                            } else {
+                                $subscription           = new Subscription();
+                                $subscription->user_id  = Auth::user()->id;
+                                $subscription->start_at = Carbon::now();
+                            }
+
+                            $subscription->status                 = Subscription::STATUS_ACTIVE;
+                            $subscription->plan_id                = $plan->getBillableId();
+                            $subscription->end_period_last_days   = '10';
+                            $subscription->current_period_ends_at = $subscription->getPeriodEndsAt(Carbon::now());
+                            $subscription->end_at                 = null;
+                            $subscription->end_by                 = null;
+                            $subscription->payment_method_id      = $paymentMethod->id;
+                            $subscription->save();
+
+                            // add transaction
+                            $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                    'end_at'                 => $subscription->end_at,
+                                    'current_period_ends_at' => $subscription->current_period_ends_at,
+                                    'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                    'title'                  => trans('locale.subscription.subscribed_to_plan', ['plan' => $subscription->plan->getBillableName()]),
+                                    'amount'                 => $subscription->plan->getBillableFormattedPrice(),
+                            ]);
+
+                            // add log
+                            $subscription->addLog(SubscriptionLog::TYPE_ADMIN_PLAN_ASSIGNED, [
+                                    'plan'  => $subscription->plan->getBillableName(),
+                                    'price' => $subscription->plan->getBillableFormattedPrice(),
+                            ]);
+
+
+                            $user = User::find($tranx->data->metadata->user_id);
+
+                            if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
+                                $user->sms_unit = $plan->getOption('sms_max');
+                            } else {
+                                if ($plan->getOption('add_previous_balance') == 'yes') {
+                                    $user->sms_unit += $plan->getOption('sms_max');
+                                } else {
+                                    $user->sms_unit = $plan->getOption('sms_max');
+                                }
+                            }
+
+                            $user->save();
+
+                            $this->createNotification('plan', $plan->name, $user->displayName());
+
+                            return redirect()->route('customer.subscriptions.index')->with([
+                                    'status'  => 'success',
+                                    'message' => __('locale.payment_gateways.payment_successfully_made'),
+                            ]);
+                        }
+
+                        return redirect()->route('customer.subscriptions.purchase', $plan->uid)->with([
+                                'status'  => 'error',
+                                'message' => __('locale.exceptions.something_went_wrong'),
+                        ]);
+                    }
+
+                    return redirect()->route('customer.subscriptions.purchase', $plan->uid)->with([
+                            'status'  => 'error',
+                            'message' => __('locale.exceptions.something_went_wrong'),
+                    ]);
+                }
+
 
             }
 
@@ -1558,6 +1707,13 @@ class PaymentController extends Controller
                             $user->sms_unit += $request->sms_unit;
                             $user->save();
                         }
+                        $subscription = $user->customer->activeSubscription();
+
+                        $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                'amount'                 => $request->sms_unit.' sms units',
+                        ]);
 
                         return redirect()->route('user.home')->with([
                                 'status'  => 'success',
@@ -1741,6 +1897,15 @@ class PaymentController extends Controller
                                 $user->save();
                             }
 
+                            $subscription = $user->customer->activeSubscription();
+
+                            $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                    'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                    'title'                  => 'Add '.$sms_unit.' sms units',
+                                    'amount'                 => $sms_unit.' sms units',
+                            ]);
+
+
                             return redirect()->route('user.home')->with([
                                     'status'  => 'success',
                                     'message' => __('locale.payment_gateways.payment_successfully_made'),
@@ -1886,6 +2051,15 @@ class PaymentController extends Controller
                             $user->save();
                         }
 
+                        $subscription = $user->customer->activeSubscription();
+
+                        $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                'amount'                 => $request->sms_unit.' sms units',
+                        ]);
+
+
                         return redirect()->route('user.home')->with([
                                 'status'  => 'success',
                                 'message' => __('locale.payment_gateways.payment_successfully_made'),
@@ -2019,6 +2193,14 @@ class PaymentController extends Controller
                             $user->save();
                         }
 
+                        $subscription = $user->customer->activeSubscription();
+
+                        $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                'amount'                 => $request->sms_unit.' sms units',
+                        ]);
+
                         return redirect()->route('user.home')->with([
                                 'status'  => 'success',
                                 'message' => __('locale.payment_gateways.payment_successfully_made'),
@@ -2107,6 +2289,14 @@ class PaymentController extends Controller
                                         $user->sms_unit += $request->sms_unit;
                                         $user->save();
                                     }
+
+                                    $subscription = $user->customer->activeSubscription();
+
+                                    $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                                            'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                                            'title'                  => 'Add '.$request->sms_unit.' sms units',
+                                            'amount'                 => $request->sms_unit.' sms units',
+                                    ]);
 
                                     return redirect()->route('user.home')->with([
                                             'status'  => 'success',
@@ -2617,7 +2807,7 @@ class PaymentController extends Controller
                                     if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                         $user->sms_unit = $plan->getOption('sms_max');
                                     } else {
-                                        if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                        if ($plan->getOption('add_previous_balance') == 'yes') {
                                             $user->sms_unit += $plan->getOption('sms_max');
                                         } else {
                                             $user->sms_unit = $plan->getOption('sms_max');
@@ -4567,7 +4757,7 @@ class PaymentController extends Controller
                                     if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                         $user->sms_unit = $plan->getOption('sms_max');
                                     } else {
-                                        if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                        if ($plan->getOption('add_previous_balance') == 'yes') {
                                             $user->sms_unit += $plan->getOption('sms_max');
                                         } else {
                                             $user->sms_unit = $plan->getOption('sms_max');
@@ -4683,7 +4873,7 @@ class PaymentController extends Controller
                                 if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                     $user->sms_unit = $plan->getOption('sms_max');
                                 } else {
-                                    if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                    if ($plan->getOption('add_previous_balance') == 'yes') {
                                         $user->sms_unit += $plan->getOption('sms_max');
                                     } else {
                                         $user->sms_unit = $plan->getOption('sms_max');
@@ -4782,7 +4972,7 @@ class PaymentController extends Controller
                         if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                             $user->sms_unit = $plan->getOption('sms_max');
                         } else {
-                            if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                            if ($plan->getOption('add_previous_balance') == 'yes') {
                                 $user->sms_unit += $plan->getOption('sms_max');
                             } else {
                                 $user->sms_unit = $plan->getOption('sms_max');
@@ -4885,7 +5075,7 @@ class PaymentController extends Controller
                                     if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                         $user->sms_unit = $plan->getOption('sms_max');
                                     } else {
-                                        if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                        if ($plan->getOption('add_previous_balance') == 'yes') {
                                             $user->sms_unit += $plan->getOption('sms_max');
                                         } else {
                                             $user->sms_unit = $plan->getOption('sms_max');
@@ -4995,7 +5185,7 @@ class PaymentController extends Controller
                             if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                 $user->sms_unit = $plan->getOption('sms_max');
                             } else {
-                                if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                if ($plan->getOption('add_previous_balance') == 'yes') {
                                     $user->sms_unit += $plan->getOption('sms_max');
                                 } else {
                                     $user->sms_unit = $plan->getOption('sms_max');
@@ -5116,7 +5306,7 @@ class PaymentController extends Controller
                         if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                             $user->sms_unit = $plan->getOption('sms_max');
                         } else {
-                            if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                            if ($plan->getOption('add_previous_balance') == 'yes') {
                                 $user->sms_unit += $plan->getOption('sms_max');
                             } else {
                                 $user->sms_unit = $plan->getOption('sms_max');
@@ -5283,7 +5473,7 @@ class PaymentController extends Controller
                         if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                             $user->sms_unit = $plan->getOption('sms_max');
                         } else {
-                            if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                            if ($plan->getOption('add_previous_balance') == 'yes') {
                                 $user->sms_unit += $plan->getOption('sms_max');
                             } else {
                                 $user->sms_unit = $plan->getOption('sms_max');
@@ -5460,7 +5650,7 @@ class PaymentController extends Controller
                         if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                             $user->sms_unit = $plan->getOption('sms_max');
                         } else {
-                            if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                            if ($plan->getOption('add_previous_balance') == 'yes') {
                                 $user->sms_unit += $plan->getOption('sms_max');
                             } else {
                                 $user->sms_unit = $plan->getOption('sms_max');
@@ -5589,7 +5779,7 @@ class PaymentController extends Controller
                                 if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                     $user->sms_unit = $plan->getOption('sms_max');
                                 } else {
-                                    if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                    if ($plan->getOption('add_previous_balance') == 'yes') {
                                         $user->sms_unit += $plan->getOption('sms_max');
                                     } else {
                                         $user->sms_unit = $plan->getOption('sms_max');
@@ -5717,7 +5907,7 @@ class PaymentController extends Controller
                             if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                 $user->sms_unit = $plan->getOption('sms_max');
                             } else {
-                                if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                if ($plan->getOption('add_previous_balance') == 'yes') {
                                     $user->sms_unit += $plan->getOption('sms_max');
                                 } else {
                                     $user->sms_unit = $plan->getOption('sms_max');
@@ -5835,7 +6025,7 @@ class PaymentController extends Controller
                             if ($user->sms_unit == null || $user->sms_unit == '-1' || $plan->getOption('sms_max') == '-1') {
                                 $user->sms_unit = $plan->getOption('sms_max');
                             } else {
-                                if ($user->sms_unit != '-1' && $plan->getOption('add_previous_balance') == 'yes') {
+                                if ($plan->getOption('add_previous_balance') == 'yes') {
                                     $user->sms_unit += $plan->getOption('sms_max');
                                 } else {
                                     $user->sms_unit = $plan->getOption('sms_max');

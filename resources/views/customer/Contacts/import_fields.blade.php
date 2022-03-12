@@ -24,7 +24,7 @@
                                 @csrf
                                 <div class="row">
                                     <div class="table-responsive">
-                                        <table class="table">
+                                        <table class="table table-borderless">
                                             <thead>
                                             @foreach ($csv_data as $row)
                                                 <tr>
@@ -38,7 +38,7 @@
                                             <tr>
                                                 @foreach ($csv_data[0] as $key => $value)
                                                     <td>
-                                                        <select name="fields[{{ $key }}]" class="form-control select2">
+                                                        <select name="fields[{{ $key }}]" class="form-select select2">
                                                             @foreach (config('app.db_fields') as $db_key => $db_field)
                                                                 <option value="{{ $db_key }}">{{ $db_field }}</option>
                                                             @endforeach
@@ -54,8 +54,8 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <input type="hidden" name="csv_data_file_id" value="{{ $csv_data_file->id }}" />
-                                        <button type="submit" class="btn btn-primary mr-1 mb-1">
-                                            <i class="feather icon-save"></i> {{__('locale.buttons.import')}}
+                                        <button type="submit" class="btn btn-primary mt-2 mx-2 mb-1">
+                                            <i data-feather="save"></i> {{__('locale.buttons.import')}}
                                         </button>
                                     </div>
                                 </div>
@@ -84,12 +84,15 @@
     <script>
 
         // Basic Select2 select
-        $(".select2").select2({
-            // the following code is used to disable x-scrollbar when click in select input and
-            // take 100% width in responsive also
-            dropdownAutoWidth: true,
-            width: '100%'
+        $(".select2").each(function () {
+            let $this = $(this);
+            $this.wrap('<div class="position-relative"></div>');
+            $this.select2({
+                // the following code is used to disable x-scrollbar when click in select input and
+                width: '100%',
+            });
         });
+
 
         let firstInvalid = $('form').find('.is-invalid').eq(0);
 

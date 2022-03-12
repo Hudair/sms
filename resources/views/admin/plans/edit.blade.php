@@ -4,115 +4,103 @@
 
 @section('vendor-style')
     <!-- vendor css files -->
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/nouislider.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/forms/select/select2.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap5.min.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/sweetalert2.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/forms/select/select2.min.css')) }}">
 @endsection
 
-@section('page-style')
-    <!-- Page css files -->
-    <link rel="stylesheet" href="{{ asset(mix('css/plugins/extensions/noui-slider.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('css/core/colors/palette-noui.css')) }}">
-@endsection
 
 @section('content')
-
-
     <section id="nav-justified">
         <div class="row">
-            <div class="col-sm-12">
-                <div class="card overflow-hidden">
-                    <div class="card-header">
-                        <h4 class="card-title">{{ $plan->name }}</h4>
+            <div class="col-12">
+
+                <code>  {{ __('locale.description.plan_details') }} </code>
+                <ul class="nav nav-pills mb-2 mt-2 text-uppercase" role="tablist">
+
+                    {{-- Gerenal --}}
+                    <li class="nav-item">
+                        <a class="nav-link  @if (old('tab') == 'general' || old('tab') == null) active @endif" id="general-tab-justified" data-bs-toggle="tab" href="#general" role="tab"
+                           aria-controls="general" aria-selected="true"><i data-feather="home"></i> {{ __('locale.labels.general') }}</a>
+                    </li>
+
+                    {{-- features setting --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ old('tab') == 'features' ? 'active':null }}" id="features-tab-justified" data-bs-toggle="tab" href="#features" role="tab"
+                           aria-controls="features" aria-selected="true"><i data-feather="package"></i> {{ __('locale.plans.plan_features') }}</a>
+                    </li>
+
+                    {{-- speed limit --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ old('tab') == 'speed_limit' ? 'active':null }}" id="speed-limit-tab-justified" data-bs-toggle="tab" href="#speed-limit" role="tab"
+                           aria-controls="speed-limit" aria-selected="true"><i data-feather="send"></i> {{ __('locale.plans.speed_limit') }}</a>
+                    </li>
+
+                    {{-- cutting system --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ old('tab') == 'cutting_system' ? 'active':null }}" id="cutting-system-tab-justified" data-bs-toggle="tab" href="#cutting-system" role="tab"
+                           aria-controls="cutting-system" aria-selected="true"><i data-feather="minus-square"></i> {{ __('locale.sending_servers.cutting_system') }}</a>
+                    </li>
+
+                    {{-- Sending Server --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ old('tab') == 'sending_server' ? 'active':null }}" id="sending-server-tab-justified" data-bs-toggle="tab" href="#sending-server" role="tab"
+                           aria-controls="sending-server" aria-selected="false">
+                            @if (!$plan->hasPrimarySendingServer())
+                                <i data-feather="alert-circle" class="text-danger"></i>
+                            @else
+                                <i data-feather="server"></i>
+                            @endif
+                            {{ __('locale.menu.Sending Servers') }}</a>
+                    </li>
+
+                    {{-- Coverage --}}
+                    <li class="nav-item">
+                        <a class="nav-link {{ old('tab') == 'pricing' ? 'active':null }}" id="pricing-tab-justified" data-bs-toggle="tab" href="#pricing" role="tab"
+                           aria-controls="pricing" aria-selected="false"><i data-feather="shopping-cart"></i> {{ __('locale.plans.pricing') }}</a>
+                    </li>
+                </ul>
+
+
+                {{-- Tab panes --}}
+                <div class="tab-content pt-1">
+
+                    {{-- Gerenal --}}
+                    <div class="tab-pane @if (old('tab') == 'general' || old('tab') == null) active @endif" id="general" role="tabpanel" aria-labelledby="general-tab-justified">
+                        @include('admin.plans._general')
                     </div>
-                    <div class="card-content">
-                        <div class="card-body">
-                            <code>  {{ __('locale.description.plan_details') }} </code>
-                            <ul class="nav nav-tabs nav-justified mt-5" id="myTab2" role="tablist">
-
-                                {{-- Gerenal --}}
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="general-tab-justified" data-toggle="tab" href="#general-just" role="tab"
-                                       aria-controls="general-just" aria-selected="true">{{ __('locale.labels.general') }}</a>
-                                </li>
-
-                                {{-- features setting --}}
-                                <li class="nav-item">
-                                    <a class="nav-link" id="features-tab-justified" data-toggle="tab" href="#features-just" role="tab"
-                                       aria-controls="features-just" aria-selected="true">{{ __('locale.plans.plan_features') }}</a>
-                                </li>
-
-                                {{-- speed limit --}}
-                                <li class="nav-item">
-                                    <a class="nav-link" id="speed-limit-tab-justified" data-toggle="tab" href="#speed-limit-just" role="tab"
-                                       aria-controls="speed-limit-just" aria-selected="true">{{ __('locale.plans.speed_limit') }}</a>
-                                </li>
-
-                                {{-- cutting system --}}
-                                <li class="nav-item">
-                                    <a class="nav-link" id="cutting-system-tab-justified" data-toggle="tab" href="#cutting-system-just" role="tab"
-                                       aria-controls="cutting-system-just" aria-selected="true">{{ __('locale.sending_servers.cutting_system') }}</a>
-                                </li>
-
-                                {{-- Sending Server --}}
-                                <li class="nav-item">
-                                    <a class="nav-link" id="sending-server-tab-justified" data-toggle="tab" href="#sending-server-just" role="tab"
-                                       aria-controls="sending-server-just" aria-selected="false">
-                                        @if (!$plan->hasPrimarySendingServer())
-                                            <i class="feather icon-alert-circle text-danger"></i>
-                                        @endif
-                                        {{ __('locale.menu.Sending Servers') }}</a>
-                                </li>
-
-                                {{-- Coverage --}}
-                                <li class="nav-item">
-                                    <a class="nav-link" id="pricing-tab-justified" data-toggle="tab" href="#pricing-just" role="tab"
-                                       aria-controls="pricing-just" aria-selected="false">{{ __('locale.plans.pricing') }}</a>
-                                </li>
-                            </ul>
 
 
-                            {{-- Tab panes --}}
-                            <div class="tab-content pt-1">
-
-
-                                {{-- Gerenal --}}
-                                <div class="tab-pane active" id="general-just" role="tabpanel" aria-labelledby="general-tab-justified">
-                                    @include('admin.plans._general')
-                                </div>
-
-
-                                {{-- features setting --}}
-                                <div class="tab-pane" id="features-just" role="tabpanel" aria-labelledby="features-tab-justified">
-                                    @include('admin.plans._features')
-                                </div>
-
-                                {{-- speed limit --}}
-                                <div class="tab-pane" id="speed-limit-just" role="tabpanel" aria-labelledby="speed-limit-tab-justified">
-                                    @include('admin.plans._speed_limit')
-                                </div>
-
-                                {{-- cutting system --}}
-                                <div class="tab-pane" id="cutting-system-just" role="tabpanel" aria-labelledby="cutting-system-tab-justified">
-                                    @include('admin.plans._cutting_system')
-                                </div>
-
-
-                                {{-- Sending Server --}}
-                                <div class="tab-pane" id="sending-server-just" role="tabpanel" aria-labelledby="sending-server-tab-justified">
-                                    @include('admin.plans._sending_server')
-                                </div>
-
-
-                                {{-- pricing --}}
-                                <div class="tab-pane" id="pricing-just" role="tabpanel" aria-labelledby="pricing-tab-justified">
-                                    @include('admin.plans._pricing')
-                                </div>
-
-
-                            </div>
-                        </div>
+                    {{-- features setting --}}
+                    <div class="tab-pane {{ old('tab') == 'features' ? 'active':null }}" id="features" role="tabpanel" aria-labelledby="features-tab-justified">
+                        @include('admin.plans._features')
                     </div>
+
+                    {{-- speed limit --}}
+                    <div class="tab-pane {{ old('tab') == 'speed_limit' ? 'active':null }}" id="speed-limit" role="tabpanel" aria-labelledby="speed-limit-tab-justified">
+                        @include('admin.plans._speed_limit')
+                    </div>
+
+                    {{-- cutting system --}}
+                    <div class="tab-pane {{ old('tab') == 'cutting_system' ? 'active':null }}" id="cutting-system" role="tabpanel" aria-labelledby="cutting-system-tab-justified">
+                        @include('admin.plans._cutting_system')
+                    </div>
+
+
+                    {{-- Sending Server --}}
+                    <div class="tab-pane {{ old('tab') == 'sending_server' ? 'active':null }}" id="sending-server" role="tabpanel" aria-labelledby="sending-server-tab-justified">
+                        @include('admin.plans._sending_server')
+                    </div>
+
+
+                    {{-- pricing --}}
+                    <div class="tab-pane {{ old('tab') == 'pricing' ? 'active':null }}" id="pricing" role="tabpanel" aria-labelledby="pricing-tab-justified">
+                        @include('admin.plans._pricing')
+                    </div>
+
+
                 </div>
             </div>
         </div>
@@ -122,11 +110,16 @@
 
 @section('vendor-script')
     <!-- vendor files -->
-    <script src="{{ asset(mix('vendors/js/forms/select/select2.full.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/wNumb.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/nouislider.min.js')) }}"></script>
+
+    <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/responsive.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.html5.min.js')) }}"></script>
 
     <script src="{{ asset(mix('vendors/js/extensions/sweetalert2.all.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/forms/select/select2.full.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
 @endsection
 
@@ -145,36 +138,45 @@
     <script>
         $(document).ready(function () {
 
+            $('#pricing-tab-justified').on('click', function (e) {
+                $($.fn.dataTable.tables(true)).DataTable()
+                    .columns.adjust()
+                    .responsive.recalc();
+            });
+
             //show response message
             function showResponseMessage(data) {
-
                 if (data.status === 'success') {
-                    toastr.success(data.message, 'Success!!', {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['success'](data.message, '{{__('locale.labels.success')}}!!', {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 2000);
                 } else {
-                    toastr.warning("{{__('locale.exceptions.something_went_wrong')}}", "{{__('locale.labels.attention')}}", {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['warning']("{{__('locale.exceptions.something_went_wrong')}}", '{{ __('locale.labels.warning') }}!', {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
                 }
             }
 
-            $(".select2").select2({
-                // the following code is used to disable x-scrollbar when click in select input and
-                // take 100% width in responsive also
-                dropdownAutoWidth: true,
-                width: '100%'
+
+            // Basic Select2 select
+            $(".select2").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
             });
 
             let showCustom = $('.show-custom');
@@ -265,76 +267,19 @@
                 });
             });
 
-
-            //set primary
-            Table.delegate(".action-set-primary", "click", function (e) {
-                e.stopPropagation();
-                let id = $(this).data('id');
-                Swal.fire({
-                    title: "{{ __('locale.labels.are_you_sure') }}",
-                    text: "{{ __('locale.plans.sending_server_as_primary') }}",
-                    type: 'success',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: "{{ __('locale.labels.set_primary') }}",
-                    confirmButtonClass: 'btn btn-primary',
-                    cancelButtonClass: 'btn btn-danger ml-1',
-                    buttonsStyling: false,
-                }).then(function (result) {
-                    if (result.value) {
-                        $.ajax({
-                            url: "{{ route('admin.plans.settings.set-primary', $plan->uid)}}",
-                            type: "POST",
-                            data: {
-                                _method: 'POST',
-                                server_id: id,
-                                _token: "{{csrf_token()}}"
-                            },
-                            success: function (data) {
-                                showResponseMessage(data);
-                            },
-                            error: function (reject) {
-                                if (reject.status === 422) {
-                                    let errors = reject.responseJSON.errors;
-                                    $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
-                                            closeButton: true,
-                                            newestOnTop: true
-                                        });
-                                    });
-                                } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
-                                        closeButton: true,
-                                        newestOnTop: true
-                                    });
-                                }
-                            }
-                        })
-                    }
-                })
-            });
-
-
             //delete sending server
             Table.delegate(".action-delete", "click", function (e) {
                 e.stopPropagation();
                 let id = $(this).data('id');
                 Swal.fire({
                     title: "{{ __('locale.labels.are_you_sure') }}",
-                    type: 'success',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.delete_it') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
@@ -353,16 +298,16 @@
                                 if (reject.status === 422) {
                                     let errors = reject.responseJSON.errors;
                                     $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     });
                                 } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
+                                    toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                         positionClass: 'toast-top-right',
                                         containerId: 'toast-top-right',
                                         progressBar: true,
@@ -375,6 +320,191 @@
                     }
                 })
             });
+
+
+            // init list view datatable
+            let dataListView = $('.datatables-basic').DataTable({
+
+                "processing": true,
+                "serverSide": true,
+                "ajax": {
+                    "url": "{{ route('admin.plans.settings.search_coverage', $plan->uid) }}",
+                    "dataType": "json",
+                    "type": "POST",
+                    "data": {_token: "{{csrf_token()}}"}
+                },
+                "columns": [
+                    {"data": 'responsive_id', orderable: false, searchable: false},
+                    {"data": "uid"},
+                    {"data": "name", orderable: false},
+                    {"data": "iso_code", orderable: false},
+                    {"data": "country_code", orderable: false},
+                    {"data": "status", orderable: false, searchable: false},
+                    {"data": "action", orderable: false, searchable: false}
+                ],
+
+                searchDelay: 1500,
+                columnDefs: [
+                    {
+                        // For Responsive
+                        className: 'control',
+                        orderable: false,
+                        responsivePriority: 2,
+                        targets: 0
+                    },
+                    {
+                        targets: 1,
+                        visible: false
+                    },
+                    {
+                        // Actions
+                        targets: -1,
+                        title: '{{ __('locale.labels.actions') }}',
+                        orderable: false,
+                        render: function (data, type, full) {
+                            return (
+
+                                '<a href="' + full['edit'] + '" class="text-primary pe-1">' +
+                                feather.icons['edit'].toSvg({class: 'font-medium-4'}) +
+                                '</a>' +
+                                '<span class="action-price-delete text-danger cursor-pointer" data-id=' + full['uid'] + '>' +
+                                feather.icons['trash'].toSvg({class: 'font-medium-4'}) +
+                                '</span>'
+
+                            );
+                        }
+                    }
+                ],
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
+                    sLengthMenu: "_MENU_",
+                    sZeroRecords: "{{ __('locale.datatables.no_results') }}",
+                    sSearch: "{{ __('locale.datatables.search') }}",
+                    sProcessing: "{{ __('locale.datatables.processing') }}",
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
+                },
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.modal({
+                            header: function (row) {
+                                let data = row.data();
+                                return 'Details of ' + data['name'];
+                            }
+                        }),
+                        type: 'column',
+                        renderer: function (api, rowIdx, columns) {
+                            let data = $.map(columns, function (col) {
+                                return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                    ? '<tr data-dt-row="' +
+                                    col.rowIdx +
+                                    '" data-dt-column="' +
+                                    col.columnIndex +
+                                    '">' +
+                                    '<td>' +
+                                    col.title +
+                                    ':' +
+                                    '</td> ' +
+                                    '<td>' +
+                                    col.data +
+                                    '</td>' +
+                                    '</tr>'
+                                    : '';
+                            }).join('');
+
+                            return data ? $('<table class="table"/>').append('<tbody>' + data + '</tbody>') : false;
+                        }
+                    }
+                },
+                aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
+                select: {
+                    style: "multi"
+                },
+                order: [[1, "asc"]],
+                displayLength: 10,
+            });
+
+            //change status
+            Table.delegate(".get_coverage_status", "click", function () {
+
+                let coverage = $(this).data('id');
+                let url = "{{ url(config('app.admin_path').'/plans/'.$plan->uid.'/coverage')}}" + '/' + coverage + '/active';
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        _token: "{{csrf_token()}}"
+                    },
+                    success: function (data) {
+                        showResponseMessage(data);
+                    }
+                });
+            });
+
+
+            // On Delete
+            Table.delegate(".action-price-delete", "click", function (e) {
+                e.stopPropagation();
+                let id = $(this).data('id');
+
+                let url = "{{ url(config('app.admin_path').'/plans/'.$plan->uid.'/coverage')}}" + '/' + id + '/delete';
+                Swal.fire({
+                    title: "{{ __('locale.labels.are_you_sure') }}",
+                    text: "{{ __('locale.labels.able_to_revert') }}",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: "{{ __('locale.labels.delete_it') }}",
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
+                    buttonsStyling: false,
+                }).then(function (result) {
+                    if (result.value) {
+                        $.ajax({
+                            url: url,
+                            type: "POST",
+                            data: {
+                                _token: "{{csrf_token()}}"
+                            },
+                            success: function (data) {
+                                dataListView.draw();
+                                showResponseMessage(data);
+                            },
+                            error: function (reject) {
+                                if (reject.status === 422) {
+                                    let errors = reject.responseJSON.errors;
+                                    $.each(errors, function (key, value) {
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
+                                            closeButton: true,
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
+                                        });
+                                    });
+                                } else {
+                                    toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
+                                        positionClass: 'toast-top-right',
+                                        containerId: 'toast-top-right',
+                                        progressBar: true,
+                                        closeButton: true,
+                                        newestOnTop: true
+                                    });
+                                }
+                            }
+                        })
+                    }
+                })
+            });
+
+
         });
     </script>
 @endsection

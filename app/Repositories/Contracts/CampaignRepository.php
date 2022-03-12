@@ -83,4 +83,16 @@ interface CampaignRepository extends BaseRepository
      * @return mixed
      */
     public function resend(Campaigns $campaign);
+
+    /**
+     * send api message
+     *
+     * @param  Campaigns  $campaign
+     * @param  array  $input
+     *
+     * @return mixed
+     */
+    public function sendApi(Campaigns $campaign, array $input);
+
+
 }

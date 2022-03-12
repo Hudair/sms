@@ -63,12 +63,12 @@
                     document.getElementById('device_data').value = dataCollectorInstance.deviceData;
                 });
             }).catch(function (err) {
-                toastr.warning(err.message, "{{__('locale.labels.attention')}}", {
-                    positionClass: 'toast-top-right',
-                    containerId: 'toast-top-right',
-                    progressBar: true,
+                toastr['warning'](err.message, "{{__('locale.labels.attention')}}", {
                     closeButton: true,
-                    newestOnTop: true
+                    positionClass: 'toast-top-right',
+                    progressBar: true,
+                    newestOnTop: true,
+                    rtl: isRtl
                 });
             });
 
@@ -84,24 +84,24 @@
                         form.submit();
                     }).catch((error) => {
                         if (error) {
-                            toastr.warning(error.message, "{{__('locale.labels.attention')}}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning'](error.message, "{{__('locale.labels.attention')}}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
                     });
                 });
             }).catch((error) => {
                 if (error) {
-                    toastr.warning(error.message, "{{__('locale.labels.attention')}}", {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['warning'](error.message, "{{__('locale.labels.attention')}}", {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
                 }
             });

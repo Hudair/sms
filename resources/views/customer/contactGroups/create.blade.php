@@ -19,8 +19,8 @@
                                 <div class="row">
 
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="name" class="required">{{__('locale.labels.name')}}</label>
+                                        <div class="mb-1">
+                                            <label for="name" class="form-label required">{{__('locale.labels.name')}}</label>
                                             <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" name="name" required>
                                             @error('name')
                                             <div class="invalid-feedback">
@@ -34,7 +34,7 @@
                                 <div class="row">
                                     <div class="col-12">
                                         <div class="divider divider-left divider-primary">
-                                            <div class="divider-text text-uppercase text-bold-600 text-primary">{{ __('locale.labels.settings') }}</div>
+                                            <div class="divider-text text-uppercase fw-bold text-primary">{{ __('locale.labels.settings') }}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -46,10 +46,10 @@
 
                                     </div>
                                     <div class="col-2">
-                                        <div class="form-group">
-                                            <div class="custom-control custom-switch switch-lg custom-switch-success mt-2">
-                                                <input type="checkbox" name="send_welcome_sms" value="1" checked class="custom-control-input" id="send_welcome_sms">
-                                                <label class="custom-control-label" for="send_welcome_sms">
+                                        <div class="mb-1">
+                                            <div class="form-check form-switch form-check-primary form-switch-md">
+                                                <input type="checkbox" name="send_welcome_sms" value="1" checked class="form-check-input" id="send_welcome_sms">
+                                                <label class="form-check-label" for="send_welcome_sms">
                                                     <span class="switch-text-left">{{ __('locale.labels.yes') }}</span>
                                                     <span class="switch-text-right">{{ __('locale.labels.no') }}</span>
                                                 </label>
@@ -65,10 +65,10 @@
 
                                     </div>
                                     <div class="col-2">
-                                        <div class="form-group">
-                                            <div class="custom-control custom-switch switch-lg custom-switch-success mt-2">
-                                                <input type="checkbox" name="unsubscribe_notification" value="1" checked class="custom-control-input" id="unsubscribe_notification">
-                                                <label class="custom-control-label" for="unsubscribe_notification">
+                                        <div class="mb-1">
+                                            <div class="form-check form-switch form-check-primary form-switch-md">
+                                                <input type="checkbox" name="unsubscribe_notification" value="1" checked class="form-check-input" id="unsubscribe_notification">
+                                                <label class="form-check-label" for="unsubscribe_notification">
                                                     <span class="switch-text-left">{{ __('locale.labels.yes') }}</span>
                                                     <span class="switch-text-right">{{ __('locale.labels.no') }}</span>
                                                 </label>
@@ -85,10 +85,10 @@
 
                                         </div>
                                         <div class="col-2">
-                                            <div class="form-group">
-                                                <div class="custom-control custom-switch switch-lg custom-switch-success mt-2">
-                                                    <input type="checkbox" name="send_keyword_message" value="1" class="custom-control-input" id="send_keyword_message">
-                                                    <label class="custom-control-label" for="send_keyword_message">
+                                            <div class="mb-1">
+                                                <div class="form-check form-switch form-check-primary form-switch-md">
+                                                    <input type="checkbox" name="send_keyword_message" value="1" class="form-check-input" id="send_keyword_message">
+                                                    <label class="form-check-label" for="send_keyword_message">
                                                         <span class="switch-text-left">{{ __('locale.labels.yes') }}</span>
                                                         <span class="switch-text-right">{{ __('locale.labels.no') }}</span>
                                                     </label>
@@ -102,7 +102,7 @@
                                     <div class="col-12">
                                         <input type="hidden" value="1" name="is_admin">
                                         <button type="submit" class="btn btn-primary mr-1 mb-1">
-                                            <i class="feather icon-save"></i> {{__('locale.buttons.save')}}
+                                            <i data-feather="save"></i> {{__('locale.buttons.save')}}
                                         </button>
                                     </div>
                                 </div>

@@ -165,7 +165,7 @@ class Customer extends Model
     {
         $options = $this->getOptions();
 
-        return isset($options[$name]) ? $options[$name] : null;
+        return $options[$name] ?? null;
     }
 
     /**
@@ -186,9 +186,9 @@ class Customer extends Model
     /**
      * Count customer lists.
      *
-     * @return number
+     * @return int
      */
-    public function listsCount()
+    public function listsCount(): int
     {
         return $this->lists()->count();
     }
@@ -246,9 +246,9 @@ class Customer extends Model
     /**
      * Display calculate list usage.
      *
-     * @return array|Application|Translator|string|null
+     * @return string
      */
-    public function displayListsUsage()
+    public function displayListsUsage(): string
     {
         if ($this->maxLists() == '∞') {
             return '∞';
@@ -311,9 +311,9 @@ class Customer extends Model
     /**
      * Display calculate list usage.
      *
-     * @return array|Application|Translator|string|null
+     * @return string
      */
-    public function displaySubscribersUsage()
+    public function displaySubscribersUsage(): string
     {
         if ($this->maxSubscribers() == '∞') {
             return '∞';

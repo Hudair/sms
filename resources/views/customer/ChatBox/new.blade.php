@@ -27,59 +27,84 @@
                                 <div class="row">
                                     <div class="col-12">
 
-                                        <div class="form-group">
-                                            <label for="sender_id" class="required">{{__('locale.labels.phone')}}</label>
-                                            <select class="form-control select2" id="sender_id" name="sender_id">
+                                        <div class="mb-1">
+                                            <label for="sender_id" class="form-label required">{{__('locale.labels.phone')}}</label>
+                                            <select class="form-select select2" id="sender_id" name="sender_id">
                                                 @foreach($phone_numbers as $number)
                                                     <option value="{{$number->number}}"> {{ $number->number }}</option>
                                                 @endforeach
                                             </select>
 
                                             @error('sender_id')
-                                            <div class="text-danger">
-                                                {{ $message }}
-                                            </div>
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="mb-1">
+                                            <label for="sending_server" class="form-label required">{{ __('locale.labels.sending_server') }}</label>
+                                            <select class="select2 form-select" name="sending_server">
+                                                @foreach($sending_server as $server)
+                                                    <option value="{{$server->id}}"> {{ $server->name }}</option>
+                                                @endforeach
+                                            </select>
 
+                                            @error('sending_server')
+                                            <p><small class="text-danger">{{ $message }}</small></p>
+                                            @enderror
+                                        </div>
+                                    </div>
 
-                                        <div class="form-group">
-                                            <label for="recipient" class="required">{{ __('locale.labels.recipient') }}</label>
-                                            <input type="text"
-                                                   id="recipient"
-                                                   class="form-control @error('recipient') is-invalid @enderror"
-                                                   value="{{ old('recipient') }}"
-                                                   name="recipient"
-                                                   required
-                                                   placeholder="{{__('locale.labels.required')}}"
-                                            >
+                                    <div class="col-12">
+                                        <div class="mb-1">
+                                            <label for="recipient" class="form-label required">{{ __('locale.labels.recipient') }}</label>
+                                            <div class="input-group">
+                                                <div style="width: 8rem">
+                                                    <select class="form-select select2" id="country_code" name="country_code">
+                                                        @foreach($coverage as $code)
+                                                            <option value="{{ $code->country_id }}"> +{{ $code->country->country_code }} </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <input type="text"
+                                                       id="recipient"
+                                                       class="form-control @error('recipient') is-invalid @enderror"
+                                                       value="{{ old('recipient',  $recipient ?? null) }}"
+                                                       name="recipient"
+                                                       required
+                                                       placeholder="{{__('locale.labels.required')}}"
+                                                >
+
+                                            </div>
+
                                             @error('recipient')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
+                                            <p><small class="text-danger">{{ $message }}</small></p>
+                                            @enderror
+                                            @error('country_code')
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
+                                    </div>
 
 
-                                        <div class="form-group">
+                                    <div class="col-12">
+                                        <div class="mb-1">
                                             <label for="message" class="required">{{ __('locale.labels.message') }}</label>
                                             <textarea class="form-control" rows="4" required name="message">{{old('message')}}</textarea>
                                             @error('message')
-                                            <div class="text-danger">
-                                                {{ $message }}
-                                            </div>
+                                            <p><small class="text-danger">{{ $message }}</small> </p>
                                             @enderror
                                         </div>
-
-
                                     </div>
+
                                 </div>
 
                                 <div class="row">
                                     <div class="col-12">
                                         <input type="hidden" name="sms_type" value="plain">
-                                        <button type="submit" class="btn btn-primary mr-1 mb-1 pull-right">
-                                            <i class="feather icon-send"></i> {{__('locale.buttons.send')}}
+                                        <button type="submit" class="btn btn-primary mr-1 mb-1 float-end">
+                                            <i data-feather="send"></i> {{__('locale.buttons.send')}}
                                         </button>
                                     </div>
                                 </div>
@@ -109,11 +134,17 @@
 
     <script>
 
-        $(".select2").select2({
-            // the following code is used to disable x-scrollbar when click in select input and
-            // take 100% width in responsive also
-            dropdownAutoWidth: true,
-            width: '100%'
+        // Basic Select2 select
+        $(".select2").each(function () {
+            let $this = $(this);
+            $this.wrap('<div class="position-relative"></div>');
+            $this.select2({
+                // the following code is used to disable x-scrollbar when click in select input and
+                // take 100% width in responsive also
+                dropdownAutoWidth: true,
+                width: '100%',
+                dropdownParent: $this.parent()
+            });
         });
 
         let firstInvalid = $('form').find('.is-invalid').eq(0);

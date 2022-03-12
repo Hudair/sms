@@ -180,7 +180,7 @@ class UserSeeder extends Seeder
                 'first_name'        => 'Super',
                 'last_name'         => 'Admin',
                 'image'             => null,
-                'email'             => 'info@arabcode.online',
+                'email'             => 'akasham67@gmail.com',
                 'password'          => bcrypt($defaultPassword),
                 'status'            => true,
                 'is_admin'          => true,
@@ -189,7 +189,7 @@ class UserSeeder extends Seeder
                 'email_verified_at' => now(),
         ]);
 
-        $superAdmin->api_token = $superAdmin->createToken('info@arabcode.online')->plainTextToken;
+        $superAdmin->api_token = $superAdmin->createToken('akasham67@gmail.com')->plainTextToken;
         $superAdmin->save();
 
         $superAdmin->roles()->save($superAdminRole);
@@ -208,7 +208,7 @@ class UserSeeder extends Seeder
 //                'email_verified_at' => now(),
 //        ]);
 //
-//        $supervisor->api_token = $supervisor->createToken('info@arabcode.online')->plainTextToken;
+//        $supervisor->api_token = $supervisor->createToken('akasham67@gmail.com')->plainTextToken;
 //        $supervisor->save();
 //
 //        $supervisor->roles()->save($authorRole);
@@ -228,7 +228,7 @@ class UserSeeder extends Seeder
 //        ]);
 //
 //
-//        $customers->api_token = $customers->createToken('info@arabcode.online')->plainTextToken;
+//        $customers->api_token = $customers->createToken('akasham67@gmail.com')->plainTextToken;
 //        $customers->save();
 //
 //        $customer->create([

@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Library\RouletteWheel;
+use App\Library\SMSCounter;
 use App\Library\Tool;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberUtil;
 
 /**
  * @method static where(string $string, string $uid)
@@ -40,6 +43,7 @@ class Campaigns extends SendCampaignSMS
     const TYPE_RECURRING = 'recurring';
 
     public static $serverPools = [];
+    public static $senderIdPools = [];
     protected $sendingSevers = null;
     protected $senderIds = null;
     protected $currentSubscription;
@@ -262,6 +266,35 @@ class Campaigns extends SendCampaignSMS
         return $this->reports()->where('campaign_id', $this->id)->where('status', 'like', '%Sent%')->count();
     }
 
+    public function nextScheduleDate($startDate, $interval, $intervalCount)
+    {
+
+        switch ($interval) {
+
+            case 'month':
+                $scheduleDate = $startDate->addMonthsNoOverflow($intervalCount);
+                break;
+
+            case 'day':
+                $scheduleDate = $startDate->addDay($intervalCount);
+                break;
+
+            case 'week':
+                $scheduleDate = $startDate->addWeek($intervalCount);
+                break;
+
+            case 'year':
+                $scheduleDate = $startDate->addYearsNoOverflow($intervalCount);
+                break;
+
+            default:
+                $scheduleDate = null;
+                break;
+        }
+
+        return $scheduleDate;
+    }
+
     /**
      * Update Campaign cached data.
      *
@@ -359,50 +392,14 @@ class Campaigns extends SendCampaignSMS
         return $this->currentSubscription;
     }
 
-    /**
-     * get campaign sending servers
-     *
-     * @param  string  $type
-     *
-     * @return array
-     */
-    public function getSendingServers($type = 'plain'): array
+    public function getSendingServers()
     {
         if ( ! is_null($this->sendingSevers)) {
             return $this->sendingSevers;
         }
 
-        if ($type == 'unicode') {
-            $type = 'plain';
-        }
-
-        $result = [];
-
-        // Check the customer has permissions using sending servers and has his own sending servers
-        if ($this->user->customer->getOption('create_sending_server') == 'yes') {
-
-            if ($this->activeCustomerSendingServers()->count()) {
-                $result = SendingServer::where('user_id', $this->user->id)->where($type, 1)->where('status', true)->cursor()->map(function ($server) {
-                    return [$server->id, '100'];
-                });
-            } elseif ($this->activePlanSendingServers()->count()) {
-                $result = $this->activePlanSendingServers()->get()->map(function ($server) {
-                    return [$server->sending_server_id, $server->fitness];
-                });
-            }
-        } else {
-            // If customer dont have permission creating sending servers
-            $result = $this->activePlanSendingServers()->get()->map(function ($server) {
-                return [$server->sending_server_id, $server->fitness];
-            });
-        }
-        $assoc = [];
-        foreach ($result as $server) {
-            [$key, $fitness] = $server;
-            $assoc[(int) $key] = $fitness;
-        }
-
-        $this->sendingSevers = $assoc;
+        $sending_server_id   = CampaignsSendingServer::where('campaign_id', $this->id)->first()->sending_server_id;
+        $this->sendingSevers = SendingServer::find($sending_server_id);
 
         return $this->sendingSevers;
     }
@@ -426,7 +423,7 @@ class Campaigns extends SendCampaignSMS
         $assoc = [];
         foreach ($result as $server) {
             [$key, $fitness] = $server;
-            $assoc[(int) $key] = $fitness;
+            $assoc[$key] = $fitness;
         }
 
         $this->senderIds = $assoc;
@@ -555,7 +552,26 @@ class Campaigns extends SendCampaignSMS
 
 
     /**
+     * get coverage
+     *
+     * @return array
+     */
+    public function getCoverage(): array
+    {
+        $data          = [];
+        $plan_coverage = PlansCoverageCountries::where('plan_id', $this->user->customer->activeSubscription()->plan->id)->cursor();
+        foreach ($plan_coverage as $coverage) {
+            $data[$coverage->country->country_code] = json_decode($coverage->options, true);
+        }
+
+        return $data;
+
+    }
+
+    /**
      * send campaign
+     *
+     * @throws NumberParseException
      */
     public function singleProcess()
     {
@@ -603,24 +619,7 @@ class Campaigns extends SendCampaignSMS
         $cost       = 0;
         $total_unit = 0;
 
-        if ($this->sms_type == 'plain' || $this->sms_type == 'unicode') {
-            $cost = $this->user->customer->getOption('plain_sms');
-        }
-
-        if ($this->sms_type == 'voice') {
-            $cost = $this->user->customer->getOption('voice_sms');
-        }
-
-        if ($this->sms_type == 'mms') {
-            $cost = $this->user->customer->getOption('mms_sms');
-        }
-
-        if ($this->sms_type == 'whatsapp') {
-            $cost = $this->user->customer->getOption('whatsapp_sms');
-        }
-
-
-        if ($cutting_system == 'yes') {
+        if ($cutting_system == 'yes' && $this->user->customer->getOption('cutting_value') != 0) {
             $cutting_value = $this->user->customer->getOption('cutting_value');
             $cutting_unit  = $this->user->customer->getOption('cutting_unit');
             $cutting_logic = $this->user->customer->getOption('cutting_logic');
@@ -647,153 +646,185 @@ class Campaigns extends SendCampaignSMS
         $insertData = Tool::check_diff_multi($collection->all(), $cutting_array);
 
 
-        collect($cutting_array)->chunk(1000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, &$total_unit) {
+        $sending_server = $this->getSendingServers();
+        $coverage = $this->getCoverage();
 
-            $sending_server = $this->pickSendingServer();
-            $sender_id      = $this->pickSenderIds();
+        collect($cutting_array)->chunk(1000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, &$total_unit, $sending_server, $coverage) {
+
+            $check_sender_id = $this->getSenderIds();
+
+            if (count($check_sender_id) > 0) {
+                $sender_id = $this->pickSenderIds();
+            } else {
+                $sender_id = null;
+            }
 
             foreach ($lines as $line) {
+                $phoneUtil         = PhoneNumberUtil::getInstance();
+                $phoneNumberObject = $phoneUtil->parse('+'.$line['phone']);
+                $country_code      = $phoneNumberObject->getCountryCode();
 
-                $message = $this->renderSMS($this->message, $line);
+                if (is_array($coverage) && array_key_exists($country_code, $coverage)) {
 
-                $sms_type = $this->sms_type;
-
-                if ($sms_type == 'plain') {
-                    if (strlen($message) != strlen(utf8_decode($message))) {
-                        $sms_type = 'unicode';
+                    if ($this->sms_type == 'plain' || $this->sms_type == 'unicode') {
+                        $cost = $coverage[$country_code]['plain_sms'];
                     }
 
-                    if ($sms_type == 'unicode') {
-                        $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
-
-                        if ($length_count <= 70) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 67;
-                        }
-                    } else {
-                        $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                        if ($length_count <= 160) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 157;
-                        }
+                    if ($this->sms_type == 'voice') {
+                        $cost = $coverage[$country_code]['voice_sms'];
                     }
-                } elseif ($sms_type == 'unicode') {
-                    $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
 
-                    if ($length_count <= 70) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 67;
+                    if ($this->sms_type == 'mms') {
+                        $cost = $coverage[$country_code]['mms_sms'];
                     }
+
+                    if ($this->sms_type == 'whatsapp') {
+                        $cost = $coverage[$country_code]['whatsapp_sms'];
+                    }
+
+                    $message  = $this->renderSMS($this->message, $line);
+                    $sms_type = $this->sms_type;
+
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    $price      = $cost * $sms_count;
+                    $total_unit += (int) $price;
+
+                    $preparedData['id']             = $line['id'];
+                    $preparedData['user_id']        = $this->user_id;
+                    $preparedData['phone']          = $line['phone'];
+                    $preparedData['sender_id']      = $sender_id;
+                    $preparedData['message']        = $message;
+                    $preparedData['sms_type']       = $sms_type;
+                    $preparedData['cost']           = (int) $price;
+                    $preparedData['status']         = 'Delivered';
+
                 } else {
-                    $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                    if ($length_count <= 160) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 157;
-                    }
+
+                    $message = $this->renderSMS($this->message, $line);
+
+                    $sms_type = $this->sms_type;
+
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    $price      = 1 * $sms_count;
+                    $total_unit += (int) $price;
+
+                    $preparedData['id']             = $line['id'];
+                    $preparedData['user_id']        = $this->user_id;
+                    $preparedData['phone']          = $line['phone'];
+                    $preparedData['sender_id']      = $sender_id;
+                    $preparedData['message']        = $message;
+                    $preparedData['sms_type']       = $sms_type;
+                    $preparedData['cost']           = (int) $price;
+                    $preparedData['status']         = "Permission to send an SMS has not been enabled for the region indicated by the 'To' number: ".$line['phone'];
+
                 }
-                $sms_count = ceil($sms_count);
-
-                $price      = $cost * $sms_count;
-                $total_unit += (int) $price;
-
-                $preparedData['id']             = $line['id'];
-                $preparedData['user_id']        = $this->user_id;
-                $preparedData['phone']          = $line['phone'];
-                $preparedData['sender_id']      = $sender_id;
-                $preparedData['message']        = $message;
-                $preparedData['sms_type']       = $sms_type;
-                $preparedData['cost']           = (int) $price;
-                $preparedData['status']         = 'Delivered';
                 $preparedData['campaign_id']    = $this->id;
                 $preparedData['sending_server'] = $sending_server;
-
-                $prepareForTemplateTag[] = $preparedData;
+                $prepareForTemplateTag[]        = $preparedData;
             }
         });
 
 
-        collect($insertData)->chunk(5000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, &$total_unit) {
+        collect($insertData)->chunk(5000)->each(function ($lines) use (&$prepareForTemplateTag, $cost, &$total_unit, $sending_server, $coverage) {
+
+            $check_sender_id = $this->getSenderIds();
+
+            if (count($check_sender_id) > 0) {
+                $sender_id = $this->pickSenderIds();
+            } else {
+                $sender_id = null;
+            }
+
             foreach ($lines as $line) {
 
-                $sending_server = $this->pickSendingServer();
-                $sender_id      = $this->pickSenderIds();
+                $phoneUtil         = PhoneNumberUtil::getInstance();
+                $phoneNumberObject = $phoneUtil->parse('+'.$line['phone']);
+                $country_code      = $phoneNumberObject->getCountryCode();
 
-                $message = $this->renderSMS($this->message, $line);
+                if (is_array($coverage) && array_key_exists($country_code, $coverage)) {
 
-                $sms_type = $this->sms_type;
-
-                if ($sms_type == 'plain') {
-                    if (strlen($message) != strlen(utf8_decode($message))) {
-                        $sms_type = 'unicode';
+                    if ($this->sms_type == 'plain' || $this->sms_type == 'unicode') {
+                        $cost = $coverage[$country_code]['plain_sms'];
                     }
 
-                    if ($sms_type == 'unicode') {
-                        $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
-
-                        if ($length_count <= 70) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 67;
-                        }
-                    } else {
-                        $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                        if ($length_count <= 160) {
-                            $sms_count = 1;
-                        } else {
-                            $sms_count = $length_count / 157;
-                        }
+                    if ($this->sms_type == 'voice') {
+                        $cost = $coverage[$country_code]['voice_sms'];
                     }
-                } elseif ($sms_type == 'unicode') {
-                    $length_count = mb_strlen(preg_replace('/\s+/', ' ', trim($message)), 'UTF-8');
 
-                    if ($length_count <= 70) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 67;
+                    if ($this->sms_type == 'mms') {
+                        $cost = $coverage[$country_code]['mms_sms'];
                     }
+
+                    if ($this->sms_type == 'whatsapp') {
+                        $cost = $coverage[$country_code]['whatsapp_sms'];
+                    }
+
+                    $message  = $this->renderSMS($this->message, $line);
+                    $sms_type = $this->sms_type;
+
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    $price      = $cost * $sms_count;
+                    $total_unit += (int) $price;
+
+                    $preparedData['id']             = $line['id'];
+                    $preparedData['user_id']        = $this->user_id;
+                    $preparedData['phone']          = $line['phone'];
+                    $preparedData['sender_id']      = $sender_id;
+                    $preparedData['message']        = $message;
+                    $preparedData['sms_type']       = $sms_type;
+                    $preparedData['cost']           = (int) $price;
+                    $preparedData['status']         = null;
+
                 } else {
-                    $length_count = strlen(preg_replace('/\s+/', ' ', trim($message)));
-                    if ($length_count <= 160) {
-                        $sms_count = 1;
-                    } else {
-                        $sms_count = $length_count / 157;
-                    }
+
+                    $message = $this->renderSMS($this->message, $line);
+
+                    $sms_type = $this->sms_type;
+
+                    $sms_counter  = new SMSCounter();
+                    $message_data = $sms_counter->count($message);
+                    $sms_count    = $message_data->messages;
+
+                    $price      = 1 * $sms_count;
+                    $total_unit += (int) $price;
+
+                    $preparedData['id']             = $line['id'];
+                    $preparedData['user_id']        = $this->user_id;
+                    $preparedData['phone']          = $line['phone'];
+                    $preparedData['sender_id']      = $sender_id;
+                    $preparedData['message']        = $message;
+                    $preparedData['sms_type']       = $sms_type;
+                    $preparedData['cost']           = (int) $price;
+                    $preparedData['status']         = "Permission to send an SMS has not been enabled for the region indicated by the 'To' number: ".$line['phone'];
+
                 }
-                $sms_count = ceil($sms_count);
-
-                $price = $cost * $sms_count;
-
-                $total_unit += (int) $price;
-
-                $preparedData['id']             = $line['id'];
-                $preparedData['user_id']        = $this->user_id;
-                $preparedData['phone']          = $line['phone'];
-                $preparedData['sender_id']      = $sender_id;
-                $preparedData['message']        = $message;
-                $preparedData['sms_type']       = $sms_type;
-                $preparedData['cost']           = (int) $price;
-                $preparedData['status']         = null;
                 $preparedData['campaign_id']    = $this->id;
                 $preparedData['sending_server'] = $sending_server;
-
-                $prepareForTemplateTag[] = $preparedData;
+                $prepareForTemplateTag[]        = $preparedData;
             }
         });
 
-        if ($total_unit > $this->user->sms_unit) {
+        if ($this->user->sms_unit != '-1' && $total_unit > $this->user->sms_unit) {
             $this->failed(sprintf("Campaign `%s` (%s) halted, customer exceeds sms credit", $this->campaign_name, $this->uid));
             sleep(60);
         } else {
 
             $user = User::find($this->user->id);
+            if ($user->sms_unit != '-1') {
 
-            $user->update([
-                    'sms_unit' => $user->sms_unit - $total_unit,
-            ]);
+                $user->update([
+                        'sms_unit' => $user->sms_unit - $total_unit,
+                ]);
+            }
 
             try {
                 $failed_cost = 0;
@@ -822,6 +853,9 @@ class Campaigns extends SendCampaignSMS
                         }
 
                         if ($this->sms_type == 'whatsapp') {
+                            if (isset($this->media_url)){
+                                $data['media_url'] = $this->media_url;
+                            }
                             $status = $this->sendWhatsApp($data);
                         }
 
@@ -837,9 +871,11 @@ class Campaigns extends SendCampaignSMS
                 unset($user);
                 $user = User::find($this->user->id);
 
-                $user->update([
-                        'sms_unit' => $user->sms_unit + $failed_cost,
-                ]);
+                if ($user->sms_unit != '-1') {
+                    $user->update([
+                            'sms_unit' => $user->sms_unit + $failed_cost,
+                    ]);
+                }
 
                 $this->delivered();
 
@@ -848,6 +884,7 @@ class Campaigns extends SendCampaignSMS
             } finally {
                 self::resetServerPools();
                 $this->updateCache();
+                $this->delivered();
             }
         }
 
@@ -910,14 +947,11 @@ class Campaigns extends SendCampaignSMS
 
         $id = RouletteWheel::generate($sender_id);
 
-        if ($id == 0) {
-            $id = CampaignsSenderid::find($sender_id[0])->sender_id;
-        }
-        if (empty(self::$serverPools[$id])) {
-            self::$serverPools[$id] = $id;
+        if (empty(self::$senderIdPools[$id])) {
+            self::$senderIdPools[$id] = $id;
         }
 
-        return self::$serverPools[$id];
+        return self::$senderIdPools[$id];
 
     }
 
@@ -931,25 +965,25 @@ class Campaigns extends SendCampaignSMS
         $sms_type = $this->sms_type;
 
         if ($sms_type == 'plain') {
-            return '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.plain').'</span></div>';
+            return '<span class="badge bg-primary text-uppercase me-1 mb-1">'.__('locale.labels.plain').'</span>';
         }
         if ($sms_type == 'unicode') {
-            return '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.unicode').'</span></div>';
+            return '<span class="badge bg-primary text-uppercase me-1 mb-1">'.__('locale.labels.unicode').'</span>';
         }
 
         if ($sms_type == 'voice') {
-            return '<div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.voice').'</span></div>';
+            return '<span class="badge bg-success text-uppercase me-1 mb-1">'.__('locale.labels.voice').'</span>';
         }
 
         if ($sms_type == 'mms') {
-            return '<div class="badge badge-info text-uppercase mr-1 mb-1"><span>'.__('locale.labels.mms').'</span></div>';
+            return '<span class="badge bg-info text-uppercase me-1 mb-1">'.__('locale.labels.mms').'</span>';
         }
 
         if ($sms_type == 'whatsapp') {
-            return '<div class="badge badge-warning text-uppercase mb-1"><span>'.__('locale.labels.whatsapp').'</span></div>';
+            return '<span class="badge bg-warning text-uppercase mb-1">'.__('locale.labels.whatsapp').'</span>';
         }
 
-        return '<div class="badge badge-danger text-uppercase mb-1"><span>'.__('locale.labels.invalid').'</span></div>';
+        return '<span class="badge bg-danger text-uppercase mb-1">'.__('locale.labels.invalid').'</span>';
     }
 
     /**
@@ -963,19 +997,20 @@ class Campaigns extends SendCampaignSMS
 
         if ($sms_type == 'onetime') {
             return '<div>
-                        <div class="badge badge-info text-uppercase mr-1 mb-1"><span>'.__('locale.labels.scheduled').'</span></div>
+                        <span class="badge badge-light-info text-uppercase me-1 mb-1">'.__('locale.labels.scheduled').'</span>
                         <p class="text-muted">'.Tool::customerDateTime($this->schedule_time).'</p>
                     </div>';
         }
         if ($sms_type == 'recurring') {
             return '<div>
-                        <div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.recurring').'</span></div>
+                        <span class="badge badge-light-success text-uppercase me-1 mb-1">'.__('locale.labels.recurring').'</span>
                         <p class="text-muted">'.__('locale.labels.every').' '.$this->displayFrequencyTime().'</p>
-                        <p class="text-muted">'.__('locale.labels.end_time').' '.Tool::formatDate($this->recurring_end).'</p>
+                        <p class="text-muted">'.__('locale.labels.next_schedule_time').': '.Tool::formatDateTime($this->schedule_time).'</p>
+                        <p class="text-muted">'.__('locale.labels.end_time').': '.Tool::formatDateTime($this->recurring_end).'</p>
                     </div>';
         }
 
-        return '<div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.normal').'</span></div>';
+        return '<span class="badge badge-light-primary text-uppercase me-1 mb-1">'.__('locale.labels.normal').'</span>';
     }
 
     /**
@@ -1000,31 +1035,27 @@ class Campaigns extends SendCampaignSMS
 
         if ($status == self::STATUS_FAILED || $status == self::STATUS_CANCELLED) {
             return '<div>
-                        <div class="badge badge-danger text-uppercase mr-1 mb-1"><span>'.__('locale.labels.'.$status).'</span></div>
+                        <span class="badge bg-danger text-uppercase me-1 mb-1">'.__('locale.labels.'.$status).'</span>
                         <p class="text-muted" data-toggle="tooltip" data-placement="top" title="'.$this->reason.'">'.str_limit($this->reason, 40).'</p>
                     </div>';
         }
         if ($status == self::STATUS_SENDING || $status == self::STATUS_PROCESSING) {
             return '<div>
-                        <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.'.$status).'</span></div>
+                        <span class="badge bg-primary text-uppercase mr-1 mb-1">'.__('locale.labels.'.$status).'</span>
                         <p class="text-muted">'.__('locale.labels.run_at').': '.Tool::customerDateTime($this->run_at).'</p>
                     </div>';
         }
 
         if ($status == self::STATUS_SCHEDULED) {
-            return '<div>
-                        <div class="badge badge-info text-uppercase mr-1 mb-1"><span>'.__('locale.labels.scheduled').'</span></div>
-                    </div>';
+            return '<span class="badge bg-info text-uppercase mr-1 mb-1">'.__('locale.labels.scheduled').'</span>';
         }
         if ($status == self::STATUS_NEW || $status == self::STATUS_QUEUED) {
-            return '<div>
-                        <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>'.__('locale.labels.'.$status).'</span></div>
-                    </div>';
+            return '<span class="badge bg-primary text-uppercase mr-1 mb-1">'.__('locale.labels.'.$status).'</span>';
         }
 
 
         return '<div>
-                        <div class="badge badge-success text-uppercase mr-1 mb-1"><span>'.__('locale.labels.delivered').'</span></div>
+                        <span class="badge bg-success text-uppercase mr-1 mb-1">'.__('locale.labels.delivered').'</span>
                         <p class="text-muted">'.__('locale.labels.delivered_at').': '.Tool::customerDateTime($this->delivery_at).'</p>
                     </div>';
     }

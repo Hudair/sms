@@ -6,6 +6,7 @@ use App\Exceptions\GeneralException;
 use App\Models\Plan;
 use App\Models\PlansSendingServer;
 use App\Models\SendingServer;
+use App\Models\Subscription;
 use App\Repositories\Contracts\PlanRepository;
 use Carbon\Carbon;
 use Exception;
@@ -48,6 +49,7 @@ class EloquentPlanRepository extends EloquentBaseRepository implements PlanRepos
                 'currency_id',
                 'is_popular',
                 'tax_billing_required',
+                'show_in_customer',
         ]));
 
         if (isset($input['tax_billing_required'])) {
@@ -58,6 +60,12 @@ class EloquentPlanRepository extends EloquentBaseRepository implements PlanRepos
             $plan->is_popular = true;
         }
 
+        if (isset($input['show_in_customer'])) {
+            $plan->show_in_customer = true;
+        } else {
+            $plan->show_in_customer = false;
+        }
+
         if (isset($input['billing_cycle']) && $input['billing_cycle'] != 'custom') {
             $limits                 = $billingCycle[$input['billing_cycle']];
             $plan->frequency_amount = $limits['frequency_amount'];
@@ -66,7 +74,7 @@ class EloquentPlanRepository extends EloquentBaseRepository implements PlanRepos
 
         $plan->options = json_encode($options);
 
-        $plan->status  = true;
+        $plan->status  = false;
         $plan->user_id = auth()->user()->id;
 
         if ( ! $this->save($plan)) {
@@ -114,6 +122,12 @@ class EloquentPlanRepository extends EloquentBaseRepository implements PlanRepos
             $input['is_popular'] = false;
         }
 
+        if (isset($input['show_in_customer'])) {
+            $input['show_in_customer'] = true;
+        } else {
+            $input['show_in_customer'] = false;
+        }
+
         if (isset($input['billing_cycle']) && $input['billing_cycle'] != 'custom') {
             $limits                    = $billingCycle[$input['billing_cycle']];
             $input['frequency_amount'] = $limits['frequency_amount'];
@@ -136,6 +150,9 @@ class EloquentPlanRepository extends EloquentBaseRepository implements PlanRepos
      */
     public function destroy(Plan $plan)
     {
+
+        Subscription::where('plan_id', $plan->id)->delete();
+
         if ( ! $plan->delete()) {
             throw new GeneralException(__('locale.exceptions.something_went_wrong'));
         }
@@ -152,14 +169,12 @@ class EloquentPlanRepository extends EloquentBaseRepository implements PlanRepos
      */
     public function batchDestroy(array $ids): bool
     {
-        DB::transaction(function () use ($ids) {
-            // This wont call eloquent events, change to destroy if needed
-            if ($this->query()->whereIn('uid', $ids)->delete()) {
-                return true;
-            }
 
-            throw new GeneralException(__('locale.exceptions.something_went_wrong'));
-        });
+        $plans = Plan::whereIn('uid', $ids)->cursor();
+        foreach ($plans as $plan) {
+            Subscription::where('plan_id', $plan->id)->delete();
+            $plan->delete();
+        }
 
         return true;
     }

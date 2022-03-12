@@ -50,7 +50,7 @@ class UpdateDemo extends Command
      *
      * @var string
      */
-    protected $description = 'Update Demo Database in every 1 hour';
+    protected $description = 'Update Demo Database in every day';
 
     /**
      * Create a new command instance.
@@ -1337,8 +1337,8 @@ class UpdateDemo extends Command
                         'user_id'              => 1,
                         'currency_id'          => 1,
                         'name'                 => 'Free',
-                        'description'          => 'Free Plan for new user\'s',
-                        'price'                => '0.00',
+                        'description'          => 'A simple start for everyone',
+                        'price'                => '0',
                         'billing_cycle'        => 'monthly',
                         'frequency_amount'     => 1,
                         'frequency_unit'       => 'month',
@@ -1348,27 +1348,27 @@ class UpdateDemo extends Command
                 ],
                 [
                         'user_id'              => 1,
-                        'currency_id'          => 3,
+                        'currency_id'          => 1,
                         'name'                 => 'Standard',
-                        'description'          => 'Most Popular Plan',
-                        'price'                => '500.00',
+                        'description'          => 'For small to medium businesses',
+                        'price'                => '49',
                         'billing_cycle'        => 'custom',
                         'frequency_amount'     => 6,
                         'frequency_unit'       => 'month',
                         'is_popular'           => true,
-                        'options'              => '{"sms_max":"10000","whatsapp_max":"10000","list_max":"100","subscriber_max":"100000","subscriber_per_list_max":"10000","segment_per_list_max":"-1","billing_cycle":"monthly","sending_limit":"10000_per_hour","sending_quota":"1000","sending_quota_time":"1","sending_quota_time_unit":"hour","max_process":"2","unsubscribe_url_required":"yes","create_sending_server":"yes","sending_servers_max":"5","list_import":"yes","list_export":"yes","api_access":"yes","create_sub_account":"yes","delete_sms_history":"yes","add_previous_balance":"yes","sender_id_verification":"yes","send_spam_message":"yes","plain_sms":"1","receive_plain_sms":"0","voice_sms":"2","receive_voice_sms":"0","mms_sms":"3","receive_mms_sms":"0","whatsapp_sms":"1","receive_whatsapp_sms":"0","quota_value":10000,"quota_base":1,"quota_unit":"hour","cutting_system":"yes","cutting_value":"5","cutting_unit":"percentage","cutting_logic":"random","per_unit_price":"0.3"}',
+                        'options'              => '{"sms_max":"10000","whatsapp_max":"10000","list_max":"-1","subscriber_max":"-1","subscriber_per_list_max":"-1","segment_per_list_max":"-1","billing_cycle":"monthly","sending_limit":"10000_per_hour","sending_quota":"1000","sending_quota_time":"1","sending_quota_time_unit":"hour","max_process":"2","unsubscribe_url_required":"yes","create_sending_server":"yes","sending_servers_max":"5","list_import":"yes","list_export":"yes","api_access":"yes","create_sub_account":"yes","delete_sms_history":"yes","add_previous_balance":"yes","sender_id_verification":"yes","send_spam_message":"yes","plain_sms":"1","receive_plain_sms":"0","voice_sms":"2","receive_voice_sms":"0","mms_sms":"3","receive_mms_sms":"0","whatsapp_sms":"1","receive_whatsapp_sms":"0","quota_value":10000,"quota_base":1,"quota_unit":"hour","cutting_system":"yes","cutting_value":"5","cutting_unit":"percentage","cutting_logic":"random","per_unit_price":"0.3"}',
                         'status'               => true,
                         'tax_billing_required' => true,
                 ],
                 [
                         'user_id'              => 1,
                         'currency_id'          => 1,
-                        'name'                 => 'Premium',
-                        'description'          => 'Premium package. Specially for corporate service.',
-                        'price'                => '5000.00',
-                        'billing_cycle'        => 'yearly',
+                        'name'                 => 'Enterprise',
+                        'description'          => 'Solution for big organizations',
+                        'price'                => '99',
+                        'billing_cycle'        => 'monthly',
                         'frequency_amount'     => 1,
-                        'frequency_unit'       => 'year',
+                        'frequency_unit'       => 'month',
                         'options'              => '{"sms_max":"-1","whatsapp_max":"-1","list_max":"-1","subscriber_max":"-1","subscriber_per_list_max":"-1","segment_per_list_max":"-1","billing_cycle":"monthly","sending_limit":"50000_per_hour","sending_quota":"1000","sending_quota_time":"1","sending_quota_time_unit":"hour","max_process":"3","unsubscribe_url_required":"yes","create_sending_server":"yes","sending_servers_max":"5","list_import":"yes","list_export":"yes","api_access":"yes","create_sub_account":"yes","delete_sms_history":"yes","add_previous_balance":"yes","sender_id_verification":"yes","send_spam_message":"yes","plain_sms":"1","receive_plain_sms":"0","voice_sms":"1","receive_voice_sms":"0","mms_sms":"2","receive_mms_sms":"0","whatsapp_sms":"1","receive_whatsapp_sms":"0","quota_value":50000,"quota_base":1,"quota_unit":"hour","cutting_system":"yes","cutting_value":"5","cutting_unit":"percentage","cutting_logic":"random","per_unit_price":"0.3"}',
                         'status'               => true,
                         'tax_billing_required' => true,

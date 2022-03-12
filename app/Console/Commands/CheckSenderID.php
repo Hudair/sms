@@ -37,7 +37,7 @@ class CheckSenderID extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
         $senderids = Senderid::where('status', 'active')->where('validity_date', "<", Carbon::now()->endOfDay())->cursor();
 

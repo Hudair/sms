@@ -473,6 +473,7 @@ return [
                 'bulk_approve' => 'Aprobar',
                 'bulk_cancel'  => 'Cancelar',
                 'bulk_disable' => 'Deshabilitar',
+                'showing_entries' => 'Demostración :start para :end de :total entradas',
         ],
 
     //Localization for application http status codes

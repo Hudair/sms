@@ -30,6 +30,9 @@ return [
                 'move'             => 'Move',
                 'remove_mms'       => 'Remove MMS',
                 'new_server'       => 'Add New Server',
+            /*Version 3.1*/
+                'add_coverage'     => 'Add Coverage',
+                'update_coverage'  => 'Update Coverage',
         ],
 
     //Localization for application exception
@@ -42,6 +45,7 @@ return [
                 'invalid_image'            => 'Invalid image. Please update correct one.',
                 'registration_disabled'    => 'Registration is disabled.',
                 'user_verification'        => 'User verification is disabled.',
+                'invalid_sms_type'         => 'Please insert valid sms type called plain, unicode, voice, mms, and whatsapp.',
         ],
 
     //Localization for application labels
@@ -97,6 +101,7 @@ return [
                 'failed'                                => 'Failed',
                 'queued'                                => 'Queued',
                 'schedule_time'                         => 'Schedule Time',
+                'next_schedule_time'                    => 'Next Schedule Time',
                 'capabilities'                          => 'Capabilities',
                 'cancelled'                             => 'Cancelled',
                 'opps'                                  => 'Opps...',
@@ -143,6 +148,7 @@ return [
                 'end_date'                              => 'End date',
                 'time'                                  => 'Time',
                 'end_time'                              => 'End time',
+                'start_time'                            => 'Start time',
                 'available'                             => 'Available',
                 'size'                                  => 'Size',
                 'roles'                                 => 'Roles',
@@ -285,6 +291,7 @@ return [
                 'information'                           => 'Information',
                 'change'                                => 'Change',
                 'add_unit'                              => 'Add Unit',
+                'remove_unit'                           => 'Remove Unit',
                 'remove'                                => 'Remove',
                 'sender_id'                             => 'Sender ID',
                 'company'                               => 'Company',
@@ -378,7 +385,7 @@ return [
                 'free'                                  => 'Free',
                 'payment_required'                      => 'Payment Required',
                 'pay'                                   => 'Pay',
-                'sms_credit'                            => 'Sms Credit',
+                'sms_credit'                            => 'Sms Unit',
                 'whatsapp_credit'                       => 'WhatsApp Credit',
                 'cutting_system_available'              => 'Cutting system available',
                 'api_access'                            => 'API Access',
@@ -422,6 +429,7 @@ return [
                 'checkout'                              => 'Checkout',
                 'total_price'                           => 'Total Price',
                 'total'                                 => 'Total',
+                'charge'                                => 'Charge',
                 'delivery_charge'                       => 'Delivery Charge',
                 'place_order'                           => 'Place Order',
                 'cart'                                  => 'Cart',
@@ -444,15 +452,36 @@ return [
                 'credit_warning'                        => 'Credit Warning',
                 'subscription_warning'                  => 'Subscription Warning',
                 'new_conversion'                        => 'New Conversion',
-                "welcome_to"                            => "Welcome To",
-                "welcome_to_docs"                       => "Welcome To :brandname docs",
-                "submitted"                             => "Submitted",
-                "finished"                              => "Finished",
-                "greeting_message"                      => ":time, :name",
-                "good_morning"                          => "Good morning",
-                "good_afternoon"                        => "Good afternoon",
-                "good_evening"                          => "Good evening",
-                "good_night"                            => "Good night",
+                'welcome_to'                            => 'Welcome To',
+                'welcome_to_docs'                       => 'Welcome To :brandname docs',
+                'submitted'                             => 'Submitted',
+                'finished'                              => 'Finished',
+                'greeting_message'                      => ':time, :name',
+                'good_morning'                          => 'Good morning',
+                'good_afternoon'                        => 'Good afternoon',
+                'good_evening'                          => 'Good evening',
+                'good_night'                            => 'Good night',
+
+            /*version 3.1*/
+                'read_all_notifications'                => 'Read all notifications',
+                'you_have_new_user'                     => 'You have new user',
+                'you_have_new_subscription'             => 'You have new subscription',
+                'new_sender_id_notification'            => 'New Sender ID notification',
+                'manage_profile'                        => 'Manage Profile',
+                'success'                               => 'Success',
+                'warning'                               => 'Warning',
+                'ops'                                   => 'Oops',
+                'select_all'                            => 'Select All',
+                'id'                                    => 'ID',
+                'popular'                               => 'Popular',
+                'success_rate'                          => 'Success Rate',
+                'existing_mms_file'                     => 'Existing MMS File',
+                'remove_blacklist'                      => 'You can revert this from Blacklist',
+                'iso_code'                              => 'ISO Code',
+                'country_code'                          => 'Country Code',
+                'sending_server'                        => 'Sending Server',
+                'remaining_in_number'                   => 'Remaining In number',
+
         ],
 
         'filezone'   => [
@@ -466,18 +495,19 @@ return [
 
     //Localization for application data tables
         'datatables' => [
-                'no_results'   => 'No results available',
-                'search'       => 'Search',
-                'first'        => 'First',
-                'last'         => 'Last',
-                'previous'     => 'Previous',
-                'next'         => 'Next',
-                'processing'   => 'Processing ...',
-                'bulk_delete'  => 'Delete',
-                'bulk_enable'  => 'Enable',
-                'bulk_approve' => 'Approve',
-                'bulk_cancel'  => 'Cancel',
-                'bulk_disable' => 'Disable',
+                'no_results'      => 'No results available',
+                'search'          => 'Search',
+                'first'           => 'First',
+                'last'            => 'Last',
+                'previous'        => 'Previous',
+                'next'            => 'Next',
+                'processing'      => 'Processing ...',
+                'bulk_delete'     => 'Delete',
+                'bulk_enable'     => 'Enable',
+                'bulk_approve'    => 'Approve',
+                'bulk_cancel'     => 'Cancel',
+                'bulk_disable'    => 'Disable',
+                'showing_entries' => 'Showing :start to :end of :total entries',
         ],
 
     //Localization for application http status codes
@@ -576,6 +606,8 @@ return [
                 "Received Messages"  => "Received Messages",
                 "Sent Messages"      => "Sent Messages",
                 "Campaigns"          => "Campaigns",
+                "Countries"          => "Countries",
+                "Theme Customizer"   => "Theme Customizer",
         ],
 
         'currencies' => [
@@ -704,6 +736,11 @@ return [
                 'plans_disabled'                               => 'Selected plans disabled',
                 'plans_deleted'                                => 'Selected plans deleted',
                 'send_spam_message'                            => 'Customer can send spam message',
+
+            /*Version 3.1*/
+                'select_plan_as_per_requirement'               => 'Select plan as per your retirement',
+                'show_in_customer'                             => 'Show In Customer',
+                'coverage_was_successfully_added'              => 'Plan coverage was successfully added',
         ],
 
         'keywords' => [
@@ -737,8 +774,8 @@ return [
                 'number_successfully_released'        => 'Number was successfully released',
                 'available_phone_numbers'             => 'Do you want available these phone numbers!',
                 'delete_phone_numbers'                => 'Do you want delete these phone numbers!',
-                'phone_numbers_deleted'               => 'Selected phone numbers deleted',
-                'phone_numbers_available'             => 'Selected phone numbers available',
+                'phone_numbers_deleted'               => 'Selected phone numbers were deleted',
+                'phone_numbers_available'             => 'Selected phone numbers are available',
                 'phone_number_capabilities_not_found' => 'Phone number capabilities not found',
                 'release_numbers'                     => 'Release selected numbers!',
                 'payment_for_number'                  => 'Payment for number',
@@ -797,7 +834,7 @@ return [
                 'sender_id_required'             => 'Sender ID required',
                 'phone_numbers_required'         => 'Phone numbers required',
                 'sender_id_invalid'              => 'Originator :sender_id is not authorized to send this message',
-                'sender_id_sms_capabilities'     => 'Originator :sender_id is not capable to send plain sms',
+                'sender_id_sms_capabilities'     => 'Originator :sender_id is not capable to send :type sms',
                 'payment_for_sender_id'          => 'Payment for Sender ID',
                 'price_details'                  => 'Price Details',
                 'payment_cancelled'              => 'Payment cancelled by user',
@@ -929,7 +966,7 @@ return [
                 'no_active_subscription'               => 'No active subscription',
                 'plan_not_found'                       => 'Subscription plan information not found',
                 'customer_not_found'                   => 'Customer information not found',
-                'subscription_period_end'              => 'Number of days before subscription period end',
+                'subscription_period_end'              => 'Send notification (x) number of days before expiration',
                 'subscribed_to_plan'                   => 'Subscribed to :plan plan',
                 'subscribed_by'                        => 'Subscribed by',
                 'subscribed_on'                        => 'Subscribed on',
@@ -980,6 +1017,11 @@ return [
                 'subscription_warning_description'     => 'Send an email or SMS anytime when your subscription going to be expired',
                 'delete_invoices'                      => 'Do you want delete these invoices!',
                 'invoices_deleted'                     => 'Selected invoices deleted',
+
+            /*version 3.1*/
+                'current_plan_information'             => "Your Current Plan is <strong>:plan_name</strong>",
+                'active_until'                         => "Active until <strong>:date</strong>",
+                'current_plan_notification'            => "We will send you a notification upon Subscription expiration",
         ],
 
 
@@ -1141,6 +1183,7 @@ return [
                 'max_list_quota'                              => 'You have exceeded the contact groups quota. Your contact groups quota: :max_list',
                 'subscriber_per_list_max_quota'               => 'You have exceeded the contacts quota for this group. Your contacts quota per group is: :subscriber_per_list_max',
                 'subscriber_max_quota'                        => 'You have exceeded the total contacts quota. Your total contacts quota is: :subscriber_max',
+                'include_country_code'                        => 'Every number needs to include a <code>country code</code> for a successful insert.',
                 'include_country_code_for_successful_import'  => 'Every number needs to include a <code>country code</code> for a successful import.',
                 'only_supported_file'                         => 'Only supported file: <code>.csv</code>',
                 'upload_maximum_1000_rows'                    => 'You can upload a maximum of 1000 rows by copy-pasting',
@@ -1235,57 +1278,67 @@ return [
 
                 'custom_sending_credit' => "The configuration setting below allows you to set a limit on sms sending speed. For example, to limit sending speed to <code>500 sms every 5 minutes </code>, you can set <code> Sending limit = 500, Time value = 5, and Time unit = minute </code> accordingly. If you set <code>SMS Per Single Request</code> grater than <code>1</code> then you must have to select your <code>Delimiter</code> for multiple sms.",
 
-                'cutting_system' => "The configuration setting below allows you to set a limit on sms cutting system. For example, to set number of cutting sms to <code>5 percent sms randomly </code>, you can set <code> Cutting Value= 5, Cutting Unit = Percentage, and Cutting Login = Cutting Random Number </code> accordingly. Example If want to send <code>100 sms</code> and set cutting value <code>5 percent</code> then <code>95 sms</code> will send, rest <code>5 sms</code> set delivered as status without sending. You can also set <code>specific amount </code> of cutting sms using <code>Digit</code> instead <code>Percentage</code> from <code>Cutting Unit</code> dropdown. Set <code>0</code> for no cutting.",
+                'cutting_system' => "The configuration setting below allows you to set a limit on sms cutting system. For example, to set number of cutting sms to <code>5 percent sms randomly </code>, you can set <code> Cutting Value= 5, Cutting Unit = Percentage, and Cutting Login = Cutting Random Number </code> accordingly. Example If you want to send <code>100 sms</code> and set cutting value <code>5 percent</code> then <code>95 sms</code> will send, rest <code>5 sms</code> set delivered as status without sending. You can also set <code>specific amount </code> of cutting sms using <code>Digit</code> instead <code>Percentage</code> from <code>Cutting Unit</code> dropdown. Set <code>0</code> for no cutting.",
                 'api_docs'       => 'Get familiar with our APIs and technical resources in your favorite languages.',
 
-                'twilio' => 'Create a new Twilio account <a href="https://www.twilio.com/try-twilio" target="_blank">here</a> , or sign into <a href="https://www.twilio.com/console" target="_blank"> an existing Twilio account</a> After login with twilio console you will find <code>ACCOUNT SID</code> and <code>AUTH TOKEN</code> on dashboard. Copy these information and paste on :brandname. For <code>Two Way</code> setup please login with your twilio console and Click either <code>Programmable Voice >TwiML > TwiML Apps</code> or <code>Programmable Messaging > Tools > TwiML Apps.</code> Click the <code>red + sign</code> icon or Create new TwiML App. Then insert following url on Voice and Messaging Request url <code> :url </code> Finally click on <code>save</code> button.',
+                'twilio' => 'Create a new Twilio account <a href="https://www.twilio.com/try-twilio" target="_blank">here</a> , or sign into <a href="https://www.twilio.com/console" target="_blank"> an existing Twilio account</a> After login with twilio console you will find <code>ACCOUNT SID</code> and <code>AUTH TOKEN</code> on dashboard. Copy this information and paste on :brandname. For <code>Two Way</code> setup please log in with your twilio console and Click either <code>Programmable Voice >TwiML > TwiML Apps</code> or <code>Programmable Messaging > Tools > TwiML Apps.</code> Click the <code>red + sign</code> icon or Create new TwiML App. Then insert following url on Voice and Messaging Request url <code> :url </code> Finally, click on <code>save</code> button.',
 
-                'clickatell' => 'Create a new Clickatell account <a href="https://www.clickatell.com/sign-up/" target="_blank">here</a> , or sign into <a href="https://www.clickatell.com/sign-in/" target="_blank"> an existing Clickatell account</a> After login with Clickatell you will find <code>Create SMS HTTP API</code> button. Then click on <code>Create new integration</code> button. Finally copy the <code>api key</code> and paste on ',
+                'clickatell' => 'Create a new Clickatell account <a href="https://www.clickatell.com/sign-up/" target="_blank">here</a> , or sign into <a href="https://www.clickatell.com/sign-in/" target="_blank"> an existing Clickatell account</a> After login with Clickatell you will find <code>Create SMS HTTP API</code> button. Then click on <code>Create new integration</code> button. Finally, copy the <code>api key</code> and paste on ',
 
                 'route_mobile' => 'Create a new Route Mobile account <a href="https://routemobile.com/payonline/" target="_blank">here</a> , or sign into <a href="https://routemobile.com/login/" target="_blank"> an existing Route Mobile account</a> Please update your Route Mobile login <code>Username</code> and <code>Password</code> on :brandname. For delivery reports please insert this url <code>:url</code> on your DLR callback setting',
 
-                'text_local' => 'Create a new Text Local account <a href="https://www.textlocal.com/signup/" target="_blank">here</a> , or sign into <a href="https://www.textlocal.com/login/" target="_blank"> an existing Text Local account</a> After login with Text Local you have to go <code>Settings -> API Keys</code> menu. Then click on <code>Create New Key</code> button. Finally copy the <code>api key</code> and paste on :brandname. For <code>Two Way</code> setup please login with your Text Local and go <code>Receive > Create Inbox </code>Menu. Then Click the <code>See SMS Inbox Options</code> button and choose either <code>Long Number Keyword or Dedicated Number</code>. After that click on <code>Settings</code> button and checked <code>Forward incoming messages to a URL</code> checkbox and insert this url <code>:url</code> on URL https:// field. Finally click on <code>save settings</code> button.',
+                'text_local' => 'Create a new Text Local account <a href="https://www.textlocal.com/signup/" target="_blank">here</a> , or sign into <a href="https://www.textlocal.com/login/" target="_blank"> an existing Text Local account</a> After login with Text Local you have to go <code>Settings -> API Keys</code> menu. Then click on <code>Create New Key</code> button. Finally, copy the <code>api key</code> and paste on :brandname. For <code>Two Way</code> setup please log in with your Text Local and go <code>Receive > Create Inbox </code>Menu. Then Click the <code>See SMS Inbox Options</code> button and choose either <code>Long Number Keyword or Dedicated Number</code>. After that click on <code>Settings</code> button and checked <code>Forward incoming messages to a URL</code> checkbox and insert this url <code>:url</code> on URL https:// field. Finally, click on <code>save settings</code> button.',
 
-                'mgs91' => 'Create a new msg91 account <a href="https://control.msg91.com/signup/" target="_blank">here</a> , or sign into <a href="https://control.msg91.com/signin/" target="_blank"> an existing msg91 account</a> After login with msg91 you have to click <code>Flow and APIs</code> option. Then click on <code>Create New </code> button. Finally copy the <code>api key</code> and paste on ',
+                'mgs91' => 'Create a new msg91 account <a href="https://control.msg91.com/signup/" target="_blank">here</a> , or sign into <a href="https://control.msg91.com/signin/" target="_blank"> an existing msg91 account</a> After login with msg91 you have to click <code>Flow and APIs</code> option. Then click on <code>Create New </code> button. Finally, copy the <code>api key</code> and paste on ',
 
-                'plivo' => 'Create a new Plivo account <a href="https://console.plivo.com/accounts/login/" target="_blank">here</a> , or sign into <a href="https://console.plivo.com/accounts/register/" target="_blank"> an existing Plivo account</a> After login with Plivo console you will find <code>AUTH ID</code> and <code>AUTH TOKEN</code> on dashboard. Copy these information and paste on :brandname. For <code>Two Way</code> setup please create a <a href="https://support.plivo.com/support/solutions/articles/17000090507-how-can-i-setup-an-application-and-assign-a-number-" target="_blank">Plivo Application</a> and insert this url <code>:url</code> on Message Method <code>Message URL</code> field.',
+                'plivo' => 'Create a new Plivo account <a href="https://console.plivo.com/accounts/login/" target="_blank">here</a> , or sign into <a href="https://console.plivo.com/accounts/register/" target="_blank"> an existing Plivo account</a> After login with Plivo console you will find <code>AUTH ID</code> and <code>AUTH TOKEN</code> on dashboard. Copy this information and paste on :brandname. For <code>Two Way</code> setup please create a <a href="https://support.plivo.com/support/solutions/articles/17000090507-how-can-i-setup-an-application-and-assign-a-number-" target="_blank">Plivo Application</a> and insert this url <code>:url</code> on Message Method <code>Message URL</code> field.',
 
-                'sms_global' => 'Create a new SMS Global account <a href="https://www.smsglobal.com/mxt-sign-up" target="_blank">here</a> , or sign into <a href="https://mxt.smsglobal.com/login" target="_blank"> an existing SMS Global account</a> After login with SMS Global you have to go <code>API & Integrations</code> menu and copy master api <code>Username</code> and <code>Password</code> Finally paste on :brandname. For delivery reports please go <code>Delivery Receipts</code> tab and select <code>URL</code> checkbox. Then insert this url <code>:url</code> on your DLR URL setting.',
+                'sms_global' => 'Create a new SMS Global account <a href="https://www.smsglobal.com/mxt-sign-up" target="_blank">here</a> , or sign into <a href="https://mxt.smsglobal.com/login" target="_blank"> an existing SMS Global account</a> After login with SMS Global you have to go <code>API & Integrations</code> menu and copy master api <code>Username</code> and <code>Password</code> Finally, paste on :brandname. For delivery reports please go <code>Delivery Receipts</code> tab and select <code>URL</code> checkbox. Then insert this url <code>:url</code> on your DLR URL setting.',
 
-                'bulk_sms' => 'Create a new Bulk SMS account <a href="https://www.bulksms.com/account/#!/registration" target="_blank">here</a> , or sign into <a href="https://www2.bulksms.com/login.mc" target="_blank"> an existing Bulk SMS account</a> Please update your Bulk SMS login <code>Username</code> and <code>Password</code> on :brandname. For <code>Two Way</code> setup please go <code>Developer Settings</code> Menu and click <code>Create Webhook</code> button. After that insert webhook name and select <code>a received message arrives</code> option. Finally insert this url <code>:url</code> on <code> URL</code> field and click on <code>Create</code> button.',
+                'bulk_sms' => 'Create a new Bulk SMS account <a href="https://www.bulksms.com/account/#!/registration" target="_blank">here</a> , or sign into <a href="https://www2.bulksms.com/login.mc" target="_blank"> an existing Bulk SMS account</a> Please update your Bulk SMS login <code>Username</code> and <code>Password</code> on :brandname. For <code>Two Way</code> setup please go <code>Developer Settings</code> Menu and click <code>Create Webhook</code> button. After that insert webhook name and select <code>a received message arrives</code> option. Finally, insert this url <code>:url</code> on <code> URL</code> field and click on <code>Create</code> button.',
 
-                'vonage' => 'Create a new Vonage account <a href="https://dashboard.nexmo.com/sign-up" target="_blank">here</a> , or sign into <a href="https://dashboard.nexmo.com/sign-in" target="_blank"> an existing Vonage account</a>  After login with Vonage you will find <code>API Key</code> and <code>API Secret</code> on dashboard. Copy these information and paste on :brandname. For <code>Two Way</code> setup please go <code># Numbers -> Your Numbers</code> Menu and click <code>Edit</code> icon. Then insert this url <code>:inbound_url</code> on <code> Inbound Webhook URL</code> field. Finally click on <code>Save</code> button. For delivery reports please insert this url <code>:dlr_url</code> on your <code>Webhook URL for Delivery Receipt</code> field.',
+                'vonage' => 'Create a new Vonage account <a href="https://dashboard.nexmo.com/sign-up" target="_blank">here</a> , or sign into <a href="https://dashboard.nexmo.com/sign-in" target="_blank"> an existing Vonage account</a>  After login with Vonage you will find <code>API Key</code> and <code>API Secret</code> on dashboard. Copy this information and paste on :brandname. For <code>Two Way</code> setup please go <code># Numbers -> Your Numbers</code> Menu and click <code>Edit</code> icon. Then insert this url <code>:inbound_url</code> on <code> Inbound Webhook URL</code> field. Finally, click on <code>Save</code> button. For delivery reports please insert this url <code>:dlr_url</code> on your <code>Webhook URL for Delivery Receipt</code> field.',
 
                 'infobip' => 'Create a new Infobip account <a href="https://www.infobip.com/contact" target="_blank">here</a> , or sign into <a href="https://portal.infobip.com/" target="_blank"> an existing Infobip account</a>  Please update your Infobip login <code>Username</code> and <code>Password</code> on ',
 
-                '1s2u' => 'Create a new 1s2u account <a href="https://1s2u.com/login.asp" target="_blank">here</a> , or sign into <a href="https://1s2u.com/login.asp" target="_blank"> an existing 1s2u account</a>  Please update your 1s2u login <code>Username</code> and <code>Password</code> on ',
+                '1s2u' => 'Create a new 1s2u account <a href="https://1s2u.com/login.asp" target="_blank">here</a> , or sign into <a href="https://1s2u.com/login.asp" target="_blank"> an existing 1s2u account</a>  Please update your 1s2u login <code>Username</code> and <code>Password</code> on :brandname  For delivery reports please insert this url <code>:dlr_url</code> on your <code>DLR Through Web</code> field from <code>Account Settings</code> dropdown.',
 
-                'sms_gateway_me' => 'Create a new Sms Gateway Me account <a href="https://smsgateway.me/register" target="_blank">here</a> , or sign into <a href="https://smsgateway.me/login" target="_blank"> an existing Sms Gateway Me account</a>  After login with Sms Gateway Me you have to go <code>Settings</code> menu and copy <code>API Token</code> Then click on <code>Devices</code> menu and copy <code>Device ID</code> Finally update these information on ',
+                'sms_gateway_me' => 'Create a new Sms Gateway Me account <a href="https://smsgateway.me/register" target="_blank">here</a> , or sign into <a href="https://smsgateway.me/login" target="_blank"> an existing Sms Gateway Me account</a>  After login with Sms Gateway Me you have to go <code>Settings</code> menu and copy <code>API Token</code> Then click on <code>Devices</code> menu and copy <code>Device ID</code> Finally, update this information on ',
 
-                'messagebird' => 'Create a new MessageBird account <a href="https://dashboard.messagebird.com/en/sign-up" target="_blank">here</a> , or sign into <a href="https://dashboard.messagebird.com/en/login/" target="_blank"> an existing MessageBird account</a>  After login with MessageBird you will find <code>API Key</code> on dashboard. Use <code>Live API Key</code> for <code>Production</code> mode and use <code>Test API Key</code> for <code>Sandbox or Test Environment</code> mode. Finally copy the <code>API Key</code> and paste on :brandname. For <code>Two Way</code> setup please visit this url <a href="https://developers.messagebird.com/tutorials/handle-incoming-calls-and-sms" target="_blank">Handle Incoming SMS</a> and insert this url <code>:inbound_url</code> on <code> Inbound Webhook URL</code> field. Finally click on <code>Save</code> button.',
+                'messagebird' => 'Create a new MessageBird account <a href="https://dashboard.messagebird.com/en/sign-up" target="_blank">here</a> , or sign into <a href="https://dashboard.messagebird.com/en/login/" target="_blank"> an existing MessageBird account</a>  After login with MessageBird you will find <code>API Key</code> on dashboard. Use <code>Live API Key</code> for <code>Production</code> mode and use <code>Test API Key</code> for <code>Sandbox or Test Environment</code> mode. Finally, copy the <code>API Key</code> and paste on :brandname. For <code>Two Way</code> setup please visit this url <a href="https://developers.messagebird.com/tutorials/handle-incoming-calls-and-sms" target="_blank">Handle Incoming SMS</a> and insert this url <code>:inbound_url</code> on <code> Inbound Webhook URL</code> field. Finally, click on <code>Save</code> button.',
 
                 'amazon_sns' => 'Create a new Amazon SNS account <a href="https://portal.aws.amazon.com/billing/signup#/start" target="_blank">here</a> , or sign into <a href="https://console.aws.amazon.com/?nc2=h_m_mc" target="_blank"> an existing Amazon SNS account</a>  After login with Amazon AWS Console please visit this url <a href="https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys" target="_blank">Access keys </a>  Then update your Amazon AWS <code>ACCESS KEY</code> , <code> SECRET ACCESS</code> and <code>REGION</code> on ',
 
-                'tyntec' => 'Create a new Tyntec account <a href="https://www.tyntec.com/create-account" target="_blank">here</a> , or sign into <a href="https://my.tyntec.com/auth/login" target="_blank"> an existing Tyntec account</a>  After login with Tyntec portal you have to go <code>API Settings</code> menu and copy the <code>API Key</code> Finally update your API Key on ',
+                'tyntec' => 'Create a new Tyntec account <a href="https://www.tyntec.com/create-account" target="_blank">here</a> , or sign into <a href="https://my.tyntec.com/auth/login" target="_blank"> an existing Tyntec account</a>  After login with Tyntec portal you have to go <code>API Settings</code> menu and copy the <code>API Key</code> Finally, update your API Key on ',
 
-                'whatsapp_chat_api' => 'Create a new Chat API account <a href="https://app.chat-api.com/registration" target="_blank">here</a> , or sign into <a href="https://app.chat-api.com/login" target="_blank"> an existing Chat API account</a>  After login with Chat API portal will find <code>API URL</code> and <code>Token</code> Just copy these information and update on ',
+                'whatsapp_chat_api' => 'Create a new Chat API account <a href="https://app.chat-api.com/registration" target="_blank">here</a> , or sign into <a href="https://app.chat-api.com/login" target="_blank"> an existing Chat API account</a>  After login with Chat API portal will find <code>API URL</code> and <code>Token</code> Just copy this information and update on :brandname. To receive messages please insert this url on your webhook url <code>:inbound_url</code>',
 
-                'karixio' => 'Create a new Karix account <a href="https://cloud.karix.io/user/register" target="_blank">here</a> , or sign into <a href="https://cloud.karix.io/user/login" target="_blank"> an existing Karix account</a>  After login with Karix portal you will find <code>ACCOUNT ID</code> and <code>ACCOUNT TOKEN</code> on dashboard. Copy these information and paste on ',
+                'karixio' => 'Create a new Karix account <a href="https://cloud.karix.io/user/register" target="_blank">here</a> , or sign into <a href="https://cloud.karix.io/user/login" target="_blank"> an existing Karix account</a>  After login with Karix portal you will find <code>ACCOUNT ID</code> and <code>ACCOUNT TOKEN</code> on dashboard. Copy this information and paste on ',
 
-                'signal_wire' => 'Create a new SignalWire account <a href="https://signalwire.com/signups/new?s=1" target="_blank">here</a> , or sign into <a href="https://signalwire.com/signin" target="_blank"> an existing SignalWire account</a>  After login with SignalWire portal you have to go <code>API</code> menu and copy the <code>PROJECT ID</code> <code>SPACE URL with https://</code> and <code>Token</code> Finally update your details on :brandname. For <code>Two Way</code> setup please login with your SignalWire project and go <code>LaML</code> menu. Click the <code>Apps</code> Tab and Create new LaML App. After that insert your App Name and go <code>Message Settings</code> Option. Finally insert this url  <code>:inbound_url </code> on <code>WHEN A MESSAGE COMES IN:</code> field and click on <code>save</code> button.',
+                'signal_wire' => 'Create a new SignalWire account <a href="https://signalwire.com/signups/new?s=1" target="_blank">here</a> , or sign into <a href="https://signalwire.com/signin" target="_blank"> an existing SignalWire account</a>  After login with SignalWire portal you have to go <code>API</code> menu and copy the <code>PROJECT ID</code> <code>SPACE URL with https://</code> and <code>Token</code> Finally, update your details on :brandname. For <code>Two Way</code> setup please login with your SignalWire project and go <code>LaML</code> menu. Click the <code>Apps</code> Tab and Create new LaML App. After that insert your App Name and go <code>Message Settings</code> Option. Finally, insert this url  <code>:inbound_url </code> on <code>WHEN A MESSAGE COMES IN:</code> field and click on <code>save</code> button.',
 
 
-                'flowroute' => 'Create a new Flowroute account <a href="https://manage.flowroute.com/signup/" target="_blank">here</a> , or sign into <a href="https://manage.flowroute.com/accounts/login/" target="_blank"> an existing Flowroute account</a>  After login click on <code>Preferences -> API Control</code> menu and <code>Add New API Key</code> Finally update your details on :brandname. For <code>Two Way</code> setup please insert this url <code>:inbound_url</code> on <code>SMS Callback</code> field and click on <code>Update URL</code> button.',
+                'flowroute' => 'Create a new Flowroute account <a href="https://manage.flowroute.com/signup/" target="_blank">here</a> , or sign into <a href="https://manage.flowroute.com/accounts/login/" target="_blank"> an existing Flowroute account</a>  After login click on <code>Preferences -> API Control</code> menu and <code>Add New API Key</code> Finally, update your details on :brandname. For <code>Two Way</code> setup please insert this url <code>:inbound_url</code> on <code>SMS Callback</code> field and click on <code>Update URL</code> button.',
 
                 'telnyx' => 'Create a new Telnyx account <a href="https://telnyx.com/sign-up" target="_blank">here</a> , or sign into <a href="https://portal.telnyx.com/#/login/sign-in" target="_blank"> an existing Telnyx account</a>  After login with Telnyx portal you have to go <code>Auth</code> menu. Then click on <code> Create API Key </code> button and copy the <code>API Key</code> and update on :brandname. Then go <code>Messaging</code> menu and click on <code>Add New profile</code> button. After that insert this url <code>:inbound_url</code> on <code>Send a webhook to this URL:</code> Field. For more details please check <a href="https://developers.telnyx.com/docs/v2/messaging/quickstarts/portal-setup" target="_blank">Portal Setup</a> documentation.',
 
-                'bandwidth' => 'Create a new Bandwidth account <a href="https://www.bandwidth.com/free-trial/" target="_blank">here</a> , or sign into <a href="https://www.bandwidth.com/login/" target="_blank"> an existing Bandwidth account</a>  After login with Bandwidth portal please visit this url <a href="https://support.bandwidth.com/hc/en-us/articles/360033658613-Messaging-V2-API-Account-Setup-UI-" target="_blank">Messaging V2 API Account Setup </a>  Finally copy the <code>Account ID, API Token, API Secret and Application ID</code> and update on :brandname. Please update your <code>Account ID</code> on <code>API Link</code> field.',
+                'bandwidth' => 'Create a new Bandwidth account <a href="https://www.bandwidth.com/free-trial/" target="_blank">here</a> , or sign into <a href="https://www.bandwidth.com/login/" target="_blank"> an existing Bandwidth account</a>  After login with Bandwidth portal please visit this url <a href="https://support.bandwidth.com/hc/en-us/articles/360033658613-Messaging-V2-API-Account-Setup-UI-" target="_blank">Messaging V2 API Account Setup </a>  Finally, copy the <code>Account ID, API Token, API Secret and Application ID</code> and update on :brandname. Please update your <code>Account ID</code> on <code>API Link</code> field. For <code>Two Way</code> setup please insert this url <code>:inbound_url</code> on <code>SMS Callback</code> field and click on <code>Update URL</code> button.',
+
+                'Solucoesdigitais' => 'For <code>Two Way</code> setup please insert this url <code>:inbound_url</code> on <code>SMS Callback</code> field and click on <code>Update URL</code> button.',
 
 
-                'easysendsms' => 'Create a new Easy Send SMS account <a href="https://www.easysendsms.com/register" target="_blank">here</a> , or sign into <a href="https://www.easysendsms.com/login" target="_blank"> an existing Easy Send SMS account</a>  After registration with Easy Send SMS you will find <code>Username</code> and <code>Password</code>. Copy these information and paste on :brandname. For <code>Two Way</code> setup please click on <code><i class="feather icon-settings us-2x"></i> </code> icon from right top corner and scroll down <code>URL\'s & Report Settings</code> option. Then insert this url <code>:inbound_url</code> on <code> 2 Way SMS Push URL</code> field. Finally click on <code>Save</code> button. For delivery reports please insert this url <code>:dlr_url</code> on your <code>Callback URL for SMS over HTTP API</code> field.',
+                'easysendsms' => 'Create a new Easy Send SMS account <a href="https://www.easysendsms.com/register" target="_blank">here</a> , or sign into <a href="https://www.easysendsms.com/login" target="_blank"> an existing Easy Send SMS account</a>  After registration with Easy Send SMS you will find <code>Username</code> and <code>Password</code>. Copy this information and paste on :brandname. For <code>Two Way</code> setup please click on <code><i class="feather icon-settings us-2x"></i> </code> icon from right top corner and scroll down <code>URL\'s & Report Settings</code> option. Then insert this url <code>:inbound_url</code> on <code> 2 Way SMS Push URL</code> field. Finally, click on <code>Save</code> button. For delivery reports please insert this url <code>:dlr_url</code> on your <code>Callback URL for SMS over HTTP API</code> field.',
+
+                'cmcom' => 'To receive delivery reports please update this URL <code>:dlr_url</code> on <code>Delivery Status Report Settings</code> on CM portal. To receive incoming message please update this url on your callback settings <code>:inbound_url</code>',
+
+                'gatewayapi' => 'To receive delivery reports please update this URL <code>:dlr_url</code>. To receive incoming message please update this url on your callback settings <code>:inbound_url</code>',
+
+                'skyetel' => 'To get SID and Secret please check this url <a href=":brand_name" target="_blank">Generating and obtaining an SID and Secret</a> . Copy this information and paste on :brandname. For <code>Two Way</code> setup please insert this url <code>:inbound_url</code> on <code> Callback URL</code> field. Finally, click on <code>Save</code> button.',
+
+                'AfricasTalking' => 'Create a new Africas talking account <a href="https://account.africastalking.com/" target="_blank">here</a> , or sign into <a href="https://account.africastalking.com/" target="_blank"> an existing Africas talking account</a>  After registration with Africas talking account you will find <code>API Key</code> from <code>Settings -> API Key</code> menu. Generate and Copy <code>API Key</code> and paste on :brandname. To receive <code>delivery reports</code>, you need to set a delivery report callback URL <code>:dlr_url</code>. From the dashboard select <code> SMS -> SMS Callback URLs -> Delivery Reports </code>.',
 
 
-                'smpp' => 'Please login your SMPP portal and copy <code>IP/DOMAIN, PORT, SYSTEM ID/USERNAME, PASSWORD</code> and paste on :brandname. By default :brandname set <code>source_addr_ton = 5, source_addr_npi = 0, dest_addr_ton = 1, dest_addr_npi = 1</code> But if you want you change these on ',
+                'smpp' => 'Please login your SMPP portal and copy <code>IP/DOMAIN, PORT, SYSTEM ID/USERNAME, PASSWORD</code> and paste on :brandname. By default, :brandname set <code>source_addr_ton = 5, source_addr_npi = 0, dest_addr_ton = 1, dest_addr_npi = 1</code> But if you want you change these on ',
 
                 'plan_details' => 'A plan, or service plan, is the group of services and limits that you have agreed to provide to your customer. A plan allows you to centrally plan and standardize your service offerings. Set up your plan details below:',
 
@@ -1303,9 +1356,9 @@ on ',
 
                 'system_email' => 'Configure email service which is used by the system to send <code>transactional emails</code> like user verification, application notification, payment confirmation etc.',
 
-                'captcha' => '<code>reCAPTCHA</code> is a free service that protects your site from spam and abuse, developed by <code>Google</code>. For this reason you will need a Google Account first. If you don’t have, simply <a href="https://accounts.google.com/SignUp" target="_blank"> Create a new google account</a>. One you have an account with google, log into the <a href="https://www.google.com/recaptcha/admin" target="_blank">reCaptcha Admin</a> page and setup your application install URL. For more details please check <a href="https://ultimatesms.codeglen.com/setting-up-google-recaptcha-with-our-ultimate-sms/" target="_blank">Ultimate SMS Blog</a>',
+                'captcha' => '<code>reCAPTCHA</code> is a free service that protects your site from spam and abuse, developed by <code>Google</code>. For this reason you will need a Google Account first. If you don’t have, simply <a href="https://accounts.google.com/SignUp" target="_blank"> Create a new Google account</a>. Once you have an account with Google, log into the <a href="https://www.google.com/recaptcha/admin" target="_blank">reCaptcha Admin</a> page and setup your application install URL. For more details please check <a href="https://ultimatesms.codeglen.com/setting-up-google-recaptcha-with-our-ultimate-sms/" target="_blank">Ultimate SMS Blog</a>',
 
-                'pusher' => 'If you don\'t have <code>Pusher Account</code> already, create a free <code>Pusher</code> account at <a href="https://pusher.com/signup" target="_blank">Pusher signup</a> then <a href="https://dashboard.pusher.com/accounts/sign_in" target="_blank">login</a> to your dashboard and click on <code>create app</code> button. Then insert your <code>app name, cluster</code>, select <code>jQuery</code> for <code>front-end tech</code> option and <code>Laravel</code> for <code>back-end tech</code> option. Finally go <code>App Keys</code> option and update credentials on ',
+                'pusher' => 'If you don\'t have <code>Pusher Account</code> already, create a free <code>Pusher</code> account at <a href="https://pusher.com/signup" target="_blank">Pusher signup</a> then <a href="https://dashboard.pusher.com/accounts/sign_in" target="_blank">login</a> to your dashboard and click on <code>create app</code> button. Then insert your <code>app name, cluster</code>, select <code>jQuery</code> for <code>front-end tech</code> option and <code>Laravel</code> for <code>back-end tech</code> option. Finally, go <code>App Keys</code> option and update credentials on ',
 
                 'background_jobs'   => 'If you want to run <code>cron jobs or background jobs</code> on <code>cPanel</code> based applications then please copy the following commands without <code>* * * * *</code> and login with your cPanel and search <code>Cron Jobs</code> in the search field on the top. Then click on the Cron Jobs option and select the <code>Every minutes</code> option from the <code>common setting</code> dropdown. For <code>Plesk</code> based hosting please select <code>Scheduled Tasks</code> from the right side and click on <code>Add Task</code> button. Then select <code>Run a PHP script</code> option and open file folder. After that go ultimate SMS installation folder and select <code>artisan</code> file. Then insert <code>schedule:run</code> on arguments field. Finally, select your PHP version, <code>cron style</code> from the Run dropdown and insert <code>* * * * *</code> For <code>Cloud or VPS</code> based hosting open your Terminal or Bash and Type <code>crontab -e</code> for <code>ubuntu or Debian</code> and Type <code>sudo nano /etc/crontab</code> for <code>Centos</code> operating system. Then insert the following command on the Crontab file.',
                 'available_tags'    => 'Required tags must be in the email template editor.',
@@ -1316,9 +1369,9 @@ on ',
 
                 'twitter' => 'if you don\'t have a Twitter app account then you can create from here <a href="https://developer.twitter.com/en/apps" target="_blank">Twitter Developer Account</a>.  Then put the app name, description, and enter this URL <code>:url</code> on the <code>Website URL</code> field and send a request to approve. When your application will be approved, go to this URL <a href="https://developer.twitter.com/en/portal/projects-and-apps">Projects and Apps Overview</a>. After that, create a <code>Standalone App</code> and go <code>Edit Authentication settings</code> option. Finally, put this url <code>:callback_url</code> on <code>Callback URLs</code> field and also put required information and collect <code>API Key and Secret.</code> from <code>Keys and Tokens</code> tab.',
 
-                'google' => 'if you don\'t have google app account then you can create from here <a href="https://console.developers.google.com/" target="_blank">Google Developer Console</a> and create a new <code>project</code>. After successfully created a new project, you need to select the created projects on the top menu and click on <code>OAuth consent screen</code> and select <code>External</code> option. After that fill your website URL, privacy policy URL, etc. Then click <code>Credentials</code> menu option from left side and select <code>OAuth Client ID</code> option. Finally, select <code>Web Application</code> option and insert your application name, fill up this url <code>:callback_url</code> on <code>Authorized redirects URI</code>.Once you have click on the create button, then you can get your <code>Client ID</code> and your <code>client secret key</code>.',
+                'google' => 'if you don\'t have Google app account then you can create from here <a href="https://console.developers.google.com/" target="_blank">Google Developer Console</a> and create a new <code>project</code>. After successfully created a new project, you need to select the created projects on the top menu and click on <code>OAuth consent screen</code> and select <code>External</code> option. After that fill your website URL, privacy policy URL, etc. Then click <code>Credentials</code> menu option from left side and select <code>OAuth Client ID</code> option. Finally, select <code>Web Application</code> option and insert your application name, fill up this url <code>:callback_url</code> on <code>Authorized redirects URI</code>.Once you have clicked on the create button, then you can get your <code>Client ID</code> and your <code>client secret key</code>.',
 
-                'github' => 'if you don\'t have Github OAuth Application then you can create from here <a href="https://github.com/settings/applications/new" target="_blank">Register a new OAuth application</a>. Then put Application name, description and enter this url <code>:url</code> on <code>Homepage URL</code> field and put this url <code>:callback_url</code> on <code>Authorization callback URL</code> field.Once you have click on the Register Application button, then you can get your <code>Client ID</code> and your <code>client secret key</code>.',
+                'github' => 'if you don\'t have GitHub OAuth Application then you can create from here <a href="https://github.com/settings/applications/new" target="_blank">Register a new OAuth application</a>. Then put Application name, description and enter this url <code>:url</code> on <code>Homepage URL</code> field and put this url <code>:callback_url</code> on <code>Authorization callback URL</code> field.Once you have clicked on the Register Application button, then you can get your <code>Client ID</code> and your <code>client secret key</code>.',
 
                 'template_tag' => 'provides certain <code> template variables or tags </code> that you can use to <code>personalize message</code> content. The most commonly used variables are personalization variables, which allow you to dynamically include information about your recipients. For example, their name, email address, or custom properties you\'ve stored about the person. Like, Hi <code> {{ first_name }}{{ last_name }}</code>, your email is <code>{{ email }}</code> to Hi <code>Jhon Doe</code>, your email is <code>jhone.doe@gmail.com</code>. Your <code>customers</code> will see these values when they will store <code>contacts</code> on their <code>contact groups</code>. Here, <code>Name</code> field is for <code>tag name</code> like <code>first_name</code>. Second, <code>Type</code> field is for attribute specifies the type of <code>input</code> element to display. Finally, <code>Required</code> field is for the Tag field is <code>mandatory or not.</code>
  <code class="mr-1">first_name</code><code class="mr-1">last_name</code><code class="mr-1">email</code><code class="mr-1">username</code><code class="mr-1">company</code><code class="mr-1">address</code><code class="mr-1">birth_date</code><code>anniversary_date</code> tags already available. Don\'t insert these tags.',
@@ -1331,17 +1384,17 @@ on ',
                 'paypal'               => 'Get <code>client ID</code> and <code>client secret</code> by going to <a href="https://developer.paypal.com/developer/applications" target="_blank">https://developer.paypal.com/developer/applications</a> and generating a <code>REST API app</code>. Get <code>client ID</code> and <code>client secret</code> from there.',
                 'braintree'            => 'Get <code>Merchant ID</code>, <code>Public Key</code>, and <code>Private Key</code> by going to <a href="https://www.braintreepayments.com/" target="_blank">https://www.braintreepayments.com/</a> and check <code>Keys & Configuration</code>. Get <code>Merchant ID</code>, <code>Public Key</code>, and <code>Private Key</code> from there.',
 
-                'authorize_net' => 'Get <code>Login ID</code>, and <code>Transaction Key</code> by going to <a href="https://account.authorize.net/" target="_blank">Merchant Interface</a> and click <code>Account -> Settings</code> in the main left-side menu. Finally click on <code>API Credentials & Keys</code> and get <code>Login ID</code>, and <code>Transaction Key</code> from there.',
+                'authorize_net' => 'Get <code>Login ID</code>, and <code>Transaction Key</code> by going to <a href="https://account.authorize.net/" target="_blank">Merchant Interface</a> and click <code>Account -> Settings</code> in the main left-side menu. Finally, click on <code>API Credentials & Keys</code> and get <code>Login ID</code>, and <code>Transaction Key</code> from there.',
 
                 'stripe' => 'Get <code>Publishable key</code> and <code>Secret key</code> by going to <a href="https://dashboard.stripe.com/apikeys" target="_blank">https://dashboard.stripe.com/apikeys</a> and update these credentials on your system.',
 
                 '2checkout' => 'Get <code>Merchant Code</code> and <code>Private key</code> by going to <a href="https://secure.2checkout.com/cpanel/webhooks_api.php" target="_blank">https://secure.2checkout.com/cpanel/webhooks_api.php</a> and update these credentials on your system.',
 
-                'paynow' => 'Get <code>Integration ID</code> and <code>Integration key</code> by going to <a href="https://developers.paynow.co.zw/docs/integration_generation.html" target="_blank">https://developers.paynow.co.zw/docs/integration_generation.html</a> and follow the instructions. Finally find the credentials and update these to your system.',
+                'paynow' => 'Get <code>Integration ID</code> and <code>Integration key</code> by going to <a href="https://developers.paynow.co.zw/docs/integration_generation.html" target="_blank">https://developers.paynow.co.zw/docs/integration_generation.html</a> and follow the instructions. Finally, find the credentials and update these to your system.',
 
-                'razorpay' => 'Get <code>Key ID</code> and <code>Key Secret</code> by going to <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/api-keys/" target="_blank">API Keys</a> and follow the instructions. Finally find the credentials and update these to your system and insert this callback url <code>:callback_url_senderid</code> for Sender ID, <code>:callback_url_keywords</code> for Keywords, and <code>:callback_url_subscriptions</code> for subscription on <code>Webhooks</code> settings.',
+                'razorpay' => 'Get <code>Key ID</code> and <code>Key Secret</code> by going to <a href="https://razorpay.com/docs/payment-gateway/dashboard-guide/settings/api-keys/" target="_blank">API Keys</a> and follow the instructions. Finally, find the credentials and update these to your system and insert this callback url <code>:callback_url_senderid</code> for Sender ID, <code>:callback_url_keywords</code> for Keywords, and <code>:callback_url_subscriptions</code> for subscription on <code>Webhooks</code> settings.',
 
-                'paystack' => 'Get <code>Public Key</code>, and <code>Secret Key</code> by going to <a href="https://dashboard.paystack.com/#/login" target="_blank">Paystack Login</a> and click <code>Settings</code> in the main left-side menu. Finally insert this callback url <code>:callback_url</code> on <code>Callback URl & Webhook URL</code> and get <code>Public Key</code>, and <code>Secret Key</code> from there.',
+                'paystack' => 'Get <code>Public Key</code>, and <code>Secret Key</code> by going to <a href="https://dashboard.paystack.com/#/login" target="_blank">Paystack Login</a> and click <code>Settings</code> in the main left-side menu. Finally, insert this callback url <code>:callback_url</code> on <code>Callback URl & Webhook URL</code> and get <code>Public Key</code>, and <code>Secret Key</code> from there.',
 
                 'contacts_api' => "<p>:brandname Contacts API helps you manage contacts that are identified by a unique random ID. Using this ID, you can create, view, update, or delete contacts. This API works as a collection of customer-specific contacts that allows you to group them and assign custom values that you can later use when sending SMS template messages.</p> <p>The Contacts API uses HTTP verbs and a RESTful endpoint structure with an access key that is used as the API Authorization. Request and response payloads are formatted as JSON using UTF-8 encoding and URL encoded values.</p>",
 
@@ -1354,9 +1407,12 @@ on ',
                 'dashboard' => 'Welcome back to your personalized Dashboard. Check out charts, resources, and useful :brandname solutions tailored to your account.',
                 'api_token' => 'Use this API Token to send message from outside of :brandname.',
 
-                'teletopiasms' => 'For <code>Two Way</code> setup please login with <a href="https://home.teletopiasms.no/HomeWeb/" target="_blank">TeletopiaSMS</a> and click on <code> Gateway -> Inbound Settings</code> button. Then select <code>HTTP Plain</code> from dropdown and insert this url <code>:url</code> on <code>Primary URL</code> field. Finally click on update button',
+                'teletopiasms' => 'For <code>Two Way</code> setup please login with <a href="https://home.teletopiasms.no/HomeWeb/" target="_blank">TeletopiaSMS</a> and click on <code> Gateway -> Inbound Settings</code> button. Then select <code>HTTP Plain</code> from dropdown and insert this url <code>:url</code> on <code>Primary URL</code> field. Finally, click on update button',
 
                 'per_unit_price' => 'You can set the price of your custom unit. Since anyone wants to add more units to their purchase plan, you need to set the price for each unit. If you set the price at <code>0.3 USD</code> per unit, it will cost <code>60 USD</code> for <code>200 SMS units</code>. You can set different prices for different plans. Insert single unit price here.',
+
+            /*version 3.1*/
+                'plan_price'     => 'Only pay for what you use. Don’t get stalled by contracts, capacity planning, and price modeling. Choose the best plan to fit your needs.',
         ],
 
     /*
@@ -1371,7 +1427,9 @@ on ',
         'auth' => [
 
                 'registration_disabled'          => 'Registration is disabled.',
-                'welcome_message'                => 'Welcome back, please login to your account.',
+                'welcome_message'                => 'Please sign-in to your account and start the adventure',
+                'new_on_our_platform'            => 'New on our platform',
+                'or'                             => 'OR',
                 'failed'                         => 'These credentials do not match our records.',
                 'throttle'                       => 'Too many login attempts. Please try again in :seconds seconds.',
                 'recaptcha_required'             => 'Please validate your reCaptcha',
@@ -1402,7 +1460,13 @@ on ',
                 'two_factor_code_sent'           => 'The two factor code has been sent again',
                 'verify_with_backup_code'        => 'Verify with Backup Code',
                 'registration_successfully_done' => 'Registration was successfully done',
-                'welcome_come_back'              => 'Welcome come back :name',
+                'welcome_come_back'              => 'Welcome back :name',
+
+            /*Version 3.1*/
+                'enter_credentials'              => 'Enter credentials',
+                'personal'                       => 'Personal',
+                'account_information'            => 'Account Information',
+                'insert_required_fields'         => 'Insert required fields',
 
                 'socialite' => [
                         'unacceptable' => ':provider is not an acceptable login type.',

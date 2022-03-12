@@ -71,12 +71,14 @@ class TemplateTagsController extends AdminBaseController
         $this->authorize('view tags');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'tag',
-                3 => 'type',
-                4 => 'required',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'tag',
+                5 => 'type',
+                6 => 'required',
+                7 => 'action',
         ];
 
         $totalData = TemplateTags::count();
@@ -109,7 +111,6 @@ class TemplateTagsController extends AdminBaseController
         $data = [];
         if ( ! empty($template_tags)) {
             foreach ($template_tags as $tags) {
-                $show = route('admin.tags.show', $tags->uid);
 
                 if ($tags->required === 1) {
                     $required = 'checked';
@@ -117,20 +118,20 @@ class TemplateTagsController extends AdminBaseController
                     $required = '';
                 }
 
-                $nestedData['uid']      = $tags->uid;
-                $nestedData['name']     = $tags->name;
-                $nestedData['tag']      = $tags->tag;
-                $nestedData['type']     = $tags->type;
-                $nestedData['required'] = "<div class='custom-control custom-switch switch-md custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_required' id='required_$tags->uid' data-id='$tags->uid' name='status' $required>
-                <label class='custom-control-label' for='required_$tags->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.yes')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.no')."</span>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $tags->uid;
+                $nestedData['name']          = $tags->name;
+                $nestedData['tag']           = $tags->tag;
+                $nestedData['type']          = $tags->type;
+                $nestedData['required']      = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_required' id='required_$tags->uid' data-id='$tags->uid' name='status' $required>
+                <label class='form-check-label' for='required_$tags->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action']   = "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>
-                                         <span class='action-delete text-danger' data-id='$tags->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]                 = $nestedData;
+                $nestedData['edit']          = route('admin.tags.show', $tags->uid);
+                $data[]                      = $nestedData;
 
             }
         }

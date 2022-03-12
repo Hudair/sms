@@ -57,15 +57,17 @@ class ReportsController extends Controller
         $this->authorize('view sms_history');
 
         $columns = [
-                0 => 'uid',
-                1 => 'created_at',
-                2 => 'send_by',
-                3 => 'sms_type',
-                4 => 'from',
-                5 => 'to',
-                6 => 'cost',
-                7 => 'status',
-                8 => 'user_id',
+                0  => 'responsive_id',
+                1  => 'uid',
+                2  => 'uid',
+                3  => 'created_at',
+                4  => 'send_by',
+                5  => 'sms_type',
+                6  => 'from',
+                7  => 'to',
+                8  => 'cost',
+                9  => 'status',
+                10 => 'user_id',
         ];
 
         $totalData = Reports::count();
@@ -97,32 +99,29 @@ class ReportsController extends Controller
         $data = [];
         if ( ! empty($sms_reports)) {
             foreach ($sms_reports as $report) {
-
-                $action = null;
-                $view   = __('locale.buttons.view');
-                $delete = __('locale.buttons.delete');
-
-                $action .= "<span class='action-view text-success mr-1' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$view'><i class='feather us-2x icon-eye'></i></span>";
-
-                $action .= "<span class='action-delete text-danger' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-
                 if ($report->created_at == null) {
                     $created_at = null;
-                }else {
+                } else {
                     $created_at = Tool::customerDateTime($report->created_at);
                 }
 
-                $nestedData['uid']        = $report->uid;
-                $nestedData['created_at'] = $created_at;
-                $nestedData['user_id']    = $report->user->displayName();
-                $nestedData['send_by']    = $report->getSendBy();
-                $nestedData['sms_type']   = $report->getSMSType();
-                $nestedData['from']       = $report->from;
-                $nestedData['to']         = $report->to;
-                $nestedData['cost']       = $report->cost;
-                $nestedData['status']     = str_limit($report->status, 20);
-                $nestedData['action']     = $action;
-                $data[]                   = $nestedData;
+                $customer_profile = route('admin.customers.show', $report->user->uid);
+                $customer_name    = $report->user->displayName();
+                $user_id          = "<a href='$customer_profile' class='text-primary mr-1'>$customer_name</a>";
+
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $report->uid;
+                $nestedData['avatar']        = route('admin.customers.avatar', $report->user->uid);
+                $nestedData['email']         = $report->user->email;
+                $nestedData['created_at']    = $created_at;
+                $nestedData['user_id']       = $user_id;
+                $nestedData['send_by']       = $report->getSendBy();
+                $nestedData['sms_type']      = $report->getSMSType();
+                $nestedData['from']          = $report->from;
+                $nestedData['to']            = $report->to;
+                $nestedData['cost']          = $report->cost;
+                $nestedData['status']        = str_limit($report->status, 20);
+                $data[]                      = $nestedData;
 
             }
         }
@@ -231,6 +230,52 @@ class ReportsController extends Controller
     }
 
     /**
+     * @param $request
+     *
+     * @return Generator
+     */
+    public function exportData($request): Generator
+    {
+        $start_date = null;
+        $end_date   = null;
+
+        if ($request->start_date && $request->end_date) {
+            $start_time = $request->start_date.' '.$request->start_time;
+            $start_date = Tool::systemTimeFromString($start_time, config('app.timezone'));
+
+            $end_time = $request->end_date.' '.$request->end_time;
+            $end_date = Tool::systemTimeFromString($end_time, config('app.timezone'));
+        }
+
+        $status    = $request->status;
+        $direction = $request->direction;
+        $type      = $request->type;
+        $to        = $request->to;
+        $from      = $request->from;
+
+        if ($status == 'delivered') {
+            $status = 'Delivered';
+        }
+
+        $get_data = Reports::query()->when($status, function ($query) use ($status) {
+            $query->whereLike(['status'], $status);
+        })->when($from, function ($query) use ($from) {
+            $query->whereLike(['from'], $from);
+        })->when($to, function ($query) use ($to) {
+            $query->whereLike(['to'], $to);
+        })->when($direction, function ($query) use ($direction) {
+            $query->where('send_by', $direction);
+        })->when($start_date, function ($query) use ($start_date, $end_date) {
+            $query->whereBetween('created_at', [$start_date, $end_date]);
+        })->where('sms_type', $type)->cursor();
+
+        foreach ($get_data as $report) {
+            yield $report;
+        }
+    }
+
+
+    /**
      * @return RedirectResponse|BinaryFileResponse
      * @throws AuthorizationException
      * @throws IOException
@@ -238,7 +283,7 @@ class ReportsController extends Controller
      * @throws UnsupportedTypeException
      * @throws WriterNotOpenedException
      */
-    public function export()
+    public function export(Request $request)
     {
 
         if (config('app.env') == 'demo') {
@@ -250,7 +295,9 @@ class ReportsController extends Controller
 
         $this->authorize('view sms_history');
 
-        $file_name = (new FastExcel($this->reportsGenerator()))->export(storage_path('Reports_'.time().'.xlsx'));
+        Tool::resetMaxExecutionTime();
+
+        $file_name = (new FastExcel($this->exportData($request)))->export(storage_path('Reports_'.time().'.xlsx'));
 
         return response()->download($file_name);
     }

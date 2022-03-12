@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ChatBox\SentRequest;
+use App\Models\Blacklists;
 use App\Models\Campaigns;
 use App\Models\ChatBox;
 use App\Models\ChatBoxMessage;
+use App\Models\Contacts;
 use App\Models\PhoneNumbers;
+use App\Models\PlansCoverageCountries;
+use App\Models\PlansSendingServer;
+use App\Models\SendingServer;
 use App\Repositories\Contracts\CampaignRepository;
 use Auth;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -17,6 +22,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use libphonenumber\NumberParseException;
+use libphonenumber\PhoneNumberUtil;
 
 class ChatBoxController extends Controller
 {
@@ -49,7 +56,7 @@ class ChatBoxController extends Controller
                 'bodyClass'     => 'chat-application',
         ];
 
-        $chat_box = ChatBox::where('user_id', Auth::user()->id)->orderBy('updated_at', 'desc')->cursor();
+        $chat_box = ChatBox::where('user_id', Auth::user()->id)->take(1000)->orderBy('updated_at', 'desc')->cursor();
 
         return view('customer.ChatBox.index', [
                 'pageConfigs' => $pageConfigs,
@@ -75,7 +82,33 @@ class ChatBoxController extends Controller
 
         $phone_numbers = PhoneNumbers::where('user_id', Auth::user()->id)->where('status', 'assigned')->cursor();
 
-        return view('customer.ChatBox.new', compact('breadcrumbs', 'phone_numbers'));
+
+        $plan_id = \Illuminate\Support\Facades\Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('plain', 1)->where('two_way', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('plain', 1)->where('two_way', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('plain', 1)->where('two_way', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('plain', 1)->where('two_way', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
+
+        return view('customer.ChatBox.new', compact('breadcrumbs', 'phone_numbers', 'coverage', 'sending_server'));
     }
 
 
@@ -102,7 +135,7 @@ class ChatBoxController extends Controller
 
         $data = $this->campaigns->quickSend($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
             if ($data->getData()->status == 'success') {
 
                 $chatbox = ChatBox::where('user_id', Auth::user()->id)->where('from', $request->sender_id)->where('to', $request->recipient)->first();
@@ -110,10 +143,11 @@ class ChatBoxController extends Controller
                 if ( ! $chatbox) {
 
                     $chatbox = ChatBox::create([
-                            'user_id'      => Auth::user()->id,
-                            'from'         => $request->sender_id,
-                            'to'           => $request->recipient,
-                            'notification' => 0,
+                            'user_id'           => Auth::user()->id,
+                            'from'              => $request->sender_id,
+                            'to'                => $request->recipient,
+                            'sending_server_id' => $request->sending_server,
+                            'notification'      => 0,
                     ]);
                 }
 
@@ -165,7 +199,25 @@ class ChatBoxController extends Controller
                 'notification' => 0,
         ]);
 
-        $data = ChatBoxMessage::where('box_id', $box->id)->select('message', 'send_by')->cursor()->toJson();
+        $data = ChatBoxMessage::where('box_id', $box->id)->select('message', 'send_by', 'media_url')->cursor()->toJson();
+
+        return response()->json([
+                'status' => 'success',
+                'data'   => $data,
+        ]);
+
+    }
+
+    /**
+     * get chat messages
+     *
+     * @param  ChatBox  $box
+     *
+     * @return JsonResponse
+     */
+    public function messagesWithNotification(ChatBox $box): JsonResponse
+    {
+        $data = ChatBoxMessage::where('box_id', $box->id)->select('message', 'send_by', 'media_url')->cursor()->toJson();
 
         return response()->json([
                 'status' => 'success',
@@ -183,6 +235,7 @@ class ChatBoxController extends Controller
      *
      * @return JsonResponse
      * @throws AuthorizationException
+     * @throws NumberParseException
      */
     public function reply(ChatBox $box, Campaigns $campaign, Request $request): JsonResponse
     {
@@ -204,15 +257,21 @@ class ChatBoxController extends Controller
         }
 
         $input = [
-                'sender_id' => $box->from,
-                'recipient' => $box->to,
-                'sms_type'  => 'plain',
-                'message'   => $request->message,
+                'sender_id'      => $box->from,
+                'recipient'      => $box->to,
+                'sending_server' => $box->sending_server_id,
+                'sms_type'       => 'plain',
+                'message'        => $request->message,
         ];
+
+
+        $phoneUtil             = PhoneNumberUtil::getInstance();
+        $phoneNumberObject     = $phoneUtil->parse('+'.$box->to);
+        $input['country_code'] = $phoneNumberObject->getCountryCode();
 
         $data = $this->campaigns->quickSend($campaign, $input);
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
             if ($data->getData()->status == 'success') {
 
                 ChatBoxMessage::create([
@@ -234,6 +293,67 @@ class ChatBoxController extends Controller
                     'message' => $data->getData()->message,
             ]);
 
+        }
+
+        return response()->json([
+                'status'  => 'error',
+                'message' => __('locale.exceptions.something_went_wrong'),
+        ]);
+    }
+
+    /**
+     * delete chatbox messages
+     *
+     * @param  ChatBox  $box
+     *
+     * @return JsonResponse
+     */
+    public function delete(ChatBox $box): JsonResponse
+    {
+        $messages = ChatBoxMessage::where('box_id', $box->id)->delete();
+        if ($messages) {
+            $box->delete();
+
+            return response()->json([
+                    'status'  => 'success',
+                    'message' => __('locale.campaigns.sms_was_successfully_deleted'),
+            ]);
+        }
+
+        return response()->json([
+                'status'  => 'error',
+                'message' => __('locale.exceptions.something_went_wrong'),
+        ]);
+    }
+
+    /**
+     * add to blacklist
+     *
+     * @param  ChatBox  $box
+     *
+     * @return JsonResponse
+     */
+    public function block(ChatBox $box): JsonResponse
+    {
+        $status = Blacklists::create([
+                'user_id' => auth()->user()->id,
+                'number'  => $box->to,
+                'reason'  => 'Blacklisted by '.auth()->user()->displayName(),
+        ]);
+
+        if ($status) {
+
+            $contact = Contacts::where('phone', $box->to)->first();
+            if ($contact) {
+                $contact->update([
+                        'status' => 'unsubscribe',
+                ]);
+            }
+
+            return response()->json([
+                    'status'  => 'success',
+                    'message' => __('locale.blacklist.blacklist_successfully_added'),
+            ]);
         }
 
         return response()->json([

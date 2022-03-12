@@ -102,7 +102,9 @@ class Tool
             $result = $result->timezone($timezone);
         }
 
-        return $result->format(__('locale.labels.datetime_format'));
+        $format = config('app.date_format').', g:i A';
+
+        return $result->format($format);
     }
 
     /**

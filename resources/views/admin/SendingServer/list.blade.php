@@ -1,88 +1,92 @@
-
 @extends('layouts/contentLayoutMaster')
 
 @section('title', __('locale.menu.Sending Servers'))
 
 @section('vendor-style')
-    {{-- vendor files --}}
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/datatables.min.css')) }}">
-@endsection
-@section('page-style')
-    {{-- Page css files --}}
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/data-list-view.css')) }}">
+    {{-- vendor css files --}}
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap5.min.css')) }}">
+
 @endsection
 
 @section('content')
-    {{-- Data list view starts --}}
-    <section id="data-list-view" class="data-list-view-header">
-        <div class="action-btns d-none">
-            <div class="btn-dropdown mr-1 mb-1 add-new-div">
-                <div class="btn-group dropdown actions-dropodown">
-                    <a href="{{route('admin.sending-servers.create', ['type' => 'custom'])}}" class="btn btn-white px-1 py-1 waves-effect waves-light text-primary text-bold-500"> {{__('locale.sending_servers.create_own_server')}} <i class="feather icon-plus-circle"></i></a>
+
+    <!-- Basic table -->
+    <section id="datatables-basic">
+        <div class="mb-3 mt-2">
+
+            @can('create sending_servers')
+                <div class="btn-group">
+                    <a href="{{route('admin.sending-servers.create', ['type' => 'custom'])}}" class="btn btn-primary waves-light waves-effect fw-bold mx-1"> {{__('locale.plans.create_own_sending_server')}} <i data-feather="plus-circle"></i></a>
+                </div>
+            @endcan
+
+
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <table class="table datatables-basic">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>{{__('locale.labels.name')}}</th>
+                            <th>{{__('locale.labels.type')}}</th>
+                            <th>{{__('locale.labels.actions')}}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach ($sending_servers as $key => $server)
+                            @if($server["type"] === 'http')
+                                @php $color = "success" @endphp
+                            @elseif($server["type"] === 'smpp')
+                                @php $color = "primary" @endphp
+                            @elseif($server["type"] === 'whatsapp')
+                                @php $color = "info" @endphp
+                            @endif
+
+
+                            <tr>
+                                <td></td>
+                                <td>{{ $server['name'] }}</td>
+                                <td>
+                                    <span class="badge bg-{{$color}}">{{ strtoupper($server['type'])}}</span>
+                                </td>
+                                <td>
+                                    <a href="{{route('admin.sending-servers.create', ['type' => $key])}}" class="btn btn-primary btn-sm">{{__('locale.labels.choose')}}</a>
+                                </td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
         </div>
-        {{-- DataTable starts --}}
-        <div class="table-responsive">
-            <table class="table data-list-view">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th>{{__('locale.labels.name')}}</th>
-                    <th>{{__('locale.labels.type')}}</th>
-                    <th>{{__('locale.labels.actions')}}</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach ($sending_servers as $key => $server)
-                    @if($server["type"] === 'http')
-                        @php $color = "success" @endphp
-                    @elseif($server["type"] === 'smpp')
-                        @php $color = "primary" @endphp
-                    @elseif($server["type"] === 'whatsapp')
-                        @php $color = "info" @endphp
-                    @endif
-
-
-                    <tr>
-                        <td></td>
-                        <td>{{ $server['name'] }}</td>
-                        <td>
-                            <div class="chip chip-{{$color}}">
-                                <div class="chip-body">
-                                    <div class="chip-text">{{ strtoupper($server['type'])}}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            <a href="{{route('admin.sending-servers.create', ['type' => $key])}}" class="btn btn-primary btn-sm">{{__('locale.labels.choose')}}</a>
-                        </td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
-        </div>
-        {{-- DataTable ends --}}
-
     </section>
-    <br>
-    {{-- Data list view end --}}
+    <!--/ Basic table -->
+
+
 @endsection
+
+
 @section('vendor-script')
-    {{-- vendor js files --}}
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.min.js')) }}"></script>
+    {{-- vendor files --}}
+    <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/responsive.bootstrap5.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.bootstrap.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.html5.min.js')) }}"></script>
+
 @endsection
 @section('page-script')
+    {{-- Page js files --}}
     <script>
         $(document).ready(function () {
             "use strict"
-            // init list view datatable
 
-            $(".data-list-view").DataTable({
+            $('.datatables-basic').DataTable({
 
                 "processing": true,
                 "columns": [
@@ -91,48 +95,68 @@
                     {"data": "type"},
                     {"data": "action", orderable: false, searchable: false}
                 ],
-                responsive: false,
                 columnDefs: [
                     {
+                        // For Responsive
+                        className: 'control',
                         orderable: false,
-                        searchable: false,
-                        targets: 0,
-                    }
+                        responsivePriority: 2,
+                        targets: 0
+                    },
                 ],
-                dom:
-                    '<"top"<"actions action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">p>',
-                oLanguage: {
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
                     sLengthMenu: "_MENU_",
                     sZeroRecords: "{{ __('locale.datatables.no_results') }}",
-                    sSearch: "",
+                    sSearch: "{{ __('locale.datatables.search') }}",
                     sProcessing: "{{ __('locale.datatables.processing') }}",
-                    oPaginate: {
-                        sFirst: "{{ __('locale.datatables.first') }}",
-                        sPrevious: "{{ __('locale.datatables.previous') }}",
-                        sNext: "{{ __('locale.datatables.next') }}",
-                        sLast: "{{ __('locale.datatables.last') }}"
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
+                },
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.modal({
+                            header: function (row) {
+                                let data = row.data();
+                                return 'Details of ' + data['name'];
+                            }
+                        }),
+                        type: 'column',
+                        renderer: function (api, rowIdx, columns) {
+                            let data = $.map(columns, function (col) {
+                                return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                    ? '<tr data-dt-row="' +
+                                    col.rowIdx +
+                                    '" data-dt-column="' +
+                                    col.columnIndex +
+                                    '">' +
+                                    '<td>' +
+                                    col.title +
+                                    ':' +
+                                    '</td> ' +
+                                    '<td>' +
+                                    col.data +
+                                    '</td>' +
+                                    '</tr>'
+                                    : '';
+                            }).join('');
+
+                            return data ? $('<table class="table"/>').append('<tbody>' + data + '</tbody>') : false;
+                        }
                     }
                 },
                 aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
-                order: [[0, "asc"]],
-                bInfo: false,
-                pageLength: 10,
-                buttons: [],
-                initComplete: function () {
-                    $(".dt-buttons .btn").removeClass("btn-secondary")
-                }
+
+                order: [[0, "desc"]],
+                displayLength: 10,
             });
 
-            // To append actions dropdown before add new button
-            let actionDropdown = $(".add-new-div")
-            actionDropdown.insertBefore($(".top .actions .dt-buttons"))
-
-            // Scrollbar
-            if ($(".data-items").length > 0) {
-                new PerfectScrollbar(".data-items", {wheelPropagation: false})
-            }
-
         });
-
     </script>
+
 @endsection

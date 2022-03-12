@@ -9,6 +9,7 @@ use App\Repositories\Contracts\AccountRepository;
 use App\Repositories\Contracts\BlacklistsRepository;
 use App\Repositories\Contracts\CampaignRepository;
 use App\Repositories\Contracts\ContactsRepository;
+use App\Repositories\Contracts\CountriesRepository;
 use App\Repositories\Contracts\CurrencyRepository;
 use App\Repositories\Contracts\CustomerRepository;
 use App\Repositories\Contracts\KeywordRepository;
@@ -28,6 +29,7 @@ use App\Repositories\Eloquent\EloquentAccountRepository;
 use App\Repositories\Eloquent\EloquentBlacklistsRepository;
 use App\Repositories\Eloquent\EloquentCampaignRepository;
 use App\Repositories\Eloquent\EloquentContactsRepository;
+use App\Repositories\Eloquent\EloquentCountriesRepository;
 use App\Repositories\Eloquent\EloquentCurrencyRepository;
 use App\Repositories\Eloquent\EloquentCustomerRepository;
 use App\Repositories\Eloquent\EloquentKeywordRepository;
@@ -158,6 +160,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
                 CampaignRepository::class,
                 EloquentCampaignRepository::class
+        );
+
+        $this->app->bind(
+                CountriesRepository::class,
+                EloquentCountriesRepository::class
         );
 
     }

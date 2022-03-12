@@ -1,0 +1,61 @@
+/*================================================================================
+Item Name: Ultimate SMS - Bulk SMS Application For Marketing
+Author: Codeglen
+Author URL: https://codecanyon.net/user/codeglen
+================================================================================
+
+NOTE:
+------
+PLACE HERE YOUR OWN SCSS CODES AND IF NEEDED, OVERRIDE THE STYLES FROM THE OTHER STYLESHEETS.
+WE WILL RELEASE FUTURE UPDATES SO IN ORDER TO NOT OVERWRITE YOUR STYLES IT'S BETTER LIKE THIS.  */
+
+form .required:after {
+  color: #f35958;
+  content: "*";
+  font-size: 15px;
+  position: relative;
+  left: 3px;
+}
+
+
+//  -------------------------------
+//  Switch
+//  -------------------------------
+$white: #fff;
+$switch-bg-color: #e2e2e2;
+$switch-indicator-color: $white;
+$switch-md-size: 4rem;
+$switch-lg-size: 5.5rem;
+$switch-lg-us-size: 7.5rem;
+
+
+/* Switches */
+.form-switch-md .form-check-input{
+  width: 4rem !important;
+}
+
+.form-switch-lg .form-check-input{
+  width: 6rem !important;
+}
+
+.form-switch-xl .form-check-input{
+  width: 8rem !important;
+}
+
+.feather-16{
+  width: 16px;
+  height: 16px;
+}
+
+.feather-20{
+  width: 20px;
+  height: 20px;
+}
+.feather-24{
+  width: 24px;
+  height: 24px;
+}
+.feather-32{
+  width: 32px;
+  height: 32px;
+}

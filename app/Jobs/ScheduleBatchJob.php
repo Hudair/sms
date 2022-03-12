@@ -60,7 +60,7 @@ class ScheduleBatchJob implements ShouldQueue
                     $batch_list[] = new ImportCampaign($user_id, $campaign->id, $lines, $db_fields);
                 });
 
-        $import_name = 'ImportContacts_'.date('Ymdhms');
+        $import_name = 'ImportCampaign_'.date('Ymdhms');
 
         $import_job = ImportJobHistory::create([
                 'name'      => $import_name,
@@ -77,11 +77,11 @@ class ScheduleBatchJob implements ShouldQueue
                     $campaign->processing();
 
                     $campaign->update([
-                            'batch_id' => $batch->id
+                            'batch_id' => $batch->id,
                     ]);
                     $import_job->update(['batch_id' => $batch->id]);
                 })
-                ->catch(function (Batch $batch, Throwable $e) {
+                ->catch(function (Batch $batch, Throwable $e)  {
                     $import_history = ImportJobHistory::where('batch_id', $batch->id)->first();
                     if ($import_history) {
                         $import_history->status  = 'failed';
@@ -102,6 +102,7 @@ class ScheduleBatchJob implements ShouldQueue
                     //send event notification remaining
                 })
                 ->name($import_name)
+                ->allowFailures(false)
                 ->dispatch();
 
         $campaign->update(['batch_id' => $batch->id]);

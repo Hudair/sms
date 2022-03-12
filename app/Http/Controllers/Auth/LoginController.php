@@ -124,6 +124,17 @@ class LoginController extends Controller
                 ]);
             }
 
+            if (Auth::user()->status == false) {
+
+                Auth::logout();
+                
+                return redirect()->back()->withInput($request->only('email'))->with([
+                        'status'  => 'error',
+                        'message' => __('locale.auth.disabled'),
+                ]);
+            }
+
+
             $user = Auth::user();
 
             $this->account->redirectAfterLogin($user);
@@ -152,10 +163,6 @@ class LoginController extends Controller
      */
     public function avatar(User $user)
     {
-
-        if ( ! $user) {
-            $user = new User();
-        }
 
         if ( ! empty($user->imagePath())) {
 
@@ -231,7 +238,7 @@ class LoginController extends Controller
         }
 
         if ( ! in_array($provider, $this->supportedProviders, true)) {
-            return redirect()->route('home')->with([
+            return redirect()->route('user.home')->with([
                     'status'  => 'error',
                     'message' => __('locale.auth.socialite.unacceptable', ['provider' => $provider]),
             ]);

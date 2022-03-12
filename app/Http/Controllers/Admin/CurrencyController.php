@@ -73,12 +73,14 @@ class CurrencyController extends AdminBaseController
         $this->authorize('manage currencies');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'code',
-                3 => 'format',
-                4 => 'status',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'code',
+                5 => 'format',
+                6 => 'status',
+                7 => 'actions',
         ];
 
         $totalData = Currency::count();
@@ -118,30 +120,34 @@ class CurrencyController extends AdminBaseController
                     $status = '';
                 }
 
-                $action = null;
+                $edit   = null;
+                $delete = null;
+
 
                 if (Auth::user()->can('edit currencies')) {
-                    $action .= "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>";
+                    $edit .= $show;
                 }
 
                 if (Auth::user()->can('delete currencies')) {
-                    $action .= "<span class='action-delete text-danger' data-id='$currency->uid'><i class='feather us-2x icon-trash'></i></span>";
+                    $delete .= $currency->uid;
                 }
 
 
-                $nestedData['uid']    = $currency->uid;
-                $nestedData['name']   = $currency->name;
-                $nestedData['code']   = $currency->code;
-                $nestedData['format'] = $currency->format;
-                $nestedData['status'] = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$currency->uid' data-id='$currency->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$currency->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')."</span>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $currency->uid;
+                $nestedData['name']          = $currency->name;
+                $nestedData['code']          = $currency->code;
+                $nestedData['format']        = $currency->format;
+                $nestedData['status']        = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$currency->uid' data-id='$currency->uid' name='status' $status>
+                <label class='form-check-label' for='status_$currency->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action'] = $action;
-                $data[]               = $nestedData;
+                $nestedData['edit']          = $edit;
+                $nestedData['delete']        = $delete;
+                $data[]                      = $nestedData;
 
             }
         }

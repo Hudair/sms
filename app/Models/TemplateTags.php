@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static offset(mixed $start)
  * @method static whereLike(string[] $array, mixed $search)
  * @method static cursor()
+ * @method static create(array $tags)
  */
 class TemplateTags extends Model
 {

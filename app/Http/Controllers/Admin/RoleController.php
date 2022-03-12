@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Rap2hpoutre\FastExcel\FastExcel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -74,11 +75,13 @@ class RoleController extends AdminBaseController
         $this->authorize('view roles');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'admins',
-                3 => 'status',
-                4 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'admins',
+                5 => 'status',
+                6 => 'actions',
         ];
 
         $totalData = Role::count();
@@ -119,26 +122,41 @@ class RoleController extends AdminBaseController
                     $status = '';
                 }
 
-                $nestedData['uid']    = $role->uid;
-                $nestedData['name']   = "<div>
+
+                $edit   = null;
+                $delete = null;
+
+                if (Auth::user()->can('edit roles')) {
+                    $edit .= $show;
+                }
+
+                if (Auth::user()->can('delete roles')) {
+                    $delete .= $role->uid;
+                }
+
+                $nestedData['uid']           = $role->uid;
+                $nestedData['responsive_id'] = '';
+                $nestedData['name']          = "<div>
                                         <h5 class='text-bold-600'><a href='$show' >".ucfirst($role->name)."</a>  </h5>
                                         <span class='text-muted'>".__('locale.labels.created_at').": ".Tool::formatDate($role->created_at)."</span>
                                         </div>";
-                $nestedData['admins'] = "<div>
+                $nestedData['admins']        = "<div>
                                         <h5 class='text-bold-600'>".$role->admins->count()."</h5>
                                         <span class='text-muted'>".__('locale.labels.admins')."</span>
                                         </div>";
-                $nestedData['status'] = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$role->uid' data-id='$role->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$role->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')
-                        ."</span>
+
+                $nestedData['status'] = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$role->uid' data-id='$role->uid' name='status' $status>
+                <label class='form-check-label' for='status_$role->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action'] = "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>
-                                         <span class='action-delete text-danger' data-id='$role->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]               = $nestedData;
+
+                $nestedData['edit']   = $edit;
+                $nestedData['delete'] = $delete;
+
+                $data[] = $nestedData;
 
             }
         }

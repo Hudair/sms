@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Models\PlansSendingServer;
+use App\Models\SendingServer;
+use App\Models\User;
 use Auth;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Foundation\Application;
@@ -30,7 +33,29 @@ class DeveloperController extends Controller
                 ['name' => __('locale.menu.Developers')],
         ];
 
-        return view('customer.Developers.settings', compact('breadcrumbs'));
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        return view('customer.Developers.settings', compact('breadcrumbs', 'sending_server'));
     }
 
     /**
@@ -74,5 +99,32 @@ class DeveloperController extends Controller
         ];
 
         return view('customer.Developers.documentation', compact('breadcrumbs'));
+    }
+
+    public function sendingServer(Request $request)
+    {
+
+        if (config('app.env') == 'demo') {
+            return redirect()->route('customer.developer.settings')->with([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+        $status = Auth::user()->update([
+                'api_sending_server' => $request->sending_server,
+        ]);
+
+        if ($status) {
+            return redirect()->route('customer.developer.settings')->with([
+                    'status'  => 'success',
+                    'message' => __('locale.settings.settings_successfully_updated'),
+            ]);
+        }
+
+        return redirect()->route('customer.developer.settings')->with([
+                'status'  => 'error',
+                'message' => __('locale.exceptions.something_went_wrong'),
+        ]);
     }
 }

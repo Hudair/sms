@@ -15,14 +15,14 @@
                     <ul class="nav nav-tabs nav-justified mb-3" role="tablist">
 
                         <li class="nav-item">
-                            <a class="nav-link active" id="account-tab" data-toggle="tab" href="#logs" aria-controls="logs" role="tab" aria-selected="true">
-                                <i class="feather icon-database mr-25"></i>{{__('locale.subscription.logs')}}
+                            <a class="nav-link active" id="account-tab" data-bs-toggle="tab" href="#logs" aria-controls="logs" role="tab" aria-selected="true">
+                                <i data-feather="database"></i>{{__('locale.subscription.logs')}}
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" id="information-tab" data-toggle="tab" href="#transactions" aria-controls="transactions" role="tab" aria-selected="false">
-                                <i class="feather icon-shopping-cart mr-25"></i>{{__('locale.labels.transactions')}}
+                            <a class="nav-link" id="information-tab" data-bs-toggle="tab" href="#transactions" aria-controls="transactions" role="tab" aria-selected="false">
+                                <i data-feather="shopping-cart"></i>{{__('locale.labels.transactions')}}
                             </a>
                         </li>
                     </ul>
@@ -81,18 +81,16 @@
                                             <td>{{ $invoice->amount }}</td>
                                             <td>
                                                 @if($invoice->status == 'failed')
-                                                    <div class="chip chip-danger">
+                                                    <span class="badge text-uppercase badge-light-danger">
                                                 @elseif($invoice->status == 'pending' || $invoice->status == 'plan_change' || $invoice->status == 'renew' )
-                                                     <div class="chip chip-warning">
+                                                     <span class="badge text-uppercase badge-light-warning">
                                                 @elseif($invoice->status == 'auto_charge')
-                                                     <div class="chip chip-info">
+                                                     <span class="badge text-uppercase badge-light-info">
                                                 @else
-                                                      <div class="chip chip-success">
+                                                      <span class="badge text-uppercase badge-light-success">
                                                 @endif
-                                                          <div class="chip-body">
-                                                              <div class="chip-text text-uppercase"> {{ str_replace('_', ' ', $invoice->status) }}</div>
-                                                          </div>
-                                                      </div>
+                                                          {{ str_replace('_', ' ', $invoice->status) }}
+                                                      </span>
                                             </td>
                                         </tr>
                                     @empty
@@ -113,11 +111,5 @@
         </div>
     </section>
     <!-- users edit ends -->
-@endsection
-
-@section('page-script')
-    {{-- Page js files --}}
-    <script src="{{ asset(mix('js/scripts/navs/navs.js')) }}"></script>
-
 @endsection
 

@@ -103,13 +103,7 @@ class SubscriptionController extends CustomerBaseController
         return view('admin.subscriptions.logs', compact('breadcrumbs', 'subscription'));
     }
 
-    /**
-     * renew subscription
-     *
-     * @param  Subscription  $subscription
-     *
-     * @return Application|Factory|\Illuminate\Contracts\View\View
-     */
+
     public function renew(Subscription $subscription)
     {
 
@@ -122,6 +116,14 @@ class SubscriptionController extends CustomerBaseController
         $pageConfigs = [
                 'bodyClass' => 'ecommerce-application',
         ];
+
+        $check_free = Plan::find($subscription->plan_id)->price;
+        if((int)$check_free == 0){
+            return redirect()->route('customer.subscriptions.index')->with([
+                    'status'  => 'error',
+                    'message' => "You have already subscribed your free plan",
+            ]);
+        }
 
         $payment_methods = PaymentMethods::where('status', true)->cursor();
 
@@ -142,7 +144,7 @@ class SubscriptionController extends CustomerBaseController
         $plan = $subscription->plan;
         $data = $this->subscriptions->payPayment($plan, $subscription, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
 
             if ($data->getData()->status == 'success') {
 
@@ -207,6 +209,21 @@ class SubscriptionController extends CustomerBaseController
                 return redirect()->route('customer.subscriptions.index')->with([
                         'status'  => 'error',
                         'message' => 'Sorry! This option is not available in demo mode',
+                ]);
+            }
+
+            $subscribed = false;
+
+            foreach (Auth::user()->customer->subscription->getTransactions() as $log) {
+                if ((int) filter_var($log->amount, FILTER_SANITIZE_NUMBER_INT) == 0) {
+                    $subscribed = true;
+                }
+            }
+
+            if ($subscribed) {
+                return redirect()->route('customer.subscriptions.index')->with([
+                        'status'  => 'error',
+                        'message' => "You have already subscribed your free plan",
                 ]);
             }
 
@@ -353,7 +370,7 @@ class SubscriptionController extends CustomerBaseController
     {
 
         if (config('app.env') == 'demo') {
-            return redirect()->route('customer.subscriptions.index')->with([
+            return redirect()->route('customer.subscriptions.index')->withInput(['tab' => 'preferences'])->with([
                     'status'  => 'error',
                     'message' => 'Sorry! This option is not available in demo mode',
             ]);
@@ -381,7 +398,7 @@ class SubscriptionController extends CustomerBaseController
 
         $subscription->updateOptions($input);
 
-        return redirect()->route('customer.subscriptions.index')->with([
+        return redirect()->route('customer.subscriptions.index')->withInput(['tab' => 'preferences'])->with([
                 'status'  => 'success',
                 'message' => __('locale.subscription.preferences_successfully_updated'),
         ]);

@@ -355,7 +355,7 @@ return [
                 'end_time'                              => 'Heure de fin',
                 'recipient'                             => 'Destinataire',
                 'unit'                                  => 'Unité',
-                'using_limits'                          => 'Utilisation de: utilisé de: restant',
+                'using_limits'                          => 'Utilisation de :used de :remaining',
                 'change_plan'                           => 'Changer de plan',
                 'subscription'                          => 'Abonnement',
                 'plan_details'                          => 'Détails du plan',
@@ -435,6 +435,7 @@ return [
                 'bulk_approve' => 'Approuver',
                 'bulk_cancel'  => 'Annuler',
                 'bulk_disable' => 'Désactiver',
+                'showing_entries' => 'Montrant :start à :end des :total entrées',
         ],
 
     //Localization for application http status codes
@@ -755,8 +756,8 @@ return [
                 'customer_sender_id_for'         => 'ID d\'expéditeur personnalisé pour ',
                 'sender_id_required'             => 'ID expéditeur requis',
                 'phone_numbers_required'         => 'Numéros de téléphone requis',
-                'sender_id_invalid'              => 'Expéditeur: sender_id n\'est pas autorisé à envoyer ce message',
-                'sender_id_sms_capabilities'     => 'Expéditeur: sender_id n\'est pas capable d\'envoyer des sms simples',
+                'sender_id_invalid'              => 'Expéditeur :sender_id n\'est pas autorisé à envoyer ce message',
+                'sender_id_sms_capabilities'     => 'Expéditeur :sender_id n\'est pas capable d\'envoyer des sms simples',
                 'payment_for_sender_id'          => 'Paiement pour l\'ID de l\'expéditeur',
                 'price_details'                  => 'Détails des prix',
                 'payment_cancelled'              => 'Paiement annulé par l\'utilisateur',

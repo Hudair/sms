@@ -69,11 +69,13 @@ class TemplateController extends Controller
         $this->authorize('sms_template');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'message',
-                3 => 'status',
-                4 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'message',
+                5 => 'status',
+                6 => 'action',
         ];
 
         $totalData = Templates::where('user_id', Auth::user()->id)->count();
@@ -105,7 +107,6 @@ class TemplateController extends Controller
         $data = [];
         if ( ! empty($templates)) {
             foreach ($templates as $template) {
-                $show = route('customer.templates.show', $template->uid);
 
                 if ($template->status === true) {
                     $status = 'checked';
@@ -119,19 +120,20 @@ class TemplateController extends Controller
                     $message = $template->message;
                 }
 
-                $nestedData['uid']     = $template->uid;
-                $nestedData['name']    = $template->name;
-                $nestedData['message'] = $message;
-                $nestedData['status']  = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$template->uid' data-id='$template->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$template->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')."</span>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']        = $template->uid;
+                $nestedData['name']       = $template->name;
+                $nestedData['message']    = $message;
+                $nestedData['status']     = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$template->uid' data-id='$template->uid' name='status' $status>
+                <label class='form-check-label' for='status_$template->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action']  = "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>
-                                         <span class='action-delete text-danger' data-id='$template->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]                = $nestedData;
+
+                $nestedData['edit'] = route('customer.templates.show', $template->uid);
+                $data[]             = $nestedData;
 
             }
         }

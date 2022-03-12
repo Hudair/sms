@@ -44,13 +44,17 @@ class InvoiceController extends Controller
     {
 
         $columns = [
-                0 => 'uid',
-                1 => 'created_at',
-                2 => 'type',
-                3 => 'description',
-                4 => 'amount',
-                5 => 'status',
-                6 => 'user_id',
+                0  => 'responsive_id',
+                1  => 'uid',
+                2  => 'uid',
+                3  => 'created_at',
+                4  => 'id',
+                5  => 'type',
+                6  => 'description',
+                7  => 'amount',
+                8  => 'status',
+                9  => 'user_id',
+                10 => 'actions',
         ];
 
         $totalData = Invoices::count();
@@ -89,17 +93,23 @@ class InvoiceController extends Controller
                 $customer_profile = route('admin.customers.show', $invoice->user->uid);
                 $customer_name    = $invoice->user->displayName();
                 $user_id          = "<a href='$customer_profile' class='text-primary mr-1'>$customer_name</a>";
+                $invoice_number   = "<a href='$show' class='text-primary fw-bold'>#$invoice->id</a>";
 
-                $nestedData['uid']         = $invoice->uid;
-                $nestedData['user_id']     = $user_id;
-                $nestedData['created_at']  = Tool::customerDateTime($invoice->created_at);
-                $nestedData['type']        = strtoupper($invoice->type);
-                $nestedData['description'] = str_limit($invoice->description, 35);
-                $nestedData['amount']      = Tool::format_price($invoice->amount, $invoice->currency->format);
-                $nestedData['status']      = $invoice->getStatus();
-                $nestedData['action']      = "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-eye'></i></a>
-                                         <span class='action-delete text-danger' data-id='$invoice->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]                    = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $invoice->uid;
+                $nestedData['id']            = $invoice_number;
+                $nestedData['user_id']       = $user_id;
+                $nestedData['avatar']        = route('admin.customers.avatar', $invoice->user->uid);
+                $nestedData['email']         = $invoice->user->email;
+                $nestedData['created_at']    = Tool::customerDateTime($invoice->created_at);
+                $nestedData['type']          = strtoupper($invoice->type);
+                $nestedData['description']   = str_limit($invoice->description, 35);
+                $nestedData['amount']        = Tool::format_price($invoice->amount, $invoice->currency->format);
+                $nestedData['status']        = $invoice->getStatus();
+                $nestedData['edit']          = $show;
+                $nestedData['delete']        = $invoice->uid;
+
+                $data[] = $nestedData;
 
             }
         }
@@ -127,6 +137,14 @@ class InvoiceController extends Controller
         ];
 
         return view('admin.Invoices.view', compact('breadcrumbs', 'invoice'));
+    }
+
+    public function print(Invoices $invoice)
+    {
+
+        $pageConfigs = ['pageHeader' => false];
+
+        return view('admin.Invoices.print', compact('invoice', 'pageConfigs'));
     }
 
     /**

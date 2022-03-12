@@ -61,10 +61,12 @@ class BlacklistsController extends CustomerBaseController
         $this->authorize('view_blacklist');
 
         $columns = [
-                0 => 'uid',
-                1 => 'number',
-                2 => 'reason',
-                3 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'number',
+                4 => 'reason',
+                5 => 'actions',
         ];
 
         $totalData = Blacklists::where('user_id', Auth::user()->id)->count();
@@ -104,11 +106,12 @@ class BlacklistsController extends CustomerBaseController
                     $reason = '--';
                 }
 
-                $nestedData['uid']    = $blacklist->uid;
-                $nestedData['number'] = $blacklist->number;
-                $nestedData['reason'] = $reason;
-                $nestedData['action'] = "<span class='action-delete text-danger' data-id='$blacklist->uid'><i class='feather us-2x icon-trash'></i></span>";
-                $data[]               = $nestedData;
+
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $blacklist->uid;
+                $nestedData['number']        = $blacklist->number;
+                $nestedData['reason']        = $reason;
+                $data[]                      = $nestedData;
 
             }
         }

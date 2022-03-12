@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use libphonenumber\PhoneNumberUtil;
 use Throwable;
 
 class EloquentContactsRepository extends EloquentBaseRepository implements ContactsRepository
@@ -142,7 +143,7 @@ class EloquentContactsRepository extends EloquentBaseRepository implements Conta
     public function batchDestroy(array $ids): bool
     {
         DB::transaction(function () use ($ids) {
-            // This wont call eloquent events, change to destroy if needed
+            // This won't call eloquent events, change to destroy if needed
             if ($this->query()->whereIn('uid', $ids)->delete()) {
                 return true;
             }
@@ -206,6 +207,7 @@ class EloquentContactsRepository extends EloquentBaseRepository implements Conta
      * @param  array  $input
      *
      * @return JsonResponse|mixed
+     * @throws Exception
      */
     public function storeContact(ContactGroups $contactGroups, array $input): JsonResponse
     {
@@ -219,27 +221,37 @@ class EloquentContactsRepository extends EloquentBaseRepository implements Conta
 
         if ($contact) {
 
+            $phoneUtil         = PhoneNumberUtil::getInstance();
+            $phoneNumberObject = $phoneUtil->parse('+'.$input['phone']);
+
             $sendMessage = new EloquentCampaignRepository($campaign = new Campaigns());
+
 
             if ($contactGroups->send_welcome_sms && $contactGroups->welcome_sms) {
 
                 $sendMessage->quickSend($campaign, [
-                        'sender_id' => $contactGroups->sender_id,
-                        'sms_type'  => 'plain',
-                        'message'   => $contactGroups->welcome_sms,
-                        'recipient' => $input['phone'],
-                        'user_id'   => $contactGroups->customer_id,
+                        'sender_id'      => $contactGroups->sender_id,
+                        'sms_type'       => 'plain',
+                        'message'        => $contactGroups->welcome_sms,
+                        'recipient'      => $input['phone'],
+                        'user_id'        => $contactGroups->customer_id,
+                        'country_code'   => $phoneNumberObject->getCountryCode(),
+                        'sending_server' => $contactGroups->sending_server,
+                        'exist_c_code'   => 'yes',
                 ]);
 
             }
 
             if ($contactGroups->signup_sms) {
                 $sendMessage->quickSend($campaign, [
-                        'sender_id' => $contactGroups->sender_id,
-                        'sms_type'  => 'plain',
-                        'message'   => $contactGroups->signup_sms,
-                        'recipient' => $input['phone'],
-                        'user_id'   => $contactGroups->customer_id,
+                        'sender_id'      => $contactGroups->sender_id,
+                        'sms_type'       => 'plain',
+                        'message'        => $contactGroups->signup_sms,
+                        'recipient'      => $input['phone'],
+                        'user_id'        => $contactGroups->customer_id,
+                        'country_code'   => $phoneNumberObject->getCountryCode(),
+                        'sending_server' => $contactGroups->sending_server,
+                        'exist_c_code'   => 'yes',
                 ]);
 
             }

@@ -11,7 +11,7 @@
     <!-- Basic Vertical form layout section start -->
     <section id="basic-vertical-layouts">
         <div class="row match-height">
-            <div class="col-md-6 col-12">
+            <div class="col-md-7 col-12">
 
                 <div class="card">
                     <div class="card-header">
@@ -32,26 +32,27 @@
 
                                         <div class="form-group">
                                             <label for="name" class="required">{{ __('locale.labels.name') }}</label>
-                                            <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name',  isset($role->name) ? $role->name : null) }}" name="name" required placeholder="{{__('locale.labels.required')}}" autofocus>
+                                            <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name',  $role->name ?? null) }}" name="name" required placeholder="{{__('locale.labels.required')}}" autofocus>
                                             @error('name')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
 
 
                                         <div class="mt-4"></div>
-
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="selectAll" />
+                                            <label class="form-check-label text-uppercase" for="selectAll">{{ __('locale.labels.select_all') }}</label>
+                                        </div>
                                         @foreach($permissions as $category)
 
-                                            <div class="divider divider-left divider-info mt-4">
-                                                <div class="divider-text text-uppercase text-bold-600 text-primary">{{ __('locale.menu.'.$category['title']) }}</div>
+                                            <div class="divider divider-start divider-info mt-4">
+                                                <div class="divider-text text-uppercase fw-bold text-primary">{{ __('locale.menu.'.$category['title']) }}</div>
                                             </div>
 
                                             <div class="d-flex justify-content-start flex-wrap">
                                                 @foreach($category['permissions'] as $permission)
-                                                    <div class="vs-checkbox-con vs-checkbox-primary mr-2 mb-1">
+                                                    <div class="form-check me-3 me-lg-5 mt-1">
                                                         <input type="checkbox"
                                                                @if(isset($role))
                                                                @if(isset($existing_permission) && is_array($existing_permission) && in_array($permission['name'], $existing_permission))
@@ -60,15 +61,13 @@
                                                                @else
                                                                checked
                                                                @endif
-                                                               @if($permission['name'] == 'access backend') disabled @endif
                                                                value="{{ $permission['name'] }}"
                                                                name="permissions[]"
+                                                               id="{{ $permission['name'] }}"
+                                                               class="form-check-input"
                                                         >
+                                                        <label class="form-check-label text-uppercase" for="{{ $permission['name'] }}"> {{ __('locale.permission.'.$permission['display_name']) }} </label>
 
-                                                        <span class="vs-checkbox">
-                                                            <span class="vs-checkbox--check"><i class="vs-icon feather icon-check"></i></span>
-                                                        </span>
-                                                        <span class="text-uppercase">{{ __('locale.permission.'.$permission['display_name']) }}</span>
                                                     </div>
 
                                                 @endforeach
@@ -100,4 +99,17 @@
     <!-- // Basic Vertical form layout section end -->
 
 
+@endsection
+
+@section('page-script')
+    <script>
+        // Select All checkbox click
+        const selectAll = document.querySelector('#selectAll'),
+            checkboxList = document.querySelectorAll('[type="checkbox"]');
+        selectAll.addEventListener('change', t => {
+            checkboxList.forEach(e => {
+                e.checked = t.target.checked;
+            });
+        });
+    </script>
 @endsection

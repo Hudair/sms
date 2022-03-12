@@ -1,26 +1,26 @@
 {{-- For Horizontal submenu --}}
-<ul class="dropdown-menu">
-  @foreach($menu as $submenu)
-  <?php
-      $custom_classes = "";
-      if(isset($submenu->classlist)) {
-          $custom_classes = $submenu->classlist;
-      }
-      $submenuTranslation = "";
-      if(isset($menu->i18n)){
-          $submenuTranslation = $menu->i18n;
-      }
-  ?>
-  <li
-    class="{{ (request()->is($submenu->url)) ? 'active' : '' }} {{ (isset($submenu->submenu)) ? "dropdown dropdown-submenu" : '' }} {{ $custom_classes }}">
-    <a href="{{ $submenu->url }}" class="dropdown-item {{ (isset($submenu->submenu)) ? "dropdown-toggle" : '' }}"
-      {{ (isset($submenu->submenu)) ? 'data-toggle=dropdown' : '' }}>
-      <i class="{{ isset($submenu->icon) ? $submenu->icon : "" }}"></i>
-      <span data-i18n="{{ $submenuTranslation }}">{{ __('locale.'.$submenu->name) }}</span>
-    </a>
-    @if (isset($submenu->submenu))
-    @include('panels/horizontalSubmenu', ['menu' => $submenu->submenu])
+<ul class="dropdown-menu" data-bs-popper="none">
+    @if(isset($menu))
+        @foreach($menu as $submenu)
+            @php
+                $custom_classes = "";
+                if(isset($submenu->classlist)) {
+                  $custom_classes = $submenu->classlist;
+                }
+            @endphp
+
+            <li class="{{ $custom_classes }} {{ (isset($submenu->submenu)) ? 'dropdown dropdown-submenu' : '' }} {{ isset($submenu->slug) && str_contains(request()->path(),$submenu->slug) ? 'active' : '' }}" @if(isset($submenu->submenu)){{'data-menu=dropdown-submenu'}}@endif>
+                <a href="{{isset($submenu->url) ? url($submenu->url):'javascript:void(0)'}}" class="dropdown-item {{ (isset($submenu->submenu)) ? 'dropdown-toggle' : ''}} d-flex align-items-center"
+                   {{ (isset($submenu->submenu)) ? 'data-bs-toggle=dropdown' : '' }} target="{{isset($submenu->newTab) && $submenu->newTab === true  ? '_blank':'_self'}}">
+                    @if (isset($submenu->icon))
+                        <i data-feather="{{ $submenu->icon }}"></i>
+                    @endif
+                        <span>{{ __('locale.menu.'.$submenu->name) }}</span>
+                </a>
+                @if (isset($submenu->submenu))
+                    @include('panels/horizontalSubmenu', ['menu' => $submenu->submenu])
+                @endif
+            </li>
+        @endforeach
     @endif
-  </li>
-  @endforeach
 </ul>

@@ -9,15 +9,20 @@ use App\Http\Requests\Settings\NotificationsRequest;
 use App\Http\Requests\Settings\PostGeneralRequest;
 use App\Http\Requests\Settings\PusherRequest;
 use App\Http\Requests\Settings\SystemEmailRequest;
+use App\Http\Requests\Settings\UpdateVersionRequest;
+use App\Library\Unzipper;
 use App\Models\AppConfig;
 use App\Models\Language;
 use App\Models\SendingServer;
+use App\Models\User;
 use App\Repositories\Contracts\SettingsRepository;
+use Auth;
 use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
 
 class SettingsController extends AdminBaseController
@@ -144,11 +149,18 @@ class SettingsController extends AdminBaseController
 
         if ($request->timezone != config('app.timezone')) {
             AppConfig::setEnv('APP_TIMEZONE', $request->timezone);
+            User::where('id', 1)->update([
+                    'timezone' => $request->timezone,
+            ]);
         }
 
         if ($request->language != config('app.locale')) {
             session(['locale' => $request->language]);
             AppConfig::setEnv('APP_LOCALE', $request->language);
+        }
+
+        if ($request->date_format != config('app.date_format')) {
+            AppConfig::setEnv('APP_DATE_FORMAT', $request->date_format);
         }
 
         if ($request->app_keyword != config('app.app_keyword')) {
@@ -161,7 +173,7 @@ class SettingsController extends AdminBaseController
 
         $this->settings->general($request->except('_token', 'app_logo', 'app_favicon'));
 
-        return redirect()->route('admin.settings.general')->with([
+        return redirect()->route('admin.settings.general')->withInput(['tab' => 'general'])->with([
                 'status'  => 'success',
                 'message' => __('locale.settings.settings_successfully_updated'),
         ]);
@@ -187,7 +199,7 @@ class SettingsController extends AdminBaseController
 
         $this->settings->systemEmail($request->except('_token'));
 
-        return redirect()->route('admin.settings.general')->with([
+        return redirect()->route('admin.settings.general')->withInput(['tab' => 'system_email'])->with([
                 'status'  => 'success',
                 'message' => __('locale.settings.settings_successfully_updated'),
         ]);
@@ -212,7 +224,7 @@ class SettingsController extends AdminBaseController
 
         $this->settings->authentication($request->except('_token'));
 
-        return redirect()->route('admin.settings.general')->with([
+        return redirect()->route('admin.settings.general')->withInput(['tab' => 'authentication'])->with([
                 'status'  => 'success',
                 'message' => __('locale.settings.settings_successfully_updated'),
         ]);
@@ -238,7 +250,7 @@ class SettingsController extends AdminBaseController
 
         $this->settings->notifications($request->except('_token'));
 
-        return redirect()->route('admin.settings.general')->with([
+        return redirect()->route('admin.settings.general')->withInput(['tab' => 'notifications'])->with([
                 'status'  => 'success',
                 'message' => __('locale.settings.settings_successfully_updated'),
         ]);
@@ -263,7 +275,7 @@ class SettingsController extends AdminBaseController
 
         $this->settings->pusherSettings($request->except('_token'));
 
-        return redirect()->route('admin.settings.general')->with([
+        return redirect()->route('admin.settings.general')->withInput(['tab' => 'pusher'])->with([
                 'status'  => 'success',
                 'message' => __('locale.settings.settings_successfully_updated'),
         ]);
@@ -289,8 +301,6 @@ class SettingsController extends AdminBaseController
         $get_data = array();
 		$get_data['status'] = 'success';
 		$get_data['license_type'] = 'Extended license';
-		
-		
 
         if (is_array($get_data) && array_key_exists('status', $get_data)) {
             if ($get_data['status'] == 'success') {
@@ -298,20 +308,20 @@ class SettingsController extends AdminBaseController
                 AppConfig::where('setting', 'license_type')->update(['value' => $get_data['license_type']]);
                 AppConfig::where('setting', 'valid_domain')->update(['value' => 'yes']);
 
-                return redirect()->route('admin.settings.general')->with([
+                return redirect()->route('admin.settings.general')->withInput(['tab' => 'license'])->with([
                         'status'  => 'success',
                         'message' => 'License updated successfully',
                 ]);
 
             }
 
-            return redirect()->route('admin.settings.general')->with([
+            return redirect()->route('admin.settings.general')->withInput(['tab' => 'license'])->with([
                     'status'  => 'error',
                     'message' => 'Invalid license key',
             ]);
         }
 
-        return redirect()->route('admin.settings.general')->with([
+        return redirect()->route('admin.settings.general')->withInput(['tab' => 'license'])->with([
                 'status'  => 'error',
                 'message' => __('locale.exceptions.something_went_wrong'),
         ]);
@@ -352,4 +362,132 @@ class SettingsController extends AdminBaseController
 
     }
 
+    /**
+     * @return RedirectResponse
+     */
+    public function checkAvailableUpdate(): RedirectResponse
+    {
+        if (config('app.env') == 'demo') {
+            return redirect()->route('admin.settings.update_application')->with([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+
+        $app_version      = config('app.version');
+        $get_verification = 'https://support.codeglen.com/version/';
+
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $get_verification);
+        curl_setopt($ch, CURLOPT_HTTPGET, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
+
+        if ($app_version == $data) {
+            return redirect()->route('admin.settings.update_application')->with([
+                    'status'  => 'success',
+                    'message' => 'You are using latest version',
+            ]);
+        }
+
+        return redirect()->route('admin.settings.update_application')->with([
+                'update_required' => true,
+                'version'         => $data,
+        ]);
+
+    }
+
+
+    public function postUpdateApplication(UpdateVersionRequest $request)
+    {
+        if (config('app.env') == 'demo') {
+            return redirect()->route('admin.settings.update_application')->with([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+        $purchase_code = $request->input('purchase_code');
+        $domain_name   = config('app.url');
+
+        $input = trim($domain_name, '/');
+        if ( ! preg_match('#^http(s)?://#', $input)) {
+            $input = 'http://'.$input;
+        }
+
+        $urlParts    = parse_url($input);
+        $domain_name = preg_replace('/^www\./', '', $urlParts['host']);
+
+
+        $get_verification = 'https://support.codeglen.com/forum/api/get-product-data/'.$purchase_code.'/'.$domain_name;
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $get_verification);
+        curl_setopt($ch, CURLOPT_HTTPGET, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
+
+        $get_data = json_decode($data, true);
+
+        if (is_array($get_data) && array_key_exists('status', $get_data)) {
+            if ($get_data['status'] == 'success') {
+                $get_response = Unzipper::extractZipArchive($request->file('update_file'), base_path());
+
+                if (isset($get_response->getData()->status)) {
+
+                    if ($get_response->getData()->status == 'success') {
+                        try {
+                            Artisan::call('migrate', ['--force' => true]);
+
+                            AppConfig::setEnv('APP_VERSION', $request->version);
+
+                            Auth::logout();
+
+                            return response()->json([
+                                    'status'      => 'success',
+                                    'redirectURL' => route('login'),
+                                    'message'     => 'You have successfully updated your application.',
+                            ]);
+                        } catch (Exception $e) {
+
+                            return response()->json([
+                                    'status'  => 'error',
+                                    'message' => $e->getMessage(),
+                            ]);
+
+                        }
+                    }
+
+                    return response()->json([
+                            'message' => $get_response->getData()->message,
+                            'status'  => 'error',
+                    ]);
+
+                }
+
+                return response()->json([
+                        'message' => __('locale.exceptions.something_went_wrong'),
+                        'status'  => 'error',
+                ]);
+            }
+
+            return response()->json([
+                    'message' => $get_data['msg'],
+                    'status'  => 'error',
+            ]);
+        }
+
+        return response()->json([
+                'message' => 'Invalid request',
+                'status'  => 'error',
+        ]);
+    }
 }

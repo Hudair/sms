@@ -19,17 +19,22 @@
                                 <div class="row">
 
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="phone" class="required">{{__('locale.labels.phone')}}</label>
+                                        <div class="mb-1">
+                                            <label for="phone" class="form-label required">{{__('locale.labels.phone')}}</label>
                                             <input type="text" id="phone" class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}" name="phone" required>
                                             @error('phone')
                                             <div class="invalid-feedback">
                                                 {{ $message }}
                                             </div>
                                             @enderror
+
+                                            <p><small class="text-primary"> {!! __('locale.contacts.include_country_code') !!} </small></p>
+
                                         </div>
-                                        <div class="form-group">
-                                            <label for="first_name">{{__('locale.labels.first_name')}}</label>
+
+
+                                        <div class="mb-1">
+                                            <label for="first_name" class="form-label">{{__('locale.labels.first_name')}}</label>
                                             <input type="text" id="first_name" class="form-control @error('first_name') is-invalid @enderror" value="{{ old('first_name') }}" name="first_name">
                                             @error('first_name')
                                             <div class="invalid-feedback">
@@ -37,8 +42,8 @@
                                             </div>
                                             @enderror
                                         </div>
-                                        <div class="form-group">
-                                            <label for="last_name">{{__('locale.labels.last_name')}}</label>
+                                        <div class="mb-1">
+                                            <label for="last_name" class="form-label">{{__('locale.labels.last_name')}}</label>
                                             <input type="text" id="last_name" class="form-control @error('last_name') is-invalid @enderror" value="{{ old('last_name') }}" name="last_name">
                                             @error('last_name')
                                             <div class="invalid-feedback">
@@ -51,8 +56,8 @@
 
                                 <div class="row">
                                     <div class="col-12">
-                                        <button type="submit" class="btn btn-primary mr-1 mb-1">
-                                            <i class="feather icon-save"></i> {{__('locale.buttons.save')}}
+                                        <button type="submit" class="btn btn-primary mb-1">
+                                            <i data-feather="save"></i> {{__('locale.buttons.save')}}
                                         </button>
                                     </div>
                                 </div>

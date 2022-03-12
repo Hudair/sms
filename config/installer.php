@@ -64,14 +64,14 @@ return [
         'environment'            => [
                 'form' => [
                         'rules' => [
-                                'app_name'            => 'required|string|max:50',
+                                'app_name'            => 'required|string',
                                 'app_url'             => 'required|url',
-                                'database_connection' => 'required|string|max:50',
-                                'database_host'       => 'required|string|max:50',
+                                'database_connection' => 'required|string',
+                                'database_host'       => 'required|string',
                                 'database_port'       => 'required|numeric',
-                                'database_name'       => 'required|string|max:50',
-                                'database_username'   => 'required|string|max:50',
-                                'database_password'   => 'nullable|string|max:50',
+                                'database_name'       => 'required|string',
+                                'database_username'   => 'required|string',
+                                'database_password'   => 'nullable|string',
                                 'https_enable'        => 'required|string',
                         ],
                 ],

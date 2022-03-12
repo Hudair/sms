@@ -153,6 +153,8 @@ return [
 
         'timezone' => env('APP_TIMEZONE', 'UTC'),
 
+        'date_format' => env('APP_DATE_FORMAT', 'jS M y'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -311,7 +313,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-        'super_admin_email' => env('SUPER_ADMIN_EMAIL', 'info@arabcode.online'),
+        'super_admin_email' => env('SUPER_ADMIN_EMAIL', 'akasham67@gmail.com'),
 
 
     /*
@@ -321,6 +323,15 @@ return [
     */
 
         'api_rate_limit'     => env('API_RATE_LIMIT', '1000'),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Theme layout type
+    |--------------------------------------------------------------------------
+    */
+
+        'theme_layout_type'     => env('THEME_LAYOUT_TYPE', 'vertical'),
 
 
     /*
@@ -399,7 +410,7 @@ return [
              */
                 App\Providers\AppServiceProvider::class,
                 App\Providers\AuthServiceProvider::class,
-            // App\Providers\BroadcastServiceProvider::class,
+                App\Providers\BroadcastServiceProvider::class,
                 App\Providers\EventServiceProvider::class,
                 App\Providers\RouteServiceProvider::class,
                 App\Providers\MenuServiceProvider::class,

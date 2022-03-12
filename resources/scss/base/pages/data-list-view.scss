@@ -1,0 +1,226 @@
+// ================================================================================================
+// 	File Name: data-list-view.scss
+// 	Description: SCSS file for data list view.
+// 	----------------------------------------------------------------------------------------------
+// ================================================================================================
+
+$checkbox-border-color: #b4b4b4;
+$pure-black: #000;
+$gray-300: #dee2e6 !default;
+$primary: #7367f0;
+$white: #fff;
+// For checkbox alignment
+
+
+// for header section
+.data-list-view-header, .data-thumb-view-header {
+  .table-responsive {
+    .top {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 1rem;
+      margin-bottom: 1rem;
+
+      .dataTables_length {
+        display: inline-block;
+
+        .custom-select {
+          width: 8.714rem;
+          height: 3rem;
+          border-radius: 1.428rem;
+          border: 1px solid $gray-300;
+          font-size: 1rem;
+          background-position: calc(100% - 12px) 13px, calc(100% - 20px) 13px, 100% 0;
+
+          &:focus {
+            box-shadow: none;
+          }
+        }
+      }
+
+      .dataTables_filter {
+        display: inline-block;
+
+        .form-control {
+          border-radius: 1.428rem;
+          border: 1px solid $gray-300;
+        }
+
+        label {
+          position: relative;
+
+          &:after {
+            content: url('https://api.iconify.design/feather/search.svg');
+            font-family: "feather", sans-serif;
+            position: absolute;
+            left: 1.428rem;
+            top: .928rem;
+
+          }
+        }
+      }
+    }
+
+  }
+}
+
+// datatable customization
+table.data-list-view.dataTable, table.data-thumb-view.dataTable {
+  border-spacing: 0 1.3rem;
+  padding: 0 0.7rem;
+
+  thead {
+    // th customization
+    th {
+      padding: .714rem 1.785rem;
+      font-weight: 600;
+
+      input:focus {
+        outline: 0;
+      }
+    }
+
+    th:first-child {
+      padding-left: 0;
+    }
+
+    // for sorting icons
+    .sorting_asc, .sorting_desc, .sorting {
+      padding-right: inherit;
+
+      &:before {
+        font-size: .7rem;
+        left: .857rem;
+        top: .642rem;
+      }
+
+      &:after {
+        font-size: .7rem;
+        left: .857rem;
+        top: 1.071rem;
+      }
+    }
+
+    // disable first shorting icon
+    .sorting_asc, .sorting_desc, .sorting th:first-child {
+      padding-right: inherit;
+
+      &:before {
+        display: none;
+      }
+
+      &:after {
+        display: none;
+      }
+    }
+
+  }
+
+  tbody {
+    // for table row effects
+    tr {
+      background-color: $white;
+      box-shadow: rgba($pure-black, 0.05) 0 4px 20px 0;
+      cursor: pointer;
+      transition: all .3s ease;
+      border-radius: .5rem;
+
+      &:hover {
+        transform: translateY(-4px);
+        transition: all .3s ease;
+      }
+
+      td:first-child {
+        padding-left: 1rem;
+        border-top-left-radius: .5rem;
+        border-bottom-left-radius: .5rem;
+      }
+
+      td:last-child {
+        border-top-right-radius: .5rem;
+        border-bottom-right-radius: .5rem;
+      }
+
+      &.selected {
+        td {
+          border-radius: 0;
+        }
+      }
+    }
+
+    // for td effects
+
+    td {
+      padding: 1.357rem;
+      border: none;
+      vertical-align: middle;
+
+      input:focus {
+        outline: 0;
+      }
+
+      &.product-name {
+        font-weight: 500;
+      }
+
+      &:focus {
+        outline: 0;
+      }
+
+
+      // Check customization ends
+      .progress {
+        margin-bottom: 0;
+        box-shadow: 0 4px 8px 0 rgba($pure-black, .12), 0 2px 4px 0 rgba($pure-black, .08);
+      }
+    }
+  }
+}
+
+
+// to stack buttons
+@media(max-width: 768px) {
+  #data-list-view, #data-thumb-view {
+    .table-responsive {
+      .top {
+        flex-direction: column;
+      }
+
+      .dt-buttons {
+        width: auto;
+        text-align: left;
+      }
+
+      .dataTables_length,
+      .dataTables_filter {
+        text-align: right;
+      }
+    }
+  }
+}
+
+
+
+@media screen and (-ms-high-contrast: active), (-ms-high-contrast: none) {
+  #data-list-view,
+  #data-thumb-view {
+    .table-responsive {
+      .top {
+        .dataTables_filter {
+          .form-control {
+            height: 3rem !important;
+            padding: 0 1rem !important;
+          }
+
+          label {
+            &:after {
+              display: none;
+            }
+          }
+        }
+      }
+    }
+
+  }
+}
+

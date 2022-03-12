@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Throwable;
 
 class StoreCampaignJob implements ShouldQueue
 {
@@ -21,8 +22,6 @@ class StoreCampaignJob implements ShouldQueue
     public $deleteWhenMissingModels = true;
 
     protected $campaign_id;
-
-    public $timeout = 300;
 
     /**
      * Create a new job instance.
@@ -45,5 +44,11 @@ class StoreCampaignJob implements ShouldQueue
         if ($campaign) {
             $campaign->singleProcess();
         }
+    }
+
+    public function failed(Throwable $exception)
+    {
+        $campaign = Campaigns::find($this->campaign_id);
+        $campaign->failed($exception->getMessage());
     }
 }

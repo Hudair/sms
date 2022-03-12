@@ -18,6 +18,8 @@ use App\Models\Campaigns;
 use App\Models\ContactGroups;
 use App\Models\CsvData;
 use App\Models\PhoneNumbers;
+use App\Models\Plan;
+use App\Models\PlansCoverageCountries;
 use App\Models\PlansSendingServer;
 use App\Models\Senderid;
 use App\Models\SendingServer;
@@ -65,7 +67,6 @@ class CampaignController extends CustomerBaseController
                 ['name' => __('locale.menu.Quick Send')],
         ];
 
-
         if (Auth::user()->customer->getOption('sender_id_verification') == 'yes') {
             $sender_ids    = Senderid::where('user_id', auth()->user()->id)->where('status', 'active')->cursor();
             $phone_numbers = PhoneNumbers::where('user_id', auth()->user()->id)->where('status', 'assigned')->cursor();
@@ -76,7 +77,31 @@ class CampaignController extends CustomerBaseController
 
         $recipient = $request->recipient;
 
-        return view('customer.Campaigns.quickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient'));
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('plain', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
+        return view('customer.Campaigns.quickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient', 'sending_server', 'coverage'));
     }
 
     /**
@@ -96,19 +121,21 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
 
         $data = $this->campaigns->quickSend($campaign, $request->except('_token'));
 
-        if (isset($data)) {
-            return redirect()->route('customer.reports.sent')->with([
-                    'status'  => $data->getData()->status,
-                    'message' => $data->getData()->message,
-            ]);
-        }
-
-        return redirect()->route('customer.sms.quick_send')->with([
-                'status'  => 'error',
-                'message' => __('locale.exceptions.something_went_wrong'),
+        return redirect()->route('customer.reports.sent')->with([
+                'status'  => $data->getData()->status,
+                'message' => $data->getData()->message,
         ]);
     }
 
@@ -142,7 +169,33 @@ class CampaignController extends CustomerBaseController
 
         $templates = Templates::where('user_id', auth()->user()->id)->where('status', 1)->cursor();
 
-        return view('customer.Campaigns.campaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('plain', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
+
+        return view('customer.Campaigns.campaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates', 'coverage', 'sending_server', 'plan_id'));
     }
 
     /**
@@ -188,10 +241,19 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
 
         $data = $this->campaigns->campaignBuilder($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
 
             if ($data->getData()->status == 'success') {
                 return redirect()->route('customer.reports.campaigns')->with([
@@ -238,7 +300,30 @@ class CampaignController extends CustomerBaseController
             $phone_numbers = null;
         }
 
-        return view('customer.Campaigns.import', compact('breadcrumbs', 'sender_ids', 'phone_numbers'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('plain', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('plain', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        return view('customer.Campaigns.import', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'sending_server', 'plan_id'));
     }
 
 
@@ -302,12 +387,21 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
 
         $form_data = json_decode($request->form_data, true);
 
         $data = $this->campaigns->sendUsingFile($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
             if ($form_data['sms_type'] == 'whatsapp') {
                 return redirect()->route('customer.whatsapp.import')->with([
                         'status'  => $data->getData()->status,
@@ -399,9 +493,33 @@ class CampaignController extends CustomerBaseController
             $phone_numbers = null;
         }
 
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('voice', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
         $recipient = $request->recipient;
 
-        return view('customer.Campaigns.voiceQuickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient'));
+        return view('customer.Campaigns.voiceQuickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient', 'sending_server', 'coverage'));
     }
 
     /**
@@ -421,27 +539,33 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.voice.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        } else {
+            return redirect()->route('customer.voice.quick_send')->with([
+                    'status'  => 'error',
+                    'message' => __('locale.customer.no_active_subscription'),
+            ]);
+        }
 
         $data = $this->campaigns->quickSend($campaign, $request->except('_token'));
 
-        if (isset($data)) {
-
-            if ($data->getData()->status == 'success') {
-                return redirect()->route('customer.reports.sent')->with([
-                        'status'  => 'success',
-                        'message' => $data->getData()->message,
-                ]);
-            }
-
-            return redirect()->route('customer.voice.quick_send')->with([
-                    'status'  => $data->getData()->status,
+        if ($data->getData()->status == 'success') {
+            return redirect()->route('customer.reports.sent')->with([
+                    'status'  => 'success',
                     'message' => $data->getData()->message,
             ]);
         }
 
-        return redirect()->route('customer.voice.quick_send')->with([
-                'status'  => 'error',
-                'message' => __('locale.exceptions.something_went_wrong'),
+        return redirect()->route('customer.reports.sent')->with([
+                'status'  => $data->getData()->status,
+                'message' => $data->getData()->message,
         ]);
     }
 
@@ -475,7 +599,33 @@ class CampaignController extends CustomerBaseController
 
         $templates = Templates::where('user_id', auth()->user()->id)->where('status', 1)->cursor();
 
-        return view('customer.Campaigns.voiceCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('voice', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
+
+        return view('customer.Campaigns.voiceCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates', 'sending_server', 'coverage', 'plan_id'));
     }
 
     /**
@@ -496,9 +646,19 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
+
         $data = $this->campaigns->campaignBuilder($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
 
             if ($data->getData()->status == 'success') {
                 return redirect()->route('customer.reports.campaigns')->with([
@@ -545,7 +705,30 @@ class CampaignController extends CustomerBaseController
             $phone_numbers = null;
         }
 
-        return view('customer.Campaigns.voiceImport', compact('breadcrumbs', 'sender_ids', 'phone_numbers'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('voice', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('voice', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        return view('customer.Campaigns.voiceImport', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'sending_server', 'plan_id'));
     }
 
 
@@ -629,9 +812,34 @@ class CampaignController extends CustomerBaseController
             $phone_numbers = null;
         }
 
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('mms', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
+
         $recipient = $request->recipient;
 
-        return view('customer.Campaigns.mmsQuickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient'));
+        return view('customer.Campaigns.mmsQuickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient', 'coverage', 'sending_server'));
     }
 
     /**
@@ -651,10 +859,19 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
 
         $data = $this->campaigns->quickSend($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
             return redirect()->route('customer.reports.sent')->with([
                     'status'  => $data->getData()->status,
                     'message' => $data->getData()->message,
@@ -697,7 +914,33 @@ class CampaignController extends CustomerBaseController
 
         $templates = Templates::where('user_id', auth()->user()->id)->where('status', 1)->cursor();
 
-        return view('customer.Campaigns.mmsCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('mms', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
+
+        return view('customer.Campaigns.mmsCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates', 'sending_server', 'coverage', 'plan_id'));
     }
 
 
@@ -719,10 +962,19 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
 
         $data = $this->campaigns->campaignBuilder($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
 
             if ($data->getData()->status == 'success') {
                 return redirect()->route('customer.reports.campaigns')->with([
@@ -769,7 +1021,31 @@ class CampaignController extends CustomerBaseController
             $phone_numbers = null;
         }
 
-        return view('customer.Campaigns.mmsImport', compact('breadcrumbs', 'sender_ids', 'phone_numbers'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('mms', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('mms', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+
+        return view('customer.Campaigns.mmsImport', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'sending_server', 'plan_id'));
     }
 
 
@@ -857,58 +1133,33 @@ class CampaignController extends CustomerBaseController
             $phone_numbers = null;
         }
 
-        $recipient = $request->recipient;
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
 
-        $user = Auth::user();
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
 
-        $qr_code = null;
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('whatsapp', 1)->where('status', true)->get();
 
-        if ($user->customer->activeSubscription()) {
-            $sending_server = null;
-
-            $plan_id = $user->customer->activeSubscription()->plan_id;
-
-            // Check the customer has permissions using sending servers and has his own sending servers
-            if ($user->customer->getOption('create_sending_server') == 'yes') {
-
-                if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
-                    $sending_server = SendingServer::where('user_id', $user->id)->where('whatsapp', 1)->where('status', true)->first();
-                    if ( ! $sending_server) {
-                        $sending_server = PlansSendingServer::where('plan_id', $plan_id)->where('is_primary', 1)->first()->sendingServer;
-                    }
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
                 }
-
             } else {
-                // If customer dont have permission creating sending servers
-                $sending_server = PlansSendingServer::where('plan_id', $plan_id)->where('is_primary', 1)->first()->sendingServer;
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
             }
-
-            if ($sending_server && $sending_server->settings == 'WaApi') {
-
-                $headers   = [];
-                $headers[] = 'Content-Type: multipart/form-data';
-
-                $parameters = [
-                        'client_id' => $sending_server->c1,
-                        'instance'  => $sending_server->c2,
-                ];
-
-                $gateway_url = $sending_server->api_link.'/api/getqrcode.php?'.http_build_query($parameters);
-
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $gateway_url);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-                curl_setopt($ch, CURLOPT_POST, 1);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-                $qr_code = curl_exec($ch);
-                curl_close($ch);
-            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
         }
 
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
 
-        return view('customer.Campaigns.whatsAppQuickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient', 'qr_code'));
+        $recipient = $request->recipient;
+
+        return view('customer.Campaigns.whatsAppQuickSend', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'recipient', 'sending_server', 'coverage'));
     }
 
     /**
@@ -928,10 +1179,19 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
 
         $data = $this->campaigns->quickSend($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
             return redirect()->route('customer.reports.sent')->with([
                     'status'  => $data->getData()->status,
                     'message' => $data->getData()->message,
@@ -974,7 +1234,33 @@ class CampaignController extends CustomerBaseController
 
         $templates = Templates::where('user_id', auth()->user()->id)->where('status', 1)->cursor();
 
-        return view('customer.Campaigns.whatsAppCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('whatsapp', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+        $coverage = PlansCoverageCountries::where('plan_id', $plan_id)->where('status', true)->cursor();
+
+
+        return view('customer.Campaigns.whatsAppCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates', 'sending_server', 'coverage', 'plan_id'));
     }
 
 
@@ -996,9 +1282,19 @@ class CampaignController extends CustomerBaseController
             ]);
         }
 
+        if (Auth::user()->customer->activeSubscription()) {
+            $plan = Plan::where('status', true)->find(Auth::user()->customer->activeSubscription()->plan_id);
+            if ( ! $plan) {
+                return redirect()->route('customer.sms.quick_send')->with([
+                        'status'  => 'error',
+                        'message' => 'Purchased plan is not active. Please contact support team.',
+                ]);
+            }
+        }
+
         $data = $this->campaigns->campaignBuilder($campaign, $request->except('_token'));
 
-        if (isset($data)) {
+        if (isset($data->getData()->status)) {
 
             if ($data->getData()->status == 'success') {
                 return redirect()->route('customer.reports.campaigns')->with([
@@ -1045,7 +1341,31 @@ class CampaignController extends CustomerBaseController
             $phone_numbers = null;
         }
 
-        return view('customer.Campaigns.whatsAppImport', compact('breadcrumbs', 'sender_ids', 'phone_numbers'));
+
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        // Check the customer has permissions using sending servers and has his own sending servers
+        if (Auth::user()->customer->getOption('create_sending_server') == 'yes') {
+            if (PlansSendingServer::where('plan_id', $plan_id)->count()) {
+
+                $sending_server = SendingServer::where('user_id', Auth::user()->id)->where('whatsapp', 1)->where('status', true)->get();
+
+                if ($sending_server->count() == 0) {
+                    $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                    $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+                }
+            } else {
+                $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+                $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+            }
+        } else {
+            // If customer don't have permission creating sending servers
+            $sending_server_ids = PlansSendingServer::where('plan_id', $plan_id)->pluck('sending_server_id')->toArray();
+            $sending_server     = SendingServer::where('whatsapp', 1)->where('status', true)->whereIn('id', $sending_server_ids)->get();
+        }
+
+
+        return view('customer.Campaigns.whatsAppImport', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'sending_server', 'plan_id'));
     }
 
 

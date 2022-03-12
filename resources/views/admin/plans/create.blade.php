@@ -25,137 +25,119 @@
                                     @csrf
                                     <div class="row">
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="name" class="required">{{__('locale.labels.name')}}</label>
+                                            <div class="mb-1">
+                                                <label for="name" class="form-label required">{{__('locale.labels.name')}}</label>
                                                 <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" name="name" required>
                                                 @error('name')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="price"  class="required">{{__('locale.plans.price')}}</label>
+                                            <div class="mb-1">
+                                                <label for="price" class="form-label required">{{__('locale.plans.price')}}</label>
                                                 <input type="text" id="price" class="form-control text-right @error('price') is-invalid @enderror" value="{{ old('price') }}" name="price" required>
                                                 @error('price')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
 
                                         <div class="col-12">
-                                            <fieldset class="form-group">
-                                                <label for="billing_cycle" class="required">{{__('locale.plans.billing_cycle')}}</label>
-                                                <select class="form-control" id="billing_cycle" name="billing_cycle">
+                                            <div class="mb-1">
+                                                <label for="billing_cycle" class="form-label required">{{__('locale.plans.billing_cycle')}}</label>
+                                                <select class="form-select" id="billing_cycle" name="billing_cycle">
                                                     <option value="daily" {{ old('billing_cycle') == 'daily' ? 'selected': null }}> {{__('locale.labels.daily')}}</option>
                                                     <option value="monthly" {{ old('billing_cycle') == 'monthly' ? 'selected': null }}>  {{__('locale.labels.monthly')}}</option>
                                                     <option value="yearly" {{ old('billing_cycle') == 'yearly' ? 'selected': null }}>  {{__('locale.labels.yearly')}}</option>
                                                     <option value="custom" {{ old('billing_cycle') == 'custom' ? 'selected': null }}>  {{__('locale.labels.custom')}}</option>
                                                 </select>
-                                            </fieldset>
-                                            @error('billing_cycle')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
                                             </div>
+                                            @error('billing_cycle')
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
 
 
                                         <div class="col-sm-6 col-12 show-custom">
-                                            <div class="form-group">
-                                                <label for="frequency_amount" class="required">{{__('locale.plans.frequency_amount')}}</label>
+                                            <div class="mb-1">
+                                                <label for="frequency_amount" class="form-label required">{{__('locale.plans.frequency_amount')}}</label>
                                                 <input type="text" id="frequency_amount" class="form-control text-right @error('frequency_amount') is-invalid @enderror" value="{{ old('frequency_amount') }}" name="frequency_amount">
                                                 @error('frequency_amount')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
                                         <div class="col-sm-6 col-12 show-custom">
-                                            <fieldset class="form-group">
-                                                <label for="frequency_unit" class="required">{{__('locale.plans.frequency_unit')}}</label>
-                                                <select class="form-control" id="frequency_unit" name="frequency_unit">
+                                            <div class="mb-1">
+                                                <label for="frequency_unit" class="form-label required">{{__('locale.plans.frequency_unit')}}</label>
+                                                <select class="form-select" id="frequency_unit" name="frequency_unit">
                                                     <option value="day"> {{__('locale.labels.day')}}</option>
                                                     <option value="week">  {{__('locale.labels.week')}}</option>
                                                     <option value="month">  {{__('locale.labels.month')}}</option>
                                                     <option value="year">  {{__('locale.labels.year')}}</option>
                                                 </select>
-                                            </fieldset>
-                                            @error('frequency_unit')
-                                            <div class="text-danger">
-                                                {{ $message }}
                                             </div>
+                                            @error('frequency_unit')
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
 
 
                                         <div class="col-12">
-                                            <fieldset class="form-group">
-                                                <label for="currency_id" class="required">{{__('locale.labels.currency')}}</label>
-                                                <select class="form-control select2" id="currency_id" name="currency_id">
+                                            <div class="mb-1">
+                                                <label for="currency_id" class="form-label required">{{__('locale.labels.currency')}}</label>
+                                                <select class="form-select select2" id="currency_id" name="currency_id">
                                                     @foreach($currencies as $currency)
                                                         <option value="{{$currency->id}}"> {{ $currency->name }}
                                                             ({{$currency->code}})
                                                         </option>
                                                     @endforeach
                                                 </select>
-                                            </fieldset>
-                                            @error('currency_id')
-                                            <div class="text-danger">
-                                                {{ $message }}
                                             </div>
+                                            @error('currency_id')
+                                            <p><small class="text-danger">{{ $message }}</small></p>
                                             @enderror
                                         </div>
 
 
                                         <div class="col-12">
-                                            <fieldset>
-                                                <div class="vs-checkbox-con vs-checkbox-primary">
-                                                    <input type="checkbox" value="true" name="tax_billing_required">
-                                                    <span class="vs-checkbox">
-                                                          <span class="vs-checkbox--check">
-                                                            <i class="vs-icon feather icon-check"></i>
-                                                          </span>
-                                                        </span>
-                                                    <span class="">{{__('locale.plans.billing_information_required')}}</span>
+                                            <div class="mb-1">
+                                                <div class="form-check me-3 me-lg-5 mt-1">
+                                                    <input type="checkbox" class="form-check-input" id="show_in_customer" checked value="true" name="show_in_customer">
+                                                    <label for="show_in_customer" class="form-label">{{__('locale.plans.show_in_customer')}}</label>
                                                 </div>
-                                                <p>
-                                                    <small class="text-muted">{{__('locale.plans.ask_tax_billing_information_subscribing_plan')}}</small>
-                                                </p>
-
-                                            </fieldset>
+                                            </div>
                                         </div>
 
                                         <div class="col-12">
-                                            <fieldset>
-                                                <div class="vs-checkbox-con vs-checkbox-primary">
-                                                    <input type="checkbox" value="true" name="is_popular">
-                                                    <span class="vs-checkbox">
-                                                          <span class="vs-checkbox--check">
-                                                            <i class="vs-icon feather icon-check"></i>
-                                                          </span>
-                                                        </span>
-                                                    <span class="">{{__('locale.labels.is_popular')}}</span>
+                                            <div class="mb-1">
+                                                <div class="form-check me-3 me-lg-5 mt-1">
+                                                    <input type="checkbox" class="form-check-input" id="tax_billing_required" value="true" name="tax_billing_required">
+                                                    <label for="tax_billing_required" class="form-label">{{__('locale.plans.billing_information_required')}}</label>
                                                 </div>
-                                                <p>
-                                                    <small class="text-muted">{{__('locale.plans.set_this_plan_as_popular')}}</small>
-                                                </p>
+                                                <p><small class="text-muted">{{__('locale.plans.ask_tax_billing_information_subscribing_plan')}}</small></p>
 
-                                            </fieldset>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <div class="mb-1">
+                                                <div class="form-check me-3 me-lg-5 mt-1">
+                                                    <input type="checkbox" class="form-check-input" id="is_popular" value="true" name="is_popular">
+                                                    <label class="form-label" for="is_popular">{{__('locale.labels.is_popular')}}</label>
+                                                </div>
+                                                <p><small class="text-muted">{{__('locale.plans.set_this_plan_as_popular')}}</small></p>
+                                            </div>
                                         </div>
 
 
                                         <div class="col-12 mt-2">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1">
-                                                <i class="feather icon-save"></i> {{__('locale.buttons.save')}}
+                                            <button type="submit" class="btn btn-primary mb-1">
+                                                <i data-feather="save"></i> {{__('locale.buttons.save')}}
                                             </button>
                                         </div>
 
@@ -191,15 +173,15 @@
 
         let firstInvalid = $('form').find('.is-invalid').eq(0);
 
-        if ( firstInvalid.length ) {
+        if (firstInvalid.length) {
             $('body, html').stop(true, true).animate({
                 'scrollTop': firstInvalid.offset().top - 200 + 'px'
             }, 200);
         }
 
-        if (billing_cycle.val() === 'custom'){
+        if (billing_cycle.val() === 'custom') {
             showCustom.show();
-        }else {
+        } else {
             showCustom.hide();
         }
 
@@ -213,11 +195,16 @@
         });
 
         // Basic Select2 select
-        $(".select2").select2({
-            // the following code is used to disable x-scrollbar when click in select input and
-            // take 100% width in responsive also
-            dropdownAutoWidth: true,
-            width: '100%'
+        $(".select2").each(function () {
+            let $this = $(this);
+            $this.wrap('<div class="position-relative"></div>');
+            $this.select2({
+                // the following code is used to disable x-scrollbar when click in select input and
+                // take 100% width in responsive also
+                dropdownAutoWidth: true,
+                width: '100%',
+                dropdownParent: $this.parent()
+            });
         });
 
     </script>

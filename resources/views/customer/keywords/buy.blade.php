@@ -1,88 +1,70 @@
 @extends('layouts/contentLayoutMaster')
 
-@section('title', __('locale.keywords.buy_keyword'))
+@section('title', __('locale.menu.Keywords'))
 
 @section('vendor-style')
-    {{-- vendor files --}}
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/datatables.min.css')) }}">
+    {{-- vendor css files --}}
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap5.min.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/sweetalert2.min.css')) }}">
 
 @endsection
-@section('page-style')
-    {{-- Page css files --}}
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/data-list-view.css')) }}">
-@endsection
 
 @section('content')
-    {{-- Data list view starts --}}
-    <section id="data-list-view" class="data-list-view-header">
 
-        {{-- DataTable starts --}}
-        <div class="table-responsive">
-            <table class="table data-list-view">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th>{{__('locale.labels.title')}} </th>
-                    <th>{{__('locale.labels.keyword')}} </th>
-                    <th>{{__('locale.plans.price')}}</th>
-                    <th>{{__('locale.labels.actions')}}</th>
-                </tr>
-                </thead>
-            </table>
+    <!-- Basic table -->
+    <section id="datatables-basic">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <table class="table datatables-basic">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th>{{ __('locale.labels.id') }}</th>
+                            <th>{{__('locale.labels.title')}} </th>
+                            <th>{{__('locale.labels.keyword')}}</th>
+                            <th>{{__('locale.plans.price')}}</th>
+                            <th>{{__('locale.labels.actions')}}</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
         </div>
-        {{-- DataTable ends --}}
-
     </section>
-    {{-- Data list view end --}}
+    <!--/ Basic table -->
+
+
 @endsection
+
+
 @section('vendor-script')
-    {{-- vendor js files --}}
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.min.js')) }}"></script>
+    {{-- vendor files --}}
+    <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/responsive.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.checkboxes.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.bootstrap.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.select.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.html5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.rowGroup.min.js')) }}"></script>
 
     <script src="{{ asset(mix('vendors/js/extensions/sweetalert2.all.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
+
 @endsection
+
 @section('page-script')
-
+    {{-- Page js files --}}
     <script>
-
-        // init list view datatable
         $(document).ready(function () {
             "use strict"
 
-            //show response message
-            function showResponseMessage(data) {
-
-                if (data.status === 'success') {
-                    toastr.success(data.message, 'Success!!', {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
-                        closeButton: true,
-                        newestOnTop: true
-                    });
-                    dataListView.draw();
-                } else {
-                    toastr.warning("{{__('locale.exceptions.something_went_wrong')}}", "{{__('locale.labels.attention')}}", {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
-                        closeButton: true,
-                        newestOnTop: true
-                    });
-                }
-            }
-
-            // init table dom
-            let Table = $("table");
-
             // init list view datatable
-            let dataListView = $('.data-list-view').DataTable({
+            $('.datatables-basic').DataTable({
 
                 "processing": true,
                 "serverSide": true,
@@ -93,6 +75,8 @@
                     "data": {_token: "{{csrf_token()}}"}
                 },
                 "columns": [
+                    {"data": 'responsive_id', orderable: false, searchable: false},
+                    {"data": "uid"},
                     {"data": "uid"},
                     {"data": "title"},
                     {"data": "keyword_name"},
@@ -100,110 +84,89 @@
                     {"data": "action", orderable: false, searchable: false}
                 ],
 
-                bAutoWidth: false,
-                responsive: false,
                 searchDelay: 1500,
-                dom:
-                    '<"top"<"actions action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">p>',
-                oLanguage: {
+                columnDefs: [
+                    {
+                        // For Responsive
+                        className: 'control',
+                        orderable: false,
+                        responsivePriority: 2,
+                        targets: 0
+                    },
+                    {
+                        targets: 1,
+                        visible: false
+                    },
+                    {
+                        targets: 2,
+                        visible: false
+                    },
+                    {
+                        // Actions
+                        targets: -1,
+                        title: '{{ __('locale.labels.actions') }}',
+                        orderable: false,
+                        render: function (data, type, full) {
+
+                            return (
+                                '<a href="'+full['checkout']+'" class="text-primary" data-bs-toggle="tooltip" data-placement="top" title=' + full['buy'] + '>' +
+                                feather.icons['shopping-cart'].toSvg({class: 'font-medium-4'}) +
+                                '</a>'
+                            );
+                        }
+                    }
+                ],
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
                     sLengthMenu: "_MENU_",
                     sZeroRecords: "{{ __('locale.datatables.no_results') }}",
-                    sSearch: "",
+                    sSearch: "{{ __('locale.datatables.search') }}",
                     sProcessing: "{{ __('locale.datatables.processing') }}",
-                    oPaginate: {
-                        sFirst: "{{ __('locale.datatables.first') }}",
-                        sPrevious: "{{ __('locale.datatables.previous') }}",
-                        sNext: "{{ __('locale.datatables.next') }}",
-                        sLast: "{{ __('locale.datatables.last') }}"
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
+                },
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.modal({
+                            header: function (row) {
+                                let data = row.data();
+                                return 'Details of ' + data['keyword_name'];
+                            }
+                        }),
+                        type: 'column',
+                        renderer: function (api, rowIdx, columns) {
+                            let data = $.map(columns, function (col) {
+                                return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                    ? '<tr data-dt-row="' +
+                                    col.rowIdx +
+                                    '" data-dt-column="' +
+                                    col.columnIndex +
+                                    '">' +
+                                    '<td>' +
+                                    col.title +
+                                    ':' +
+                                    '</td> ' +
+                                    '<td>' +
+                                    col.data +
+                                    '</td>' +
+                                    '</tr>'
+                                    : '';
+                            }).join('');
+
+                            return data ? $('<table class="table"/>').append('<tbody>' + data + '</tbody>') : false;
+                        }
                     }
                 },
                 aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
-                select: {
-                    style: "multi"
-                },
-                order: [[0, "desc"]],
-                bInfo: false,
-                pageLength: 10,
-                buttons: [],
-                initComplete: function () {
-                    $(".dt-buttons .btn").removeClass("btn-secondary")
-                }
-
+                order: [[2, "desc"]],
+                displayLength: 10,
             });
-
-            dataListView.on('draw.dt', function () {
-                setTimeout(function () {
-                    if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
-                        $(".dt-checkboxes-cell input, .dt-checkboxes").addClass("mac-checkbox")
-                    }
-                }, 50);
-            });
-
-
-            // To append actions dropdown before add new button
-            let actionDropdown = $(".add-new-div")
-            actionDropdown.insertBefore($(".top .actions .dt-buttons"))
-
-            // Scrollbar
-            if ($(".data-items").length > 0) {
-                new PerfectScrollbar(".data-items", {wheelPropagation: false})
-            }
-
-            // On Release
-            Table.delegate(".action-buy", "click", function (e) {
-                e.stopPropagation();
-                let id = $(this).data('id');
-                Swal.fire({
-                    title: "{{ __('locale.labels.are_you_sure') }}",
-                    text: "{{ __('locale.labels.able_to_revert') }}",
-                    type: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: "{{ __('locale.labels.delete_it') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
-                    buttonsStyling: false,
-                }).then(function (result) {
-                    if (result.value) {
-                        $.ajax({
-                            url: "{{ url('/keywords')}}" + '/' + id,
-                            type: "POST",
-                            data: {
-                                _token: "{{csrf_token()}}"
-                            },
-                            success: function (data) {
-                                showResponseMessage(data);
-                            },
-                            error: function (reject) {
-                                if (reject.status === 422) {
-                                    let errors = reject.responseJSON.errors;
-                                    $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
-                                            closeButton: true,
-                                            newestOnTop: true
-                                        });
-                                    });
-                                } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
-                                        closeButton: true,
-                                        newestOnTop: true
-                                    });
-                                }
-                            }
-                        })
-                    }
-                })
-            });
-
 
         });
     </script>
-
 @endsection

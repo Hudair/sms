@@ -248,12 +248,13 @@ Route::resource('subscriptions', 'SubscriptionController', [
 Route::any('subscriptions/{plan}/success', 'PaymentController@successfulSubscriptionPayment')->name('subscriptions.payment_success');
 Route::any('subscriptions/{plan}/cancel', 'PaymentController@cancelledSubscriptionPayment')->name('subscriptions.payment_cancel');
 Route::post('subscriptions/{plan}/braintree', 'PaymentController@braintreeSubscription')->name('subscriptions.braintree');
-Route::post('subscriptions/{plan}/authorize-net', 'PaymentController@authorizeNetSubscription')->name('subscriptions.authorize_net');
+Route::post('subscriptions/{plan}/authorize-net', 'PaymentController@authorizeNetSubscriptions')->name('subscriptions.authorize_net');
 
 Route::post('subscriptions/{subscription}/preferences', 'SubscriptionController@preferences')->name('subscriptions.preferences');
 
 Route::post('invoices/search', 'InvoiceController@search')->name('invoices.search');
 Route::get('invoices/{invoice}/view', 'InvoiceController@view')->name('invoices.view');
+Route::get('invoices/{invoice}/print', 'InvoiceController@print')->name('invoices.print');
 
 
 /*
@@ -322,7 +323,7 @@ Route::prefix('reports')->name('reports.')->group(function () {
     Route::post('/{uid}/destroy', 'ReportsController@destroy');
     Route::get('/all', 'ReportsController@reports')->name('all');
     Route::post('/{uid}/view', 'ReportsController@viewReports');
-    Route::get('/export', 'ReportsController@export')->name('export.all');
+    Route::post('/export', 'ReportsController@export')->name('export.all');
     Route::get('/export/sent', 'ReportsController@exportSent')->name('export.sent');
     Route::get('/export/receive', 'ReportsController@exportReceive')->name('export.receive');
     Route::get('/export/{campaign}', 'ReportsController@exportCampaign')->name('export.campaign');
@@ -372,7 +373,10 @@ Route::prefix('chat-box')->name('chatbox.')->group(function () {
     Route::get('/new', 'ChatBoxController@new')->name('new');
     Route::post('/sent', 'ChatBoxController@sent')->name('sent');
     Route::post('/{box}/messages', 'ChatBoxController@messages')->name('messages');
+    Route::post('/{box}/notification', 'ChatBoxController@messagesWithNotification')->name('notification');
     Route::post('/{box}/reply', 'ChatBoxController@reply')->name('reply');
+    Route::post('/{box}/delete', 'ChatBoxController@delete')->name('delete');
+    Route::post('/{box}/block', 'ChatBoxController@block')->name('block');
 });
 
 /*
@@ -385,4 +389,5 @@ Route::prefix('chat-box')->name('chatbox.')->group(function () {
 */
 Route::get('developers', 'DeveloperController@settings')->name('developer.settings');
 Route::post('developers/generate', 'DeveloperController@generate')->name('developer.generate');
+Route::post('developers/sending-server', 'DeveloperController@sendingServer')->name('developer.server');
 Route::get('developers/docs', 'DeveloperController@docs')->name('developer.docs');

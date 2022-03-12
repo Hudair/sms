@@ -60,8 +60,7 @@ class APIController extends Controller
         }
 
         $data = [
-                'used_unit'      => Tool::format_number(Auth::user()->customer->getSendingQuotaUsage()),
-                'remaining_unit' => (Auth::user()->customer->getSendingQuota() == -1) ? __('locale.labels.unlimited') : Tool::format_number(Auth::user()->customer->getSendingQuota()),
+                'remaining_unit' => (Auth::user()->sms_unit == -1) ? __('locale.labels.unlimited') : Tool::format_number(Auth::user()->sms_unit),
                 'expired_on'     => Tool::customerDateTime(Auth::user()->customer->subscription->current_period_ends_at),
         ];
 

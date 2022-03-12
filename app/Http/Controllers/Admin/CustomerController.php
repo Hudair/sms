@@ -10,8 +10,23 @@ use App\Http\Requests\Customer\UpdateAvatarRequest;
 use App\Http\Requests\Customer\UpdateCustomerRequest;
 use App\Http\Requests\Customer\UpdateInformationRequest;
 use App\Library\Tool;
+use App\Models\Blacklists;
+use App\Models\Campaigns;
+use App\Models\ChatBox;
+use App\Models\ContactGroups;
+use App\Models\Customer;
+use App\Models\Invoices;
+use App\Models\Keywords;
 use App\Models\Language;
+use App\Models\Notifications;
+use App\Models\PhoneNumbers;
+use App\Models\Plan;
+use App\Models\Reports;
+use App\Models\Senderid;
+use App\Models\SendingServer;
+use App\Models\Subscription;
 use App\Models\SubscriptionTransaction;
+use App\Models\Templates;
 use App\Models\User;
 use App\Repositories\Contracts\CustomerRepository;
 use Box\Spout\Common\Exception\InvalidArgumentException;
@@ -86,11 +101,13 @@ class CustomerController extends AdminBaseController
         $this->authorize('view customer');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'subscription',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'subscription',
                 5 => 'status',
-                6 => 'uid',
+                6 => 'actions',
         ];
 
         $totalData = User::where('is_customer', 1)->count();
@@ -141,36 +158,41 @@ class CustomerController extends AdminBaseController
                     $subscription = __('locale.subscription.no_active_subscription');
                 }
 
-                $action = "
-                                         <a href='$assign_plan' class='text-info mr-1' data-toggle='tooltip' data-placement='top' title='$assign_plan_label'><i class='feather us-2x icon-shopping-cart' ></i></a>
-                                         <a href='$show' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$edit'><i class='feather us-2x icon-edit' ></i></a>
-                                         ";
 
+                $super_user = true;
                 if ($user->id != 1) {
-                    $action .= "<span class='action-delete text-danger' data-id='$user->uid'  data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
+                    $super_user = false;
                 }
 
 
-                $nestedData['uid']          = $user->uid;
-                $nestedData['name']         = "<div>
-                                                        <h5 class='text-bold-600'><a href='$show' >$user->first_name $user->last_name </a>  </h5>
-                                                        <span class='text-muted'> $user->email </span> <br>
-                                                        <span class='text-muted'>".__('locale.labels.created_at').": ".Tool::formatDate($user->created_at)."</span>
-                                                   </div>";
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $user->uid;
+                $nestedData['avatar']        = route('admin.customers.avatar', $user->uid);
+                $nestedData['email']         = $user->email;
+                $nestedData['name']          = $user->first_name.' '.$user->last_name;
+                $nestedData['created_at']    = __('locale.labels.created_at').': '.Tool::formatDate($user->created_at);
+
                 $nestedData['subscription'] = "<div>
                                                         <p class='text-bold-600'>$subscription </p>
                                                    </div>";
 
-
-                $nestedData['status'] = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$user->uid' data-id='$user->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$user->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')."</span>
+                $nestedData['status'] = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$user->uid' data-id='$user->uid' name='status' $status>
+                <label class='form-check-label' for='status_$user->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action'] = $action;
-                $data[]               = $nestedData;
+
+                $nestedData['assign_plan']       = $assign_plan;
+                $nestedData['assign_plan_label'] = $assign_plan_label;
+                $nestedData['show']              = $show;
+                $nestedData['show_label']        = $edit;
+                $nestedData['delete']            = $user->uid;
+                $nestedData['delete_label']      = $delete;
+                $nestedData['super_user']        = $super_user;
+
+                $data[] = $nestedData;
 
             }
         }
@@ -294,10 +316,6 @@ class CustomerController extends AdminBaseController
     public function avatar(User $customer)
     {
 
-        if ( ! $customer) {
-            $customer = new User();
-        }
-
         if ( ! empty($customer->imagePath())) {
 
             try {
@@ -417,7 +435,7 @@ class CustomerController extends AdminBaseController
 
         $this->customers->update($customer, $request->input());
 
-        return redirect()->route('admin.customers.show', $customer->uid)->with([
+        return redirect()->route('admin.customers.show', $customer->uid)->withInput(['tab' => 'account'])->with([
                 'status'  => 'success',
                 'message' => __('locale.customer.customer_successfully_updated'),
         ]);
@@ -443,7 +461,7 @@ class CustomerController extends AdminBaseController
 
         $this->customers->updateInformation($customer, $request->except('_token'));
 
-        return redirect()->route('admin.customers.show', $customer->uid)->with([
+        return redirect()->route('admin.customers.show', $customer->uid)->withInput(['tab' => 'information'])->with([
                 'status'  => 'success',
                 'message' => __('locale.customer.customer_successfully_updated'),
         ]);
@@ -469,7 +487,7 @@ class CustomerController extends AdminBaseController
 
         $this->customers->permissions($customer, $request->only('permissions'));
 
-        return redirect()->route('admin.customers.show', $customer->uid)->with([
+        return redirect()->route('admin.customers.show', $customer->uid)->withInput(['tab' => 'permission'])->with([
                 'status'  => 'success',
                 'message' => __('locale.customer.customer_successfully_updated'),
         ]);
@@ -589,6 +607,26 @@ class CustomerController extends AdminBaseController
 
         $this->authorize('delete customer');
 
+        PhoneNumbers::where('user_id', $customer->id)->update([
+                'status' => 'available',
+        ]);
+
+        Blacklists::where('user_id', $customer->id)->delete();
+        Campaigns::where('user_id', $customer->id)->delete();
+        ChatBox::where('user_id', $customer->id)->delete();
+        ContactGroups::where('customer_id', $customer->id)->delete();
+        Customer::where('user_id', $customer->id)->delete();
+        Invoices::where('user_id', $customer->id)->delete();
+        Keywords::where('user_id', $customer->id)->delete();
+        Notifications::where('user_id', $customer->id)->delete();
+        Plan::where('user_id', $customer->id)->delete();
+        Reports::where('user_id', $customer->id)->delete();
+        Senderid::where('user_id', $customer->id)->delete();
+        SendingServer::where('user_id', $customer->id)->delete();
+        Subscription::where('user_id', $customer->id)->delete();
+        Templates::where('user_id', $customer->id)->delete();
+
+
         if ( ! $customer->delete()) {
             return response()->json([
                     'status'  => 'error',
@@ -673,6 +711,72 @@ class CustomerController extends AdminBaseController
                             'current_period_ends_at' => $subscription->current_period_ends_at,
                             'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
                             'title'                  => 'Add '.$request->add_unit.' sms units',
+                            'amount'                 => $request->add_unit.' sms units',
+                    ]);
+
+                    return redirect()->route('admin.customers.show', $customer->uid)->with([
+                            'status'  => 'success',
+                            'message' => __('locale.customer.add_unit_successful'),
+                    ]);
+                }
+
+                throw new GeneralException(__('locale.exceptions.something_went_wrong'));
+            }
+
+            return redirect()->route('admin.customers.show', $customer->uid)->with([
+                    'status'  => 'info',
+                    'message' => 'You are already in unlimited plan',
+            ]);
+
+        } catch (ModelNotFoundException $exception) {
+            return redirect()->route('admin.customers.show', $customer->uid)->with([
+                    'status'  => 'error',
+                    'message' => $exception->getMessage(),
+            ]);
+        }
+
+    }
+
+    /**
+     * remove custom unit
+     *
+     * @param  User  $customer
+     * @param  AddUnitRequest  $request
+     *
+     * @return RedirectResponse
+     * @throws GeneralException
+     */
+    public function removeUnit(User $customer, AddUnitRequest $request): RedirectResponse
+    {
+        if (config('app.env') == 'demo') {
+            return redirect()->route('admin.customers.index')->with([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+        try {
+
+            if ($customer->sms_unit != '-1') {
+
+                $balance = $customer->sms_unit - $request->add_unit;
+
+                if ($balance < 0) {
+                    return redirect()->route('admin.customers.show', $customer->uid)->with([
+                            'status'  => 'error',
+                            'message' => 'Sorry! You can remove maximum '.$customer->sms_unit.' unit',
+                    ]);
+                }
+
+                if ($customer->update(['sms_unit' => $balance])) {
+
+                    $subscription = $customer->customer->activeSubscription();
+
+                    $subscription->addTransaction(SubscriptionTransaction::TYPE_SUBSCRIBE, [
+                            'end_at'                 => $subscription->end_at,
+                            'current_period_ends_at' => $subscription->current_period_ends_at,
+                            'status'                 => SubscriptionTransaction::STATUS_SUCCESS,
+                            'title'                  => 'Remove '.$request->add_unit.' sms units',
                             'amount'                 => $request->add_unit.' sms units',
                     ]);
 

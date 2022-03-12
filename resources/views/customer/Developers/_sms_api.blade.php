@@ -73,7 +73,7 @@
                 <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
             </td>
             <td>string</td>
-            <td>Number to send message</td>
+            <td>Number to send message. <code>Use comma (,)</code> to send multiple numbers. Ex. <code>31612345678,8801721970168</code></td>
         </tr>
 
         <tr>
@@ -86,6 +86,15 @@
         </tr>
 
         <tr>
+            <td>type</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
+            </td>
+            <td>string</td>
+            <td>The type of the message. For text message you have to insert <code>plain</code> as sms type.</td>
+        </tr>
+
+        <tr>
             <td>message</td>
             <td>
                 <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.yes') }}</span></div>
@@ -95,17 +104,42 @@
         </tr>
 
 
+        <tr>
+            <td>schedule_time</td>
+            <td>
+                <div class="badge badge-primary text-uppercase mr-1 mb-1"><span>{{ __('locale.labels.no') }}</span></div>
+            </td>
+            <td>datetime</td>
+            <td>The scheduled date and time of the message in RFC3339 format <code>(Y-m-d H:i)</code></td>
+        </tr>
+
+
         </tbody>
     </table>
 </div>
 
-<div class="mt-2 font-medium-2 text-primary"> Example request</div>
+<div class="mt-2 font-medium-2 text-primary"> Example request for Single Number</div>
 <pre>
                                 <code class="language-php">
 curl -X POST {{ route('api.sms.send') }} \
      -H 'Authorization: Bearer 7|xs6pv2dspHJq8sWLhrpNFH5YLilMRQcVxLwSw2Sd' \
      -d "recipient=31612345678" \
      -d "sender_id=YourName" \
+     -d "type=plain" \
+     -d "schedule_time=2021-12-20 07:00" \
+     -d "message=This is a test message"
+                                </code>
+                            </pre>
+
+<div class="mt-2 font-medium-2 text-primary"> Example request for Multiple Numbers</div>
+<pre>
+                                <code class="language-php">
+curl -X POST {{ route('api.sms.send') }} \
+     -H 'Authorization: Bearer 7|xs6pv2dspHJq8sWLhrpNFH5YLilMRQcVxLwSw2Sd' \
+     -d "recipient=31612345678,8801721970168" \
+     -d "sender_id=YourName" \
+     -d "type=plain" \
+     -d "schedule_time=2021-12-20 07:00" \
      -d "message=This is a test message"
                                 </code>
                             </pre>

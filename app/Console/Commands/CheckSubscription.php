@@ -38,7 +38,7 @@ class CheckSubscription extends Command
      *
      * @return int
      */
-    public function handle()
+    public function handle(): int
     {
 
         $subscriptions = Subscription::whereNull('end_at')->where('current_period_ends_at', "<", Carbon::now()->endOfDay())->cursor();

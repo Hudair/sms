@@ -22,23 +22,18 @@
                                 <div class="row">
 
                                     <div class="col-12">
-                                        <div class="form-group">
-                                            <label for="file">{{ __('locale.settings.upload_file') }}</label>
-                                            <div class="custom-file">
-                                                <input type="file" name="file" class="custom-file-input" id="file" accept="zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed">
-                                                <label class="custom-file-label" for="file" data-browse="{{ __('locale.labels.browse') }}">{{__('locale.labels.choose_file')}}</label>
-                                                @error('file')
-                                                <div class="text-danger">
-                                                    {{ $message }}
-                                                </div>
-                                                @enderror
-                                            </div>
+                                        <div class="mb-1">
+                                            <input type="file" required name="file" class="form-control" id="file" accept="zip,application/octet-stream,application/zip,application/x-zip,application/x-zip-compressed">
+                                            @error('file')
+                                            <p><small class="text-danger">{{ $message }}</small></p>
+                                            @enderror
                                         </div>
                                     </div>
 
+
                                     <div class="col-12 mt-2">
-                                        <button type="submit" class="btn btn-primary mr-1 mb-1">
-                                            <i class="feather icon-save"></i> {{__('locale.buttons.save')}}
+                                        <button type="submit" class="btn btn-primary mb-1">
+                                            <i data-feather="upload"></i> {{__('locale.labels.upload')}}
                                         </button>
                                     </div>
 

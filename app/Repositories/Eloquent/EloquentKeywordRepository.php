@@ -16,9 +16,6 @@ use App\Repositories\Contracts\KeywordRepository;
 use Braintree\Gateway;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
@@ -65,7 +62,6 @@ class EloquentKeywordRepository extends EloquentBaseRepository implements Keywor
         $keyword = $this->make(Arr::only($input, [
                 'title',
                 'sender_id',
-                'user_id',
                 'keyword_name',
                 'reply_text',
                 'reply_voice',
@@ -94,10 +90,17 @@ class EloquentKeywordRepository extends EloquentBaseRepository implements Keywor
         }
 
 
-        $user = User::find($input['user_id'])->is_customer;
-        if ($user) {
-            $input['status'] = 'assigned';
-            $keyword->status = 'assigned';
+        if ($input['user_id'] != 0) {
+            $user = User::find($input['user_id'])->is_customer;
+            if ($user) {
+                $input['status']  = 'assigned';
+                $keyword->status  = 'assigned';
+                $keyword->user_id = $input['user_id'];
+            } else {
+                throw new GeneralException(__('locale.auth.user_not_exist'));
+            }
+        } else {
+            $keyword->user_id = 1;
         }
 
         if ($input['status'] == 'assigned') {
@@ -138,9 +141,6 @@ class EloquentKeywordRepository extends EloquentBaseRepository implements Keywor
      */
     public function update(Keywords $keyword, array $input, array $billingCycle): Keywords
     {
-
-        $media_url = null;
-
         if (isset($input['reply_mms'])) {
             $image      = $input['reply_mms'];
             $media_path = $image->store('mms_file', 'public');
@@ -190,7 +190,7 @@ class EloquentKeywordRepository extends EloquentBaseRepository implements Keywor
     public function batchDestroy(array $ids): bool
     {
         DB::transaction(function () use ($ids) {
-            // This wont call eloquent events, change to destroy if needed
+            // This won't call eloquent events, change to destroy if needed
             if ($this->query()->whereIn('uid', $ids)->delete()) {
                 return true;
             }
@@ -242,8 +242,6 @@ class EloquentKeywordRepository extends EloquentBaseRepository implements Keywor
             }
             $input['sender_id'] = $sender_id;
         }
-
-        $media_url = null;
 
         if (isset($input['reply_mms'])) {
             $image      = $input['reply_mms'];
@@ -301,9 +299,9 @@ class EloquentKeywordRepository extends EloquentBaseRepository implements Keywor
      * @param  Keywords  $keyword
      * @param  array  $input
      *
-     * @return Application|Factory|View|JsonResponse
+     * @return JsonResponse
      */
-    public function payPayment(Keywords $keyword, array $input)
+    public function payPayment(Keywords $keyword, array $input): JsonResponse
     {
 
         $paymentMethod = PaymentMethods::where('status', true)->where('type', $input['payment_methods'])->first();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exceptions\GeneralException;
+use App\Http\Requests\Plan\AddCoverageRequest;
 use App\Http\Requests\Plan\AddSendingServerRequest;
 use App\Http\Requests\Plan\CopyPlanRequest;
 use App\Http\Requests\Plan\CuttingSystemRequest;
@@ -10,11 +11,15 @@ use App\Http\Requests\Plan\PlanPricingRequest;
 use App\Http\Requests\Plan\SetPrimarySendingServerRequest;
 use App\Http\Requests\Plan\SpeedLimitRequest;
 use App\Http\Requests\Plan\StorePlanRequest;
+use App\Http\Requests\Plan\UpdateCoverageRequest;
 use App\Library\Tool;
+use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Plan;
+use App\Models\PlansCoverageCountries;
 use App\Models\PlansSendingServer;
 use App\Models\SendingServer;
+use App\Models\Subscription;
 use App\Repositories\Contracts\PlanRepository;
 use Box\Spout\Common\Exception\InvalidArgumentException;
 use Box\Spout\Common\Exception\IOException;
@@ -85,13 +90,15 @@ class PlanController extends AdminBaseController
         $this->authorize('manage plans');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'price',
-                3 => 'frequency_unit',
-                4 => 'frequency_amount',
-                5 => 'status',
-                6 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'price',
+                5 => 'frequency_unit',
+                6 => 'frequency_amount',
+                7 => 'status',
+                8 => 'action',
         ];
 
         $totalData = Plan::count();
@@ -131,18 +138,20 @@ class PlanController extends AdminBaseController
                     $status = '';
                 }
 
-                $nestedData['uid']   = $plan->uid;
-                $nestedData['name']  = "<div>
-                                                        <p class='text-bold-600'> $plan->name </p>
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $plan->uid;
+                $nestedData['plan_name']     = $plan->name;
+                $nestedData['name']          = "<div>
+                                                        <p class='fw-bold'> $plan->name </p>
                                                         <p class='text-muted'>".__('locale.plans.subscriber_count', ['count' => $plan->customersCount()])."</p>
                                                    </div>";
-                $nestedData['price'] = "<div>
-                                                        <p class='text-bold-600'>".Tool::format_price($plan->price, $plan->currency->format)." </p>
+                $nestedData['price']         = "<div>
+                                                        <p class='fw-bold'>".Tool::format_price($plan->price, $plan->currency->format)." </p>
                                                         <p class='text-muted'>".$plan->displayFrequencyTime()."</p>
                                                    </div>";
 
                 $nestedData['sending_credit'] = "<div>
-                                                        <p class='text-bold-600'>".$plan->displayTotalQuota()." </p>
+                                                        <p class='fw-bold'>".$plan->displayTotalQuota()." </p>
                                                         <p class='text-muted'>".__('locale.sending_servers.sending_credit')."</p>
                                                    </div>";
 
@@ -150,16 +159,17 @@ class PlanController extends AdminBaseController
                 $edit   = __('locale.buttons.edit');
                 $delete = __('locale.buttons.delete');
 
-                $nestedData['status'] = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$plan->uid' data-id='$plan->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$plan->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')."</span>
+                $nestedData['status'] = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$plan->uid' data-id='$plan->uid' name='status' $status>
+                <label class='form-check-label' for='status_$plan->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
-                $nestedData['action'] = "<a href='$show' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$edit'><i class='feather us-2x icon-edit' ></i></a>
-                                         <span class='action-copy text-success mr-1' data-id='$plan->uid' data-value='$plan->name' data-toggle='tooltip' data-placement='top' title='$copy'><i class='feather us-2x icon-copy'></i></span>
-                                         <span class='action-delete text-danger' data-id='$plan->uid'  data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
+                $nestedData['show']   = $show;
+                $nestedData['edit']   = $edit;
+                $nestedData['copy']   = $copy;
+                $nestedData['delete'] = $delete;
                 $data[]               = $nestedData;
 
             }
@@ -295,7 +305,7 @@ class PlanController extends AdminBaseController
 
         $this->plans->update($plan, $request->input(), $plan::billingCycleValues());
 
-        return redirect()->route('admin.plans.show', $plan->uid)->with([
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'general'])->with([
                 'status'  => 'success',
                 'message' => __('locale.plans.general_settings_was_updated'),
         ]);
@@ -382,7 +392,7 @@ class PlanController extends AdminBaseController
             throw new GeneralException(__('locale.exceptions.something_went_wrong'));
         }
 
-        return redirect()->route('admin.plans.show', $plan->uid)->with([
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'features'])->with([
                 'status'  => 'success',
                 'message' => __('locale.plans.features_was_updated'),
         ]);
@@ -421,7 +431,7 @@ class PlanController extends AdminBaseController
         $this->plans->updateSpeedLimits($plan, $input);
 
 
-        return redirect()->route('admin.plans.show', $plan->uid)->with([
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'speed_limit'])->with([
                 'status'  => 'success',
                 'message' => __('locale.plans.speed_limit_was_updated'),
         ]);
@@ -451,7 +461,7 @@ class PlanController extends AdminBaseController
 
         $this->plans->updateCuttingSystem($plan, $request->except('_token'));
 
-        return redirect()->route('admin.plans.show', $plan->uid)->with([
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'cutting_system'])->with([
                 'status'  => 'success',
                 'message' => __('locale.plans.cutting_value_was_updated'),
         ]);
@@ -505,14 +515,14 @@ class PlanController extends AdminBaseController
             $plan->status = true;
             $plan->save();
 
-            return redirect()->route('admin.plans.show', $plan->uid)->with([
+            return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'sending_server'])->with([
                     'status'  => 'success',
                     'message' => __('locale.sending_servers.add_sending_server'),
             ]);
 
         }
 
-        return redirect()->route('admin.plans.show', $plan->uid)->with([
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'sending_server'])->with([
                 'status'  => 'error',
                 'message' => __('locale.sending_servers.sending_server_not_found'),
         ]);
@@ -645,7 +655,7 @@ class PlanController extends AdminBaseController
 
         $this->plans->updatePricing($plan, $request->except('_token'));
 
-        return redirect()->route('admin.plans.show', $plan->uid)->with([
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'pricing'])->with([
                 'status'  => 'success',
                 'message' => __('locale.plans.pricing_was_updated'),
         ]);
@@ -733,6 +743,8 @@ class PlanController extends AdminBaseController
             ]);
         }
         $this->authorize('delete plans');
+
+        Subscription::where('plan_id', $plan->id)->delete();
 
         $this->plans->destroy($plan);
 
@@ -841,5 +853,315 @@ class PlanController extends AdminBaseController
         return response()->download($file_name);
     }
 
+
+    /*Version 3.1*/
+
+    /**
+     * @param  Plan  $plan
+     *
+     * @return Application|Factory|\Illuminate\Contracts\View\View
+     * @throws AuthorizationException
+     */
+    public function addCoverage(Plan $plan)
+    {
+
+        $this->authorize('manage plans');
+
+        $breadcrumbs = [
+                ['link' => url(config('app.admin_path')."/dashboard"), 'name' => __('locale.menu.Dashboard')],
+                ['link' => url(config('app.admin_path')."/plans"), 'name' => __('locale.menu.Plans')],
+                ['name' => __('locale.buttons.add_coverage')],
+        ];
+
+        $countries = Country::where('status', 1)->get();
+
+        return view('admin.plans._coverage', compact('breadcrumbs', 'countries', 'plan'));
+    }
+
+    /**
+     * add coverage
+     *
+     * @param  Plan  $plan
+     * @param  AddCoverageRequest  $request
+     *
+     * @return RedirectResponse
+     * @throws AuthorizationException
+     */
+
+    public function addCoveragePost(Plan $plan, AddCoverageRequest $request): RedirectResponse
+    {
+        if (config('app.env') == 'demo') {
+            return redirect()->route('admin.plans.settings.coverage', $plan->uid)->with([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+        $this->authorize('manage plans');
+
+        $options = $request->except('_token', 'country');
+
+        $exist = PlansCoverageCountries::where('plan_id', $plan->id)->where('country_id', $request->country)->first();
+        if ($exist) {
+            return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'pricing'])->with([
+                    'status'  => 'error',
+                    'message' => 'Coverage have already existed on your plan.',
+            ]);
+        }
+
+        $status = PlansCoverageCountries::create([
+                'country_id' => $request->country,
+                'plan_id'    => $plan->id,
+                'options'    => json_encode($options),
+        ]);
+
+        if ($status) {
+            return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'pricing'])->with([
+                    'status'  => 'success',
+                    'message' => __('locale.plans.coverage_was_successfully_added'),
+            ]);
+        }
+
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'pricing'])->with([
+                'status'  => 'error',
+                'message' => __('locale.exceptions.something_went_wrong'),
+        ]);
+    }
+
+
+    /**
+     * get coverage list
+     *
+     * @param  Plan  $plan
+     * @param  Request  $request
+     *
+     * @return void
+     * @throws AuthorizationException
+     */
+    public function searchCoverage(Plan $plan, Request $request)
+    {
+
+        $this->authorize('manage plans');
+
+        $columns = [
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'iso_code',
+                5 => 'country_code',
+                6 => 'status',
+                7 => 'actions',
+        ];
+
+        $totalData = PlansCoverageCountries::where('plan_id', $plan->id)->count();
+
+        $totalFiltered = $totalData;
+
+        $limit = $request->input('length');
+        $start = $request->input('start');
+        $order = $columns[$request->input('order.0.column')];
+        $dir   = $request->input('order.0.dir');
+
+        if (empty($request->input('search.value'))) {
+            $countries = PlansCoverageCountries::where('plan_id', $plan->id)->offset($start)
+                    ->limit($limit)
+                    ->orderBy($order, $dir)
+                    ->get();
+        } else {
+            $search = $request->input('search.value');
+
+            $countries = PlansCoverageCountries::where('plan_id', $plan->id)->whereLike(['uid', 'country.name', 'country.iso_code', 'country.country_code'], $search)
+                    ->offset($start)
+                    ->limit($limit)
+                    ->orderBy($order, $dir)
+                    ->get();
+
+            $totalFiltered = PlansCoverageCountries::where('plan_id', $plan->id)->whereLike(['uid', 'country.name', 'country.iso_code', 'country.country_code'], $search)->count();
+        }
+
+        $data = [];
+        if ( ! empty($countries)) {
+            foreach ($countries as $country) {
+
+                if ($country->status === true) {
+                    $status = 'checked';
+                } else {
+                    $status = '';
+                }
+
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $country->uid;
+                $nestedData['name']          = $country->country->name;
+                $nestedData['country_code']  = $country->country->country_code;
+                $nestedData['iso_code']      = $country->country->iso_code;
+                $nestedData['status']        = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_coverage_status' id='status_$country->uid' data-id='$country->uid' name='status' $status>
+                <label class='form-check-label' for='status_$country->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
+                </label>
+              </div>";
+                $nestedData['edit']          = route('admin.plans.settings.edit_coverage', ['plan' => $plan->uid, 'coverage' => $country->uid]);
+                $data[]                      = $nestedData;
+
+            }
+        }
+
+        $json_data = [
+                "draw"            => intval($request->input('draw')),
+                "recordsTotal"    => intval($totalData),
+                "recordsFiltered" => intval($totalFiltered),
+                "data"            => $data,
+        ];
+
+        echo json_encode($json_data);
+        exit();
+
+    }
+
+    /**
+     * update coverage
+     *
+     * @param  Plan  $plan
+     * @param  PlansCoverageCountries  $coverage
+     *
+     * @return Application|Factory|\Illuminate\Contracts\View\View
+     * @throws AuthorizationException
+     */
+    public function editCoverage(Plan $plan, PlansCoverageCountries $coverage)
+    {
+
+        $this->authorize('manage plans');
+
+        $breadcrumbs = [
+                ['link' => url(config('app.admin_path')."/dashboard"), 'name' => __('locale.menu.Dashboard')],
+                ['link' => url(config('app.admin_path')."/plans"), 'name' => __('locale.menu.Plans')],
+                ['name' => __('locale.buttons.add_coverage')],
+        ];
+
+        $options = json_decode($coverage->options, true);
+
+        return view('admin.plans._coverage', compact('breadcrumbs', 'plan', 'options', 'coverage'));
+
+    }
+
+
+    /**
+     * update coverage
+     *
+     * @param  Plan  $plan
+     * @param  PlansCoverageCountries  $coverage
+     * @param  AddCoverageRequest  $request
+     *
+     * @return RedirectResponse
+     * @throws AuthorizationException
+     */
+    public function editCoveragePost(Plan $plan, PlansCoverageCountries $coverage, AddCoverageRequest $request): RedirectResponse
+    {
+
+        if (config('app.env') == 'demo') {
+            return redirect()->route('admin.plans.settings.edit_coverage', ['plan' => $plan->uid, 'coverage' => $coverage->uid])->with([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+        $this->authorize('manage plans');
+
+
+        $get_options = json_decode($coverage->options, true);
+        $output      = array_replace($get_options, $request->except('_token', 'country'));
+
+        if ( ! $coverage->update(['options' => $output])) {
+            return redirect()->route('admin.plans.settings.edit_coverage', ['plan' => $plan->uid, 'coverage' => $coverage->uid])->with([
+                    'status'  => 'error',
+                    'message' => __('locale.exceptions.something_went_wrong'),
+            ]);
+        }
+
+        return redirect()->route('admin.plans.show', $plan->uid)->withInput(['tab' => 'pricing'])->with([
+                'status'  => 'success',
+                'message' => 'Coverage was successfully updated',
+        ]);
+    }
+
+    /**
+     * change plan coverage status
+     *
+     * @param  Plan  $plan
+     * @param  PlansCoverageCountries  $coverage
+     *
+     * @return JsonResponse
+     * @throws AuthorizationException
+     * @throws GeneralException
+     */
+    public function activeCoverageToggle(Plan $plan, PlansCoverageCountries $coverage): JsonResponse
+    {
+        if (config('app.env') == 'demo') {
+            return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+        try {
+            $this->authorize('manage plans');
+
+            if ($coverage->update(['status' => ! $coverage->status])) {
+                return response()->json([
+                        'status'  => 'success',
+                        'message' => __('locale.settings.status_successfully_change'),
+                ]);
+            }
+
+            throw new GeneralException(__('locale.exceptions.something_went_wrong'));
+
+        } catch (ModelNotFoundException $exception) {
+            return response()->json([
+                    'status'  => 'error',
+                    'message' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * delete coverage
+     *
+     * @param  Plan  $plan
+     * @param  PlansCoverageCountries  $coverage
+     *
+     * @return JsonResponse
+     * @throws AuthorizationException
+     * @throws GeneralException
+     */
+    public function deleteCoverage(Plan $plan, PlansCoverageCountries $coverage): JsonResponse
+    {
+        if (config('app.env') == 'demo') {
+            return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Sorry! This option is not available in demo mode',
+            ]);
+        }
+
+        try {
+            $this->authorize('manage plans');
+
+            if ($coverage->delete()) {
+                return response()->json([
+                        'status'  => 'success',
+                        'message' => __('locale.plans.plan_successfully_deleted'),
+                ]);
+            }
+
+            throw new GeneralException(__('locale.exceptions.something_went_wrong'));
+
+        } catch (ModelNotFoundException $exception) {
+            return response()->json([
+                    'status'  => 'error',
+                    'message' => $exception->getMessage(),
+            ]);
+        }
+    }
 
 }

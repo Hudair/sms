@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
+use App\Library\SMSCounter;
 use App\Library\Tool;
 use App\Models\Campaigns;
 use App\Models\CampaignsList;
@@ -10,11 +11,14 @@ use App\Models\CampaignsRecipients;
 use App\Models\CampaignsSenderid;
 use App\Models\CampaignsSendingServer;
 use App\Models\ContactGroups;
+use App\Models\Country;
 use App\Models\PhoneNumbers;
+use App\Models\PlansCoverageCountries;
 use App\Models\Reports;
 use App\Models\Senderid;
 use App\Models\Templates;
 use App\Models\TemplateTags;
+use App\Notifications\SendCampaignCopy;
 use ArielMejiaDev\LarapexCharts\LarapexChart;
 use Box\Spout\Common\Exception\InvalidArgumentException;
 use Box\Spout\Common\Exception\IOException;
@@ -79,15 +83,16 @@ class ReportsController extends Controller
         $this->authorize('view_reports');
 
         $columns = [
-                0 => 'uid',
-                1 => 'created_at',
-                2 => 'send_by',
-                3 => 'sms_type',
-                4 => 'from',
-                5 => 'to',
-                6 => 'cost',
-                7 => 'status',
-                8 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'created_at',
+                4 => 'send_by',
+                5 => 'sms_type',
+                6 => 'from',
+                7 => 'to',
+                8 => 'cost',
+                9 => 'status',
         ];
 
         $totalData = Reports::where('user_id', auth()->user()->id)->count();
@@ -117,45 +122,34 @@ class ReportsController extends Controller
         } else {
             $search = $request->input('search.value');
 
-            $sms_reports = Reports::where('user_id', auth()->user()->id)->whereLike(['uid', 'send_by', 'from', 'to', 'cost', 'status', 'created_at'], $search)
+            $sms_reports = Reports::where('user_id', auth()->user()->id)->whereLike(['uid', 'send_by', 'sms_type', 'from', 'to', 'cost', 'status', 'created_at'], $search)
                     ->offset($start)
                     ->limit($limit)
                     ->orderBy($order, $dir)
                     ->get();
 
-            $totalFiltered = Reports::where('user_id', auth()->user()->id)->whereLike(['uid', 'send_by', 'from', 'to', 'cost', 'status', 'created_at'], $search)->count();
+            $totalFiltered = Reports::where('user_id', auth()->user()->id)->whereLike(['uid', 'send_by', 'sms_type', 'from', 'to', 'cost', 'status', 'created_at'], $search)->count();
         }
 
         $data = [];
         if ( ! empty($sms_reports)) {
             foreach ($sms_reports as $report) {
-
-                $action = null;
-                $view   = __('locale.buttons.view');
-                $delete = __('locale.buttons.delete');
-
-                $action .= "<span class='action-view text-success mr-1' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$view'><i class='feather us-2x icon-eye'></i></span>";
-
-                if (Auth::user()->customer->getOption('delete_sms_history') == 'yes') {
-                    $action .= "<span class='action-delete text-danger' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-                }
-
                 if ($report->created_at == null) {
                     $created_at = null;
                 } else {
                     $created_at = Tool::customerDateTime($report->created_at);
                 }
 
-                $nestedData['uid']        = $report->uid;
-                $nestedData['created_at'] = $created_at;
-                $nestedData['send_by']    = $report->getSendBy();
-                $nestedData['sms_type']   = $report->getSMSType();
-                $nestedData['from']       = $report->from;
-                $nestedData['to']         = $report->to;
-                $nestedData['cost']       = $report->cost;
-                $nestedData['status']     = str_limit($report->status, 20);
-                $nestedData['action']     = $action;
-                $data[]                   = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $report->uid;
+                $nestedData['created_at']    = $created_at;
+                $nestedData['send_by']       = $report->getSendBy();
+                $nestedData['sms_type']      = $report->getSMSType();
+                $nestedData['from']          = $report->from;
+                $nestedData['to']            = $report->to;
+                $nestedData['cost']          = $report->cost;
+                $nestedData['status']        = str_limit($report->status, 20);
+                $data[]                      = $nestedData;
 
             }
         }
@@ -283,14 +277,15 @@ class ReportsController extends Controller
         $this->authorize('view_reports');
 
         $columns = [
-                0 => 'uid',
-                1 => 'created_at',
-                2 => 'sms_type',
-                3 => 'from',
-                4 => 'to',
-                5 => 'cost',
-                6 => 'status',
-                7 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'created_at',
+                5 => 'sms_type',
+                6 => 'from',
+                7 => 'to',
+                8 => 'cost',
+                9 => 'status',
         ];
 
         $totalData = Reports::where('user_id', auth()->user()->id)->where('send_by', 'to')->count();
@@ -310,43 +305,33 @@ class ReportsController extends Controller
         } else {
             $search = $request->input('search.value');
 
-            $sms_reports = Reports::where('user_id', auth()->user()->id)->where('send_by', 'to')->whereLike(['uid', 'send_by', 'from', 'to', 'cost', 'status', 'created_at'], $search)
+            $sms_reports = Reports::where('user_id', auth()->user()->id)->where('send_by', 'to')->whereLike(['uid', 'sms_type', 'from', 'to', 'cost', 'status', 'created_at'], $search)
                     ->offset($start)
                     ->limit($limit)
                     ->orderBy($order, $dir)
                     ->get();
 
-            $totalFiltered = Reports::where('user_id', auth()->user()->id)->where('send_by', 'to')->whereLike(['uid', 'send_by', 'from', 'to', 'cost', 'status', 'created_at'], $search)->count();
+            $totalFiltered = Reports::where('user_id', auth()->user()->id)->where('send_by', 'to')->whereLike(['uid', 'sms_type', 'from', 'to', 'cost', 'status', 'created_at'], $search)->count();
         }
 
         $data = [];
         if ( ! empty($sms_reports)) {
             foreach ($sms_reports as $report) {
-                $action = null;
-                $view   = __('locale.buttons.view');
-                $delete = __('locale.buttons.delete');
-
-                $action .= "<span class='action-view text-success mr-1' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$view'><i class='feather us-2x icon-eye'></i></span>";
-
-                if (Auth::user()->customer->getOption('delete_sms_history') == 'yes') {
-                    $action .= "<span class='action-delete text-danger' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-                }
-
                 if ($report->created_at == null) {
                     $created_at = null;
                 } else {
                     $created_at = Tool::customerDateTime($report->created_at);
                 }
 
-                $nestedData['uid']        = $report->uid;
-                $nestedData['created_at'] = $created_at;
-                $nestedData['sms_type']   = $report->getSMSType();
-                $nestedData['from']       = $report->from;
-                $nestedData['to']         = $report->to;
-                $nestedData['cost']       = $report->cost;
-                $nestedData['status']     = str_limit($report->status, 20);
-                $nestedData['action']     = $action;
-                $data[]                   = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $report->uid;
+                $nestedData['created_at']    = $created_at;
+                $nestedData['sms_type']      = $report->getSMSType();
+                $nestedData['from']          = $report->from;
+                $nestedData['to']            = $report->to;
+                $nestedData['cost']          = $report->cost;
+                $nestedData['status']        = str_limit($report->status, 20);
+                $data[]                      = $nestedData;
 
             }
         }
@@ -395,14 +380,15 @@ class ReportsController extends Controller
         $this->authorize('view_reports');
 
         $columns = [
-                0 => 'uid',
-                1 => 'created_at',
-                2 => 'sms_type',
-                3 => 'from',
-                4 => 'to',
-                5 => 'cost',
-                6 => 'status',
-                7 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'created_at',
+                5 => 'sms_type',
+                6 => 'from',
+                7 => 'to',
+                8 => 'cost',
+                9 => 'status',
         ];
 
         $totalData = Reports::where('user_id', auth()->user()->id)->where('send_by', 'from')->count();
@@ -422,44 +408,33 @@ class ReportsController extends Controller
         } else {
             $search = $request->input('search.value');
 
-            $sms_reports = Reports::where('user_id', auth()->user()->id)->where('send_by', 'from')->whereLike(['uid', 'send_by', 'from', 'to', 'cost', 'status', 'created_at'], $search)
+            $sms_reports = Reports::where('user_id', auth()->user()->id)->where('send_by', 'from')->whereLike(['uid', 'sms_type', 'from', 'to', 'cost', 'status', 'created_at'], $search)
                     ->offset($start)
                     ->limit($limit)
                     ->orderBy($order, $dir)
                     ->get();
 
-            $totalFiltered = Reports::where('user_id', auth()->user()->id)->where('send_by', 'from')->whereLike(['uid', 'send_by', 'from', 'to', 'cost', 'status', 'created_at'], $search)->count();
+            $totalFiltered = Reports::where('user_id', auth()->user()->id)->where('send_by', 'from')->whereLike(['uid', 'sms_type', 'from', 'to', 'cost', 'status', 'created_at'], $search)->count();
         }
 
         $data = [];
         if ( ! empty($sms_reports)) {
             foreach ($sms_reports as $report) {
-
-                $action = null;
-                $view   = __('locale.buttons.view');
-                $delete = __('locale.buttons.delete');
-
-                $action .= "<span class='action-view text-success mr-1' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$view'><i class='feather us-2x icon-eye'></i></span>";
-
-                if (Auth::user()->customer->getOption('delete_sms_history') == 'yes') {
-                    $action .= "<span class='action-delete text-danger' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-                }
-
                 if ($report->created_at == null) {
                     $created_at = null;
                 } else {
                     $created_at = Tool::customerDateTime($report->created_at);
                 }
 
-                $nestedData['uid']        = $report->uid;
-                $nestedData['created_at'] = $created_at;
-                $nestedData['sms_type']   = $report->getSMSType();
-                $nestedData['from']       = $report->from;
-                $nestedData['to']         = $report->to;
-                $nestedData['cost']       = $report->cost;
-                $nestedData['status']     = str_limit($report->status, 20);
-                $nestedData['action']     = $action;
-                $data[]                   = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $report->uid;
+                $nestedData['created_at']    = $created_at;
+                $nestedData['sms_type']      = $report->getSMSType();
+                $nestedData['from']          = $report->from;
+                $nestedData['to']            = $report->to;
+                $nestedData['cost']          = $report->cost;
+                $nestedData['status']        = str_limit($report->status, 20);
+                $data[]                      = $nestedData;
 
             }
         }
@@ -510,13 +485,15 @@ class ReportsController extends Controller
         $this->authorize('view_reports');
 
         $columns = [
-                0 => 'uid',
-                1 => 'campaign_name',
-                2 => 'contacts',
-                3 => 'sms_type',
-                4 => 'schedule_type',
-                5 => 'status',
-                6 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'campaign_name',
+                4 => 'contacts',
+                5 => 'sms_type',
+                6 => 'schedule_type',
+                7 => 'status',
+                8 => 'uid',
         ];
 
         $totalData = Campaigns::where('user_id', auth()->user()->id)->count();
@@ -548,23 +525,8 @@ class ReportsController extends Controller
         $data = [];
         if ( ! empty($campaigns)) {
             foreach ($campaigns as $campaign) {
-                $show    = route('customer.reports.campaign.edit', $campaign->uid);
-                $reports = route('customer.reports.campaign.overview', $campaign->uid);
 
-                $edit     = __('locale.buttons.edit');
-                $delete   = __('locale.buttons.delete');
-                $overview = __('locale.menu.Overview');
-
-                $action = null;
-
-                if ($campaign->status == 'queued' || $campaign->status == 'scheduled') {
-                    $action .= "<a href='$show' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$edit'><i class='feather us-2x icon-edit' ></i></a>";
-                }
-
-                if ($campaign->status == 'delivered' || $campaign->status == 'processing' || $campaign->status == 'failed' || $campaign->status == 'cancelled') {
-                    $action .= "<a href='$reports' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$overview'><i class='feather us-2x icon-bar-chart' ></i></a>";
-                }
-
+                $nestedData['responsive_id'] = '';
                 $nestedData['uid']           = $campaign->uid;
                 $nestedData['campaign_name'] = "<div>
                                                         <p class='text-bold-600'> $campaign->campaign_name </p>
@@ -574,9 +536,15 @@ class ReportsController extends Controller
                 $nestedData['sms_type']      = $campaign->getSMSType();
                 $nestedData['schedule_type'] = $campaign->getCampaignType();
                 $nestedData['status']        = $campaign->getStatus();
+                $nestedData['camp_status']   = $campaign->status;
 
-                $nestedData['action'] = $action."
-                                         <span class='action-delete text-danger' data-id='$campaign->uid'  data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
+                $nestedData['show']       = route('customer.reports.campaign.edit', $campaign->uid);
+                $nestedData['show_label'] = __('locale.buttons.edit');
+
+                $nestedData['overview']       = route('customer.reports.campaign.overview', $campaign->uid);
+                $nestedData['overview_label'] = __('locale.menu.Overview');
+
+                $nestedData['delete'] = __('locale.buttons.delete');
                 $data[]               = $nestedData;
 
             }
@@ -643,7 +611,9 @@ class ReportsController extends Controller
 
         $exist_recipients = implode(',', $exist_recipients);
 
-        return view('customer.Campaigns.updateCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates', 'campaign', 'exist_sender_id', 'originator', 'exist_phone_numbers', 'exist_groups', 'exist_recipients'));
+        $plan_id = Auth::user()->customer->activeSubscription()->plan_id;
+
+        return view('customer.Campaigns.updateCampaignBuilder', compact('breadcrumbs', 'sender_ids', 'phone_numbers', 'template_tags', 'contact_groups', 'templates', 'campaign', 'exist_sender_id', 'originator', 'exist_phone_numbers', 'exist_groups', 'exist_recipients', 'plan_id'));
     }
 
 
@@ -662,11 +632,10 @@ class ReportsController extends Controller
             ]);
         }
 
-
         $input    = $request->except('_token');
         $sms_type = $input['sms_type'];
 
-        $sending_servers = $campaign->getSendingServers($sms_type);
+        $sending_servers = $campaign->getSendingServers();
 
         if (empty($sending_servers)) {
 
@@ -675,7 +644,6 @@ class ReportsController extends Controller
                     'message' => __('locale.campaigns.sending_server_not_available'),
             ]);
         }
-
 
         $sender_id = null;
         if (Auth::user()->customer->getOption('sender_id_verification') == 'yes') {
@@ -691,7 +659,7 @@ class ReportsController extends Controller
 
                     $sender_id = $input['sender_id'];
 
-                    if (isset($sender_id) && is_array($sender_id) && count($sender_id) > 0) {
+                    if (is_array($sender_id) && count($sender_id) > 0) {
                         $invalid   = [];
                         $senderids = Senderid::where('user_id', Auth::user()->id)
                                 ->where('status', 'active')
@@ -723,14 +691,11 @@ class ReportsController extends Controller
                 } else {
 
                     if ( ! isset($input['phone_number'])) {
-
-                        return redirect()->route('customer.reports.campaign.edit', $campaign->uid)->with([
-                                'status'  => 'error',
-                                'message' => __('locale.sender_id.phone_numbers_required'),
-                        ]);
+                        $sender_id = CampaignsSenderid::where('campaign_id', $campaign->id)->pluck('sender_id')->toArray();
+                    } else {
+                        $sender_id = $input['phone_number'];
                     }
 
-                    $sender_id = $input['phone_number'];
 
                     if (isset($sender_id) && is_array($sender_id) && count($sender_id) > 0) {
                         $type_supported = [];
@@ -792,7 +757,7 @@ class ReportsController extends Controller
                     $sender_id = $input['phone_number'];
                 }
 
-                if ( ! isset($sender_id) || ! is_array($sender_id) || count($sender_id) <= 0) {
+                if ( ! is_array($sender_id) || count($sender_id) <= 0) {
 
                     return redirect()->route('customer.reports.campaign.edit', $campaign->uid)->with([
                             'status'  => 'error',
@@ -804,7 +769,6 @@ class ReportsController extends Controller
                 $sender_id = $input['sender_id'];
             }
         }
-
 
         $total           = 0;
         $campaign_groups = [];
@@ -853,74 +817,7 @@ class ReportsController extends Controller
 
             $recipients = collect($recipients)->unique();
 
-            $total += $recipients->count();
-
-            if ($total == 0) {
-                return redirect()->route('customer.reports.campaign.edit', $campaign->uid)->with([
-                        'status'  => 'error',
-                        'message' => __('locale.campaigns.contact_not_found'),
-                ]);
-            }
-
-            if (Auth::user()->customer->getSendingQuota() != '-1') {
-
-                $price = 0;
-
-                if ($sms_type == 'plain') {
-                    $unit_price = Auth::user()->customer->getOption('plain_sms');
-                    $price      = $total * $unit_price;
-                }
-
-                if ($sms_type == 'voice') {
-                    $unit_price = Auth::user()->customer->getOption('voice_sms');
-                    $price      = $total * $unit_price;
-                }
-
-                if ($sms_type == 'mms') {
-                    $unit_price = Auth::user()->customer->getOption('mms_sms');
-                    $price      = $total * $unit_price;
-                }
-
-                if ($sms_type == 'whatsapp') {
-                    $unit_price = Auth::user()->customer->getOption('whatsapp_sms');
-                    $price      = $total * $unit_price;
-                }
-
-                $balance = Auth::user()->customer->getSendingQuotaUsage();
-
-                if ($price > $balance) {
-
-                    return redirect()->route('customer.reports.campaign.edit', $campaign->uid)->with([
-                            'status'  => 'error',
-                            'message' => __('locale.campaigns.not_enough_balance', [
-                                    'current_balance' => $balance,
-                                    'campaign_price'  => $price,
-                            ]),
-                    ]);
-                }
-            }
-
-            CampaignsSenderid::where('campaign_id', $campaign->id)->delete();
-
-            foreach ($sender_id as $id) {
-
-                $data = [
-                        'campaign_id' => $campaign->id,
-                        'sender_id'   => $id,
-                ];
-
-                if (isset($input['originator'])) {
-                    $data['originator'] = $input['originator'];
-                }
-
-                CampaignsSenderid::create($data);
-            }
-
-            CampaignsList::where('campaign_id', $campaign->id)->delete();
-
-            CampaignsList::insert($campaign_groups);
-
-
+            $total   += $recipients->count();
             $numbers = [];
 
             foreach ($recipients->chunk(500) as $chunk) {
@@ -933,17 +830,93 @@ class ReportsController extends Controller
                     ];
                 }
             }
+
+            CampaignsRecipients::where('campaign_id', $campaign->id)->delete();
+
             CampaignsRecipients::insert($numbers);
+        } else {
+            CampaignsRecipients::where('campaign_id', $campaign->id)->delete();
         }
 
-
-        foreach ($sending_servers as $server_id => $fitness) {
-            CampaignsSendingServer::create([
-                    'campaign_id'       => $campaign->id,
-                    'sending_server_id' => $server_id,
-                    'fitness'           => $fitness,
+        if ($total == 0) {
+            return redirect()->route('customer.reports.campaign.edit', $campaign->uid)->with([
+                    'status'  => 'error',
+                    'message' => __('locale.campaigns.contact_not_found'),
             ]);
         }
+
+
+        if (Auth::user()->sms_unit != '-1') {
+            $coverage = PlansCoverageCountries::where('plan_id', $input['plan_id'])->first();
+
+            $priceOption = json_decode($coverage->options, true);
+
+            $sms_count = 1;
+            $price     = 0;
+
+            if (isset($input['message'])) {
+                $sms_counter  = new SMSCounter();
+                $message_data = $sms_counter->count($input['message']);
+                $sms_count    = $message_data->messages;
+            }
+
+
+            if ($sms_type == 'plain' || $sms_type == 'unicode') {
+                $unit_price = $priceOption['plain_sms'];
+                $price      = $total * $unit_price;
+            }
+
+            if ($sms_type == 'voice') {
+                $unit_price = $priceOption['voice_sms'];
+                $price      = $total * $unit_price;
+            }
+
+            if ($sms_type == 'mms') {
+                $unit_price = $priceOption['mms_sms'];
+                $price      = $total * $unit_price;
+            }
+
+            if ($sms_type == 'whatsapp') {
+                $unit_price = $priceOption['whatsapp_sms'];
+                $price      = $total * $unit_price;
+            }
+
+            $price *= $sms_count;
+
+            $balance = Auth::user()->sms_unit;
+
+            if ($price > $balance) {
+                return redirect()->route('customer.reports.campaign.edit', $campaign->uid)->with([
+                        'status'  => 'error',
+                        'message' => __('locale.campaigns.not_enough_balance', [
+                                'current_balance' => $balance,
+                                'campaign_price'  => $price,
+                        ]),
+                ]);
+            }
+        }
+
+        CampaignsSenderid::where('campaign_id', $campaign->id)->delete();
+
+        foreach ($sender_id as $id) {
+
+            $data = [
+                    'campaign_id' => $campaign->id,
+                    'sender_id'   => $id,
+            ];
+
+            if (isset($input['originator'])) {
+                $data['originator'] = $input['originator'];
+            }
+
+            CampaignsSenderid::create($data);
+        }
+
+        CampaignsList::where('campaign_id', $campaign->id)->delete();
+
+        CampaignsList::insert($campaign_groups);
+
+
         // if schedule is available then check date, time and timezone
         if (isset($input['schedule']) && $input['schedule'] == "true") {
 
@@ -953,13 +926,37 @@ class ReportsController extends Controller
             $campaign->timezone      = $input['timezone'];
             $campaign->status        = Campaigns::STATUS_SCHEDULED;
             $campaign->schedule_time = $schedule_time;
-            $campaign->schedule_type = Campaigns::TYPE_ONETIME;
-        } else {
-            $campaign->status        = Campaigns::STATUS_QUEUED;
-            $campaign->schedule_time = null;
-            $campaign->schedule_type = null;
-        }
 
+
+            if ($input['frequency_cycle'] == 'onetime') {
+                // working with onetime schedule
+                $campaign->schedule_type = Campaigns::TYPE_ONETIME;
+            } else {
+                // working with recurring schedule
+                //if schedule time frequency is not one time then check frequency details
+                $recurring_date = $input['recurring_date'].' '.$input['recurring_time'];
+                $recurring_end  = Tool::systemTimeFromString($recurring_date, $input['timezone']);
+
+                $campaign->schedule_type = Campaigns::TYPE_RECURRING;
+                $campaign->recurring_end = $recurring_end;
+
+                if (isset($input['frequency_cycle'])) {
+                    if ($input['frequency_cycle'] != 'custom') {
+                        $schedule_cycle             = $campaign::scheduleCycleValues();
+                        $limits                     = $schedule_cycle[$input['frequency_cycle']];
+                        $campaign->frequency_cycle  = $input['frequency_cycle'];
+                        $campaign->frequency_amount = $limits['frequency_amount'];
+                        $campaign->frequency_unit   = $limits['frequency_unit'];
+                    } else {
+                        $campaign->frequency_cycle  = $input['frequency_cycle'];
+                        $campaign->frequency_amount = $input['frequency_amount'];
+                        $campaign->frequency_unit   = $input['frequency_unit'];
+                    }
+                }
+            }
+        } else {
+            $campaign->status = Campaigns::STATUS_QUEUED;
+        }
         //update cache
         $campaign->cache = json_encode([
                 'ContactCount'         => $total,
@@ -968,6 +965,16 @@ class ReportsController extends Controller
                 'NotDeliveredCount'    => 0,
         ]);
 
+        $campaign->message = $input['message'];
+
+        if ($sms_type == 'voice') {
+            $campaign->language = $input['language'];
+            $campaign->gender   = $input['gender'];
+        }
+
+        if ($sms_type == 'mms') {
+            $campaign->media_url = Tool::uploadImage($input['mms_file']);
+        }
 
         $camp = $campaign->save();
 
@@ -1011,14 +1018,14 @@ class ReportsController extends Controller
         $this->authorize('view_reports');
 
         $columns = [
-                0 => 'uid',
-                1 => 'created_at',
-                2 => 'sms_type',
-                3 => 'from',
-                4 => 'to',
-                5 => 'cost',
-                6 => 'status',
-                7 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'created_at',
+                6 => 'from',
+                7 => 'to',
+                8 => 'cost',
+                9 => 'status',
         ];
 
         $totalData = Reports::where('user_id', auth()->user()->id)->where('campaign_id', $campaign->id)->count();
@@ -1038,44 +1045,32 @@ class ReportsController extends Controller
         } else {
             $search = $request->input('search.value');
 
-            $sms_reports = Reports::where('user_id', auth()->user()->id)->where('campaign_id', $campaign->id)->whereLike(['from', 'to', 'cost', 'status', 'created_at'], $search)
+            $sms_reports = Reports::where('user_id', auth()->user()->id)->where('campaign_id', $campaign->id)->whereLike(['uid', 'from', 'to', 'cost', 'status', 'created_at'], $search)
                     ->offset($start)
                     ->limit($limit)
                     ->orderBy($order, $dir)
                     ->get();
 
-            $totalFiltered = Reports::where('user_id', auth()->user()->id)->where('campaign_id', $campaign->id)->whereLike(['from', 'to', 'cost', 'status', 'created_at'], $search)->count();
+            $totalFiltered = Reports::where('user_id', auth()->user()->id)->where('campaign_id', $campaign->id)->whereLike(['uid', 'from', 'to', 'cost', 'status', 'created_at'], $search)->count();
         }
 
         $data = [];
         if ( ! empty($sms_reports)) {
             foreach ($sms_reports as $report) {
-
-                $action = null;
-                $view   = __('locale.buttons.view');
-                $delete = __('locale.buttons.delete');
-
-                $action .= "<span class='action-view text-success mr-1' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$view'><i class='feather us-2x icon-eye'></i></span>";
-
-                if (Auth::user()->customer->getOption('delete_sms_history') == 'yes') {
-                    $action .= "<span class='action-delete text-danger' data-id='$report->uid' data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-                }
-
                 if ($report->created_at == null) {
                     $created_at = null;
                 } else {
                     $created_at = Tool::customerDateTime($report->created_at);
                 }
 
-                $nestedData['uid']        = $report->uid;
-                $nestedData['created_at'] = $created_at;
-                $nestedData['sms_type']   = $report->getSMSType();
-                $nestedData['from']       = $report->from;
-                $nestedData['to']         = $report->to;
-                $nestedData['cost']       = $report->cost;
-                $nestedData['status']     = str_limit($report->status, 20);
-                $nestedData['action']     = $action;
-                $data[]                   = $nestedData;
+                $nestedData['responsive_id'] = '';
+                $nestedData['uid']           = $report->uid;
+                $nestedData['created_at']    = $created_at;
+                $nestedData['from']          = $report->from;
+                $nestedData['to']            = $report->to;
+                $nestedData['cost']          = $report->cost;
+                $nestedData['status']        = str_limit($report->status, 20);
+                $data[]                      = $nestedData;
 
             }
         }
@@ -1127,6 +1122,8 @@ class ReportsController extends Controller
     }
 
     /**
+     * @param  Request  $request
+     *
      * @return RedirectResponse|BinaryFileResponse
      * @throws AuthorizationException
      * @throws IOException
@@ -1134,7 +1131,7 @@ class ReportsController extends Controller
      * @throws UnsupportedTypeException
      * @throws WriterNotOpenedException
      */
-    public function export()
+    public function export(Request $request)
     {
         if (config('app.env') == 'demo') {
             return redirect()->route('customer.reports.all')->with([
@@ -1145,9 +1142,59 @@ class ReportsController extends Controller
 
         $this->authorize('view_reports');
 
-        $file_name = (new FastExcel($this->reportsGenerator('all')))->export(storage_path('Reports_'.time().'.xlsx'));
+        Tool::resetMaxExecutionTime();
+
+
+        $file_name = (new FastExcel($this->exportData($request)))->export(storage_path('Reports_'.time().'.xlsx'));
 
         return response()->download($file_name);
+
+    }
+
+
+    /**
+     * @param $request
+     *
+     * @return Generator
+     */
+    public function exportData($request): Generator
+    {
+        $start_date = null;
+        $end_date   = null;
+
+        if ($request->start_date && $request->end_date) {
+            $start_time = $request->start_date.' '.$request->start_time;
+            $start_date = Tool::systemTimeFromString($start_time, Auth::user()->timezone);
+
+            $end_time = $request->end_date.' '.$request->end_time;
+            $end_date = Tool::systemTimeFromString($end_time, Auth::user()->timezone);
+        }
+
+        $status    = $request->status;
+        $direction = $request->direction;
+        $type      = $request->type;
+        $to        = $request->to;
+        $from      = $request->from;
+
+        if ($status == 'delivered') {
+            $status = 'Delivered';
+        }
+
+        $get_data = Reports::query()->when($status, function ($query) use ($status) {
+            $query->whereLike(['status'], $status);
+        })->when($from, function ($query) use ($from) {
+            $query->whereLike(['from'], $from);
+        })->when($to, function ($query) use ($to) {
+            $query->whereLike(['to'], $to);
+        })->when($direction, function ($query) use ($direction) {
+            $query->where('send_by', $direction);
+        })->when($start_date, function ($query) use ($start_date, $end_date) {
+            $query->whereBetween('created_at', [$start_date, $end_date]);
+        })->where('sms_type', $type)->where('user_id', Auth::user()->id)->cursor();
+
+        foreach ($get_data as $report) {
+            yield $report;
+        }
     }
 
     /**

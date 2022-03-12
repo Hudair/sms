@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static cursor()
  * @method static find(mixed $plan_id)
  * @method static create(array $plan)
+ * @method static whereIn(string $string, array $ids)
  * @property mixed frequency_unit
  * @property mixed frequency_amount
  * @property bool|mixed status
@@ -51,8 +52,15 @@ class Plan extends Model
             'status',
             'is_popular',
             'tax_billing_required',
+            'show_in_customer',
     ];
 
+    protected $casts = [
+            'status'               => 'boolean',
+            'show_in_customer'     => 'boolean',
+            'is_popular'           => 'boolean',
+            'tax_billing_required' => 'boolean',
+    ];
 
     /**
      * Bootstrap any application services.
@@ -252,6 +260,9 @@ class Plan extends Model
         if ($this->isTimeUnlimited()) {
             return __('locale.labels.unlimited');
         }
+        if ($this->frequency_amount == 1) {
+            return Tool::getPluralParse($this->frequency_unit, $this->frequency_amount);
+        }
 
         return $this->frequency_amount.' '.Tool::getPluralParse($this->frequency_unit, $this->frequency_amount);
     }
@@ -259,7 +270,7 @@ class Plan extends Model
     /**
      * Display total quota
      *
-     * @return array|Application|Translator|int|string|null
+     * @return Application|array|string|Translator|null
      */
 
     public function displayTotalQuota()
@@ -274,7 +285,7 @@ class Plan extends Model
     /**
      * Display total quota
      *
-     * @return array|Application|Translator|int|string|null
+     * @return Application|array|string|Translator|null
      */
 
     public function displayWhatsAppQuota()
@@ -504,7 +515,7 @@ class Plan extends Model
 
 
     /**
-     * get available sending sending server
+     * get available sending server
      *
      * @param $sending_server_ids
      *

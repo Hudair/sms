@@ -35,6 +35,7 @@
             'unsubscribe_sms',
             'cache',
             'batch_id',
+            'sending_server',
         ];
 
 
@@ -92,7 +93,10 @@
             return $this->belongsTo(Contacts::class);
         }
 
-        public function optInKeywords()
+        /**
+         * @return HasMany
+         */
+        public function optInKeywords(): HasMany
         {
             return $this->hasMany(ContactGroupsOptinKeywords::class, 'contact_group', 'id');
         }

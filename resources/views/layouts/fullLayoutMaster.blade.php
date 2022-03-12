@@ -2,8 +2,13 @@
 {!! Helper::updatePageConfig($pageConfigs) !!}
 @endisset
 
-<!DOCTYPE html>
-<html lang="@if(session()->has('locale')){{Session::get('locale')}}@else{{"en"}}@endif" data-textdirection="{{ env('MIX_CONTENT_DIRECTION') === 'rtl' ? 'rtl' : 'ltr' }}">
+        <!DOCTYPE html>
+@php $configData = Helper::applClasses(); @endphp
+
+<html class="loading {{($configData['theme'] === 'light') ? '' : $configData['layoutTheme'] }}"
+      lang="@if(session()->has('locale')){{session()->get('locale')}}@else{{$configData['defaultLanguage']}}@endif"
+      data-textdirection="{{ env('MIX_CONTENT_DIRECTION') === 'rtl' ? 'rtl' : 'ltr' }}"
+      @if($configData['theme'] === 'dark') data-layout="dark-layout"@endif>
 
 <head>
     <meta charset="utf-8">
@@ -14,40 +19,50 @@
 
     <title>@yield('title') - {{config('app.title')}}</title>
     <link rel="shortcut icon" type="image/x-icon" href="<?php echo asset(config('app.favicon')); ?>"/>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600" rel="stylesheet">
 
     {{-- Include core + vendor Styles --}}
     @include('panels/styles')
 
 </head>
 
-{{-- {!! Helper::applClasses() !!} --}}
-@php
-$configData = Helper::applClasses();
-@endphp
 
-<body
-    class="vertical-layout vertical-menu-modern 1-column {{ $configData['blankPageClass']}} {{ $configData['bodyClass']}} {{($configData['theme'] === 'light') ? '' : $configData['layoutTheme'] }} {{ $configData['footerType'] }}"
-    data-menu="vertical-menu-modern" data-col="1-column">
+<body class="vertical-layout vertical-menu-modern {{ $configData['bodyClass'] }} {{($configData['theme'] === 'dark') ? 'dark-layout' : ''}} {{ $configData['blankPageClass'] }} blank-page"
+      data-menu="vertical-menu-modern"
+      data-col="blank-page"
+      data-framework="laravel"
+      data-asset-path="{{ asset('/')}}">
 
-    <!-- BEGIN: Header-->
+<!-- BEGIN: Content-->
+<div class="app-content content {{ $configData['pageClass'] }}">
     <div class="content-overlay"></div>
     <div class="header-navbar-shadow"></div>
 
-    <!-- BEGIN: Content-->
-    <div class="app-content content">
-        <div class="content-wrapper">
+    <div class="content-wrapper">
+        <div class="content-body">
 
-            <div class="content-body">
-                {{-- Include Page Content --}}
-                @yield('content')
-            </div>
+            {{-- Include Startkit Content --}}
+            @yield('content')
+
         </div>
     </div>
-    <!-- End: Content-->
+</div>
+<!-- End: Content-->
 
-    {{-- include default scripts --}}
-    @include('panels/scripts')
-    @stack('scripts')
+{{-- include default scripts --}}
+@include('panels/scripts')
+
+@stack('scripts')
+<script type="text/javascript">
+    $(window).on('load', function() {
+        if (feather) {
+            feather.replace({
+                width: 14,
+                height: 14
+            });
+        }
+    })
+</script>
 
 </body>
 

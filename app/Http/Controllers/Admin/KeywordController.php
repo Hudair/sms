@@ -74,13 +74,15 @@ class KeywordController extends AdminBaseController
         $this->authorize('view keywords');
 
         $columns = [
-                0 => 'uid',
-                1 => 'title',
-                2 => 'keyword_name',
-                3 => 'user_id',
-                4 => 'price',
-                5 => 'status',
-                6 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'title',
+                4 => 'keyword_name',
+                5 => 'user_id',
+                6 => 'price',
+                7 => 'status',
+                8 => 'actions',
         ];
 
         $totalData = Keywords::count();
@@ -129,33 +131,38 @@ class KeywordController extends AdminBaseController
                 }
 
                 if ($keyword->status == 'available') {
-                    $status = '<div class="chip chip-primary"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.available').'</div></div></div>';
+                    $status = '<span class="badge badge-light-primary text-uppercase">'.__('locale.labels.available').'</span>';
                 } elseif ($keyword->status == 'assigned') {
-                    $status = '<div class="chip chip-success"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.assigned').'</div></div></div>';
+                    $status = '<span class="badge badge-light-success text-uppercase">'.__('locale.labels.assigned').'</span>';
                 } else {
-                    $status = '<div class="chip chip-danger"> <div class="chip-body"><div class="chip-text text-uppercase">'.__('locale.labels.expired').'</div></div></div>';
+                    $status = '<span class="badge badge-light-danger text-uppercase">'.__('locale.labels.expired').'</span>';
                 }
 
-                $action_url = '';
+
+                $reply_mms = false;
 
                 if ($keyword->reply_mms) {
-                    $action_url .= "<span class='action-remove-sms text-warning mr-1' data-id='$keyword->uid' data-toggle='tooltip' data-placement='top' title='$remove_mms'><i class='feather us-2x icon-delete'></i></span>";
+                    $reply_mms = true;
                 }
 
-                $action_url .= "<a href='$show' class='text-primary mr-1' data-toggle='tooltip' data-placement='top' title='$edit'><i class='feather us-2x icon-edit' ></i></a>
-                                <span class='action-delete text-danger' data-id='$keyword->uid'  data-toggle='tooltip' data-placement='top' title='$delete'><i class='feather us-2x icon-trash'></i></span>";
-
-                $nestedData['uid']          = $keyword->uid;
-                $nestedData['title']        = $keyword->title;
-                $nestedData['keyword_name'] = $keyword->keyword_name;
-                $nestedData['user_id']      = $assign_to;
-                $nestedData['price']        = "<div>
+                $nestedData['responsive_id'] = '';
+                $nestedData['avatar']        = route('admin.customers.avatar', $keyword->user->uid);
+                $nestedData['email']         = $keyword->user->email;
+                $nestedData['uid']           = $keyword->uid;
+                $nestedData['title']         = $keyword->title;
+                $nestedData['keyword_name']  = $keyword->keyword_name;
+                $nestedData['user_id']       = $assign_to;
+                $nestedData['price']         = "<div>
                                                         <p class='text-bold-600'>".Tool::format_price($keyword->price, $keyword->currency->format)." </p>
                                                         <p class='text-muted'>".$keyword->displayFrequencyTime()."</p>
                                                    </div>";
-                $nestedData['status']       = $status;
-                $nestedData['action']       = $action_url;
-                $data[]                     = $nestedData;
+                $nestedData['reply_mms']     = $reply_mms;
+                $nestedData['remove_mms']    = $remove_mms;
+                $nestedData['show_label']    = $edit;
+                $nestedData['show']          = $show;
+                $nestedData['delete']        = $delete;
+                $nestedData['status']        = $status;
+                $data[]                      = $nestedData;
 
             }
         }
@@ -263,7 +270,7 @@ class KeywordController extends AdminBaseController
             ]);
         }
 
-        $this->keywords->update($keyword, $request->input(), $keyword::billingCycleValues());
+        $this->keywords->update($keyword, $request->all(), $keyword::billingCycleValues());
 
         return redirect()->route('admin.keywords.show', $keyword->uid)->with([
                 'status'  => 'success',

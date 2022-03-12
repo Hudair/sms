@@ -1,0 +1,158 @@
+// placeholder specific scss
+@import 'forms/labels';
+@import 'forms/form-control';
+@import 'forms/input-group';
+@import 'forms/form-check';
+@import 'forms/floating-labels';
+
+// Custom third party form plugin scss
+
+/* Textarea with Counter */
+.textarea-counter-value {
+  background-color: $primary;
+  color: $white;
+  padding: 1px 6px;
+  font-size: 0.6rem;
+  border-radius: 0 0 5px 5px;
+  margin-right: 1rem;
+}
+
+//  Number Input style
+.btn.disabled-max-min,
+.btn.disabled-max-min:focus,
+.btn.disabled-max-min:active {
+  background-color: rgba($black, 0.5) !important;
+  cursor: default;
+}
+
+// disabled number input
+.bootstrap-touchspin,
+.bootstrap-touchspin {
+  &.disabled-touchspin {
+    .bootstrap-touchspin-down,
+    .bootstrap-touchspin-up {
+      border-color: transparent !important;
+    }
+  }
+}
+
+/* Number Type Input Box Scss for - Remove arrow on hover */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+
+// Date & Time Picker - Form Control Bg color
+.picker__input {
+  &.form-control {
+    background-color: $white;
+  }
+}
+
+// Autofill style
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px $white inset !important;
+  -webkit-text-fill-color: $body-color !important;
+}
+
+
+.us-file-zone {
+  position: relative;
+  min-height: 350px;
+  border: 2px dashed $primary;
+  background: $white;
+  border-radius: 3px;
+  padding: 23px;
+  box-sizing: border-box;
+  cursor: pointer;
+
+  .us-file-message {
+    font-size: 2rem;
+    position: absolute;
+    top: 40%;
+    left: 0;
+    width: 100%;
+    margin-top: -45px;
+    color: $primary;
+    text-align: center;
+    filter: none;
+    opacity: 1;
+  }
+
+  .us-file-message:before {
+    content: "";
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237367f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-file-text'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3Cpolyline points='10 9 9 9 8 9'%3E%3C/polyline%3E%3Cline x1='16' y1='13' x2='8' y2='13'%3E%3C/line%3E%3Cline x1='16' y1='17' x2='8' y2='17'%3E%3C/line%3E%3C/svg%3E");
+    font-size: 80px;
+    position: absolute;
+    top: 48px;
+    width: 80px;
+    height: 80px;
+    display: inline-block;
+    left: 50%;
+    margin-left: -40px;
+    line-height: 1;
+    z-index: 2;
+    color: $primary;
+    text-indent: 0;
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+  }
+
+
+  .us-file-message-done:before {
+    content: '';
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237367f0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-check-square'%3E%3Cpath d='M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'%3E%3C/path%3E%3Cpolyline points='9 11 12 14 22 4'%3E%3C/polyline%3E%3C/svg%3E");
+    font-size: 80px;
+    position: absolute;
+    top: 48px;
+    width: 80px;
+    height: 80px;
+    display: inline-block;
+    left: 50%;
+    margin-left: -40px;
+    line-height: 1;
+    z-index: 2;
+    color: $primary;
+    text-indent: 0;
+    font-weight: normal;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .us-file {
+
+    position: absolute;
+    z-index: 1000;
+    opacity: 0;
+    cursor: pointer;
+    right: 0;
+    top: 0;
+    height: 100%;
+    font-size: 24px;
+    width: 100%;
+  }
+
+  .us-file-footer {
+
+    font-size: 1rem;
+    position: absolute;
+    top: 70%;
+    left: 0;
+    width: 100%;
+    color: $primary;
+    text-align: center;
+    filter: none;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 576px) {
+  .us-file-zone .us-file-message {
+    font-size: 1.6rem;
+  }
+  .us-file-zone .us-file-message:before {
+    top: 4.5rem;
+    font-size: 50px;
+  }
+}

@@ -22,6 +22,12 @@ class Helper
 
     public static function applClasses(): array
     {
+        if (config('app.theme_layout_type') == 'vertical') {
+            $data = config('custom.vertical');
+        } else {
+            $data = config('custom.horizontal');
+        }
+
         // default data array
         $DefaultData = [
                 'mainLayoutType'         => 'vertical',
@@ -31,32 +37,39 @@ class Helper
                 'horizontalMenuType'     => 'floating',
                 'verticalMenuNavbarType' => 'floating',
                 'footerType'             => 'static', //footer
+                'layoutWidth'            => 'boxed',
+                'showMenu'               => true,
                 'bodyClass'              => '',
+                'pageClass'              => '',
                 'pageHeader'             => true,
                 'contentLayout'          => 'default',
                 'blankPage'              => false,
+                'defaultLanguage'        => 'en',
                 'direction'              => env('MIX_CONTENT_DIRECTION', 'ltr'),
         ];
 
-        // if any key missing of array from custom.php file it will be merge and set a default value from dataDefault array and store in data variable
-        $data = array_merge($DefaultData, config('custom.custom'));
+        // if any key missing of array from custom.php file it will be merged and set a default value from dataDefault array and store in data variable
+        $data = array_merge($DefaultData, $data);
 
         // All options available in the template
         $allOptions = [
                 'mainLayoutType'         => ['vertical', 'horizontal'],
-                'theme'                  => ['light' => 'light', 'dark' => 'dark-layout', 'semi-dark' => 'semi-dark-layout'],
+                'theme'                  => ['light' => 'light', 'dark' => 'dark-layout', 'bordered' => 'bordered-layout', 'semi-dark' => 'semi-dark-layout'],
                 'sidebarCollapsed'       => [true, false],
+                'showMenu'               => [true, false],
+                'layoutWidth'            => ['full', 'boxed'],
                 'navbarColor'            => ['bg-primary', 'bg-info', 'bg-warning', 'bg-success', 'bg-danger', 'bg-dark'],
                 'horizontalMenuType'     => ['floating' => 'navbar-floating', 'static' => 'navbar-static', 'sticky' => 'navbar-sticky'],
-                'horizontalMenuClass'    => ['static' => 'menu-static', 'sticky' => 'fixed-top', 'floating' => 'floating-nav'],
+                'horizontalMenuClass'    => ['static' => '', 'sticky' => 'fixed-top', 'floating' => 'floating-nav'],
                 'verticalMenuNavbarType' => ['floating' => 'navbar-floating', 'static' => 'navbar-static', 'sticky' => 'navbar-sticky', 'hidden' => 'navbar-hidden'],
-                'navbarClass'            => ['floating' => 'floating-nav', 'static' => 'static-top', 'sticky' => 'fixed-top', 'hidden' => 'd-none'],
-                'footerType'             => ['static' => 'footer-static', 'sticky' => 'fixed-footer', 'hidden' => 'footer-hidden'],
+                'navbarClass'            => ['floating' => 'floating-nav', 'static' => 'navbar-static-top', 'sticky' => 'fixed-top', 'hidden' => 'd-none'],
+                'footerType'             => ['static' => 'footer-static', 'sticky' => 'footer-fixed', 'hidden' => 'footer-hidden'],
                 'pageHeader'             => [true, false],
                 'contentLayout'          => ['default', 'content-left-sidebar', 'content-right-sidebar', 'content-detached-left-sidebar', 'content-detached-right-sidebar'],
                 'blankPage'              => [false, true],
                 'sidebarPositionClass'   => ['content-left-sidebar' => 'sidebar-left', 'content-right-sidebar' => 'sidebar-right', 'content-detached-left-sidebar' => 'sidebar-detached sidebar-left', 'content-detached-right-sidebar' => 'sidebar-detached sidebar-right', 'default' => 'default-sidebar-position'],
                 'contentsidebarClass'    => ['content-left-sidebar' => 'content-right', 'content-right-sidebar' => 'content-left', 'content-detached-left-sidebar' => 'content-detached content-right', 'content-detached-right-sidebar' => 'content-detached content-left', 'default' => 'default-sidebar'],
+                'defaultLanguage'        => ['en' => 'en', 'fr' => 'fr', 'de' => 'de', 'pt' => 'pt'],
                 'direction'              => ['ltr', 'rtl'],
         ];
 
@@ -68,7 +81,7 @@ class Helper
                     if (is_string($data[$key])) {
                         // data key should not be empty
                         if (isset($data[$key]) && $data[$key] !== null) {
-                            // data key should not be exist inside allOptions array's sub array
+                            // data key should not be existed inside allOptions array's sub array
                             if ( ! array_key_exists($data[$key], $value)) {
                                 // ensure that passed value should be match with any of allOptions array value
                                 $result = array_search($data[$key], $value, 'strict');
@@ -92,14 +105,17 @@ class Helper
                 'theme'                  => $data['theme'],
                 'layoutTheme'            => $allOptions['theme'][$data['theme']],
                 'sidebarCollapsed'       => $data['sidebarCollapsed'],
+                'showMenu'               => $data['showMenu'],
+                'layoutWidth'            => $data['layoutWidth'],
                 'verticalMenuNavbarType' => $allOptions['verticalMenuNavbarType'][$data['verticalMenuNavbarType']],
                 'navbarClass'            => $allOptions['navbarClass'][$data['verticalMenuNavbarType']],
                 'navbarColor'            => $data['navbarColor'],
                 'horizontalMenuType'     => $allOptions['horizontalMenuType'][$data['horizontalMenuType']],
                 'horizontalMenuClass'    => $allOptions['horizontalMenuClass'][$data['horizontalMenuType']],
                 'footerType'             => $allOptions['footerType'][$data['footerType']],
-                'sidebarClass'           => 'menu-expanded',
+                'sidebarClass'           => '',
                 'bodyClass'              => $data['bodyClass'],
+                'pageClass'              => $data['pageClass'],
                 'pageHeader'             => $data['pageHeader'],
                 'blankPage'              => $data['blankPage'],
                 'blankPageClass'         => '',
@@ -107,8 +123,13 @@ class Helper
                 'sidebarPositionClass'   => $allOptions['sidebarPositionClass'][$data['contentLayout']],
                 'contentsidebarClass'    => $allOptions['contentsidebarClass'][$data['contentLayout']],
                 'mainLayoutType'         => $data['mainLayoutType'],
+                'defaultLanguage'        => $allOptions['defaultLanguage'][$data['defaultLanguage']],
                 'direction'              => $data['direction'],
         ];
+        // set default language if session hasn't locale value the set default language
+        if ( ! session()->has('locale')) {
+            app()->setLocale($layoutClasses['defaultLanguage']);
+        }
 
         // sidebar Collapsed
         if ($layoutClasses['sidebarCollapsed'] == 'true') {
@@ -125,11 +146,12 @@ class Helper
 
     /**
      * @param $pageConfigs
+     *
+     * @return bool
      */
-
-    public static function updatePageConfig($pageConfigs)
+    public static function updatePageConfig($pageConfigs): bool
     {
-        $demo = 'custom';
+        $demo = 'vertical';
         if (isset($pageConfigs)) {
             if (count($pageConfigs) > 0) {
                 foreach ($pageConfigs as $config => $val) {
@@ -137,6 +159,8 @@ class Helper
                 }
             }
         }
+
+        return false;
     }
 
     /**
@@ -492,13 +516,13 @@ class Helper
                                 'slug'   => config('app.admin_path')."/dashboard",
                                 "name"   => "Dashboard",
                                 "i18n"   => "Dashboard",
-                                "icon"   => "feather icon-home",
+                                "icon"   => "home",
                                 "access" => "access backend",
                         ],
                         [
                                 "url"     => "",
                                 "name"    => "Customer",
-                                "icon"    => "feather icon-users",
+                                "icon"    => "users",
                                 "i18n"    => "Customer",
                                 "access"  => "view customer|view subscription",
                                 "submenu" => [
@@ -508,6 +532,7 @@ class Helper
                                                 "name"   => "Customers",
                                                 "i18n"   => "Customers",
                                                 "access" => "view customer",
+                                                "icon"   => "users",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/subscriptions"),
@@ -515,6 +540,7 @@ class Helper
                                                 "name"   => "Subscriptions",
                                                 "i18n"   => "Subscriptions",
                                                 "access" => "view subscription",
+                                                "icon"   => "credit-card",
                                         ],
                                 ],
                         ],
@@ -522,7 +548,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "Plan",
                                 "i18n"    => "Plan",
-                                "icon"    => "feather icon-credit-card",
+                                "icon"    => "credit-card",
                                 "access"  => "manage plans|manage currencies",
                                 "submenu" => [
                                         [
@@ -531,6 +557,7 @@ class Helper
                                                 "name"   => "Plans",
                                                 "i18n"   => "Plans",
                                                 "access" => "manage plans",
+                                                "icon"   => "credit-card",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/currencies"),
@@ -538,13 +565,14 @@ class Helper
                                                 "name"   => "Currencies",
                                                 "i18n"   => "Currencies",
                                                 "access" => "manage currencies",
+                                                "icon"   => "dollar-sign",
                                         ],
                                 ],
                         ],
                         [
                                 "url"     => "",
                                 "name"    => "Sending",
-                                "icon"    => "feather icon-send",
+                                "icon"    => "send",
                                 "i18n"    => "Sending",
                                 "access"  => "view sender_id|view keywords|view sending_servers|view phone_numbers|view tags",
                                 "submenu" => [
@@ -554,6 +582,7 @@ class Helper
                                                 "name"   => "Sending Servers",
                                                 "i18n"   => "Sending Servers",
                                                 "access" => "view sending_servers",
+                                                "icon"   => "send",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/senderid"),
@@ -561,6 +590,7 @@ class Helper
                                                 "name"   => "Sender ID",
                                                 "i18n"   => "Sender ID",
                                                 "access" => "view sender_id",
+                                                "icon"   => "book",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/phone-numbers"),
@@ -568,6 +598,7 @@ class Helper
                                                 "name"   => "Numbers",
                                                 "i18n"   => "Numbers",
                                                 "access" => "view phone_numbers",
+                                                "icon"   => "phone",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/keywords"),
@@ -575,6 +606,7 @@ class Helper
                                                 "name"   => "Keywords",
                                                 "i18n"   => "Keywords",
                                                 "access" => "view keywords",
+                                                "icon"   => "hash",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/tags"),
@@ -582,6 +614,7 @@ class Helper
                                                 "name"   => "Template Tags",
                                                 "i18n"   => "Template Tags",
                                                 "access" => "view tags",
+                                                "icon"   => "tag",
                                         ],
                                 ],
                         ],
@@ -589,7 +622,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "Security",
                                 "i18n"    => "Security",
-                                "icon"    => "feather icon-shield",
+                                "icon"    => "shield",
                                 "access"  => "view blacklist|view spam_word",
                                 "submenu" => [
                                         [
@@ -598,6 +631,7 @@ class Helper
                                                 "name"   => "Blacklist",
                                                 "i18n"   => "Blacklist",
                                                 "access" => "view blacklist",
+                                                "icon"   => "user-x",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/spam-word"),
@@ -605,6 +639,7 @@ class Helper
                                                 "name"   => "Spam Word",
                                                 "i18n"   => "Spam Word",
                                                 "access" => "view spam_word",
+                                                "icon"   => "x-square",
                                         ],
                                 ],
                         ],
@@ -612,7 +647,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "Administrator",
                                 "i18n"    => "Administrator",
-                                "icon"    => "feather icon-user",
+                                "icon"    => "user",
                                 "access"  => "view administrator|view roles",
                                 "submenu" => [
                                         [
@@ -621,6 +656,7 @@ class Helper
                                                 "name"   => "Administrators",
                                                 "i18n"   => "Administrators",
                                                 "access" => "view administrator",
+                                                "icon"   => "users",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/roles"),
@@ -628,6 +664,7 @@ class Helper
                                                 "name"   => "Admin Roles",
                                                 "i18n"   => "Admin Roles",
                                                 "access" => "view roles",
+                                                "icon"   => "user-check",
                                         ],
                                 ],
                         ],
@@ -635,7 +672,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "Settings",
                                 "i18n"    => "Settings",
-                                "icon"    => "feather icon-settings",
+                                "icon"    => "settings",
                                 "access"  => "general settings|view languages|view payment_gateways|view email_templates|manage update_application",
                                 "submenu" => [
                                         [
@@ -644,6 +681,15 @@ class Helper
                                                 "name"   => "All Settings",
                                                 "i18n"   => "All Settings",
                                                 "access" => "general settings",
+                                                "icon"   => "settings",
+                                        ],
+                                        [
+                                                "url"    => url(config('app.admin_path')."/countries"),
+                                                'slug'   => config('app.admin_path')."/countries",
+                                                "name"   => "Countries",
+                                                "i18n"   => "Countries",
+                                                "access" => "general settings",
+                                                "icon"   => "map-pin",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/languages"),
@@ -651,6 +697,7 @@ class Helper
                                                 "name"   => "Language",
                                                 "i18n"   => "Language",
                                                 "access" => "view languages",
+                                                "icon"   => "globe",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/payment-gateways"),
@@ -658,6 +705,7 @@ class Helper
                                                 "name"   => "Payment Gateways",
                                                 "i18n"   => "Payment Gateways",
                                                 "access" => "view payment_gateways",
+                                                "icon"   => "shopping-bag",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/email-templates"),
@@ -665,6 +713,7 @@ class Helper
                                                 "name"   => "Email Templates",
                                                 "i18n"   => "Email Templates",
                                                 "access" => "view email_templates",
+                                                "icon"   => "mail",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/update-application"),
@@ -672,6 +721,7 @@ class Helper
                                                 "name"   => "Update Application",
                                                 "i18n"   => "Update Application",
                                                 "access" => "manage update_application",
+                                                "icon"   => "upload",
                                         ],
                                 ],
                         ],
@@ -679,7 +729,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "Reports",
                                 "i18n"    => "Reports",
-                                "icon"    => "feather icon-bar-chart-2",
+                                "icon"    => "bar-chart-2",
                                 "access"  => "view invoices|view sms_history",
                                 "submenu" => [
                                         [
@@ -688,6 +738,7 @@ class Helper
                                                 "name"   => "All Invoices",
                                                 "i18n"   => "All Invoices",
                                                 "access" => "view invoices",
+                                                "icon"   => "pie-chart",
                                         ],
                                         [
                                                 "url"    => url(config('app.admin_path')."/reports"),
@@ -695,16 +746,17 @@ class Helper
                                                 "name"   => "SMS History",
                                                 "i18n"   => "SMS History",
                                                 "access" => "view sms_history",
+                                                "icon"   => "bar-chart-2",
                                         ],
                                 ],
                         ],
                         [
-                                "url"    => url(config('app.admin_path')."/plugins"),
-                                'slug'   => config('app.admin_path')."/plugins",
-                                "name"   => "Plugins",
-                                "i18n"   => "Plugins",
-                                "icon"   => "feather icon-package",
-                                "access" => "access backend",
+                                "url"    => url(config('app.admin_path')."/customizer"),
+                                'slug'   => config('app.admin_path')."/customizer",
+                                "name"   => "Theme Customizer",
+                                "i18n"   => "Theme Customizer",
+                                "icon"   => "grid",
+                                "access" => "general settings",
                         ],
                 ],
                 "customer" => [
@@ -713,14 +765,14 @@ class Helper
                                 'slug'   => "dashboard",
                                 "name"   => "Dashboard",
                                 "i18n"   => "Dashboard",
-                                "icon"   => "feather icon-home",
+                                "icon"   => "home",
                                 "access" => "access_backend",
                         ],
                         [
                                 "url"     => "",
                                 "name"    => "Reports",
                                 "i18n"    => "Reports",
-                                "icon"    => "feather icon-bar-chart-2",
+                                "icon"    => "bar-chart-2",
                                 "access"  => "view_reports",
                                 "submenu" => [
                                         [
@@ -729,6 +781,7 @@ class Helper
                                                 "name"   => "All Messages",
                                                 "i18n"   => "All Messages",
                                                 "access" => "view_reports",
+                                                "icon"   => "bar-chart-2",
                                         ],
                                         [
                                                 "url"    => url("reports/received"),
@@ -736,6 +789,7 @@ class Helper
                                                 "name"   => "Received Messages",
                                                 "i18n"   => "Received Messages",
                                                 "access" => "view_reports",
+                                                "icon"   => "phone-incoming",
                                         ],
                                         [
                                                 "url"    => url("reports/sent"),
@@ -743,6 +797,7 @@ class Helper
                                                 "name"   => "Sent Messages",
                                                 "i18n"   => "Sent Messages",
                                                 "access" => "view_reports",
+                                                "icon"   => "phone-outgoing",
                                         ],
                                         [
                                                 "url"    => url("reports/campaigns"),
@@ -750,6 +805,7 @@ class Helper
                                                 "name"   => "Campaigns",
                                                 "i18n"   => "Campaigns",
                                                 "access" => "view_reports",
+                                                "icon"   => "pie-chart",
                                         ],
                                 ],
                         ],
@@ -758,13 +814,13 @@ class Helper
                                 'slug'   => "contacts",
                                 "name"   => "Contacts",
                                 "i18n"   => "Contacts",
-                                "icon"   => "feather icon-user",
+                                "icon"   => "user",
                                 "access" => "view_contact_group|create_contact_group|update_contact_group|delete_contact_group|view_contact|create_contact|update_contact|delete_contact",
                         ],
                         [
                                 "url"     => "",
                                 "name"    => "Sending",
-                                "icon"    => "feather icon-send",
+                                "icon"    => "send",
                                 "i18n"    => "Sending",
                                 "access"  => "create_sending_servers|view_numbers|view_keywords|view_sender_id|sms_template",
                                 "submenu" => [
@@ -774,6 +830,7 @@ class Helper
                                                 "name"   => "Sending Servers",
                                                 "i18n"   => "Sending Servers",
                                                 "access" => "create_sending_servers",
+                                                "icon"   => "send",
                                         ],
                                         [
                                                 "url"    => url("senderid"),
@@ -781,6 +838,7 @@ class Helper
                                                 "name"   => "Sender ID",
                                                 "i18n"   => "Sender ID",
                                                 "access" => "view_sender_id",
+                                                "icon"   => "book",
                                         ],
                                         [
                                                 "url"    => url("numbers"),
@@ -788,6 +846,7 @@ class Helper
                                                 "name"   => "Numbers",
                                                 "i18n"   => "Numbers",
                                                 "access" => "view_numbers",
+                                                "icon"   => "phone",
                                         ],
                                         [
                                                 "url"    => url("keywords"),
@@ -795,6 +854,7 @@ class Helper
                                                 "name"   => "Keywords",
                                                 "i18n"   => "Keywords",
                                                 "access" => "view_keywords",
+                                                "icon"   => "hash",
                                         ],
                                         [
                                                 "url"    => url("templates"),
@@ -802,6 +862,7 @@ class Helper
                                                 "name"   => "SMS Template",
                                                 "i18n"   => "SMS Template",
                                                 "access" => "sms_template",
+                                                "icon"   => "smartphone",
                                         ],
                                 ],
                         ],
@@ -810,14 +871,14 @@ class Helper
                                 'slug'   => "blacklists",
                                 "name"   => "Blacklist",
                                 "i18n"   => "Blacklist",
-                                "icon"   => "feather icon-shield",
+                                "icon"   => "shield",
                                 "access" => "view_blacklist|create_blacklist|update_blacklist|delete_blacklist",
                         ],
                         [
                                 "url"     => "",
                                 "name"    => "SMS",
                                 "i18n"    => "SMS",
-                                "icon"    => "feather icon-message-square",
+                                "icon"    => "message-square",
                                 "access"  => "sms_campaign_builder|sms_quick_send|sms_bulk_messages",
                                 "submenu" => [
                                         [
@@ -826,6 +887,7 @@ class Helper
                                                 "name"   => "Campaign Builder",
                                                 "i18n"   => "Campaign Builder",
                                                 "access" => "sms_campaign_builder",
+                                                "icon"   => "server",
                                         ],
                                         [
                                                 "url"    => url("sms/quick-send"),
@@ -833,6 +895,7 @@ class Helper
                                                 "name"   => "Quick Send",
                                                 "i18n"   => "Quick Send",
                                                 "access" => "sms_quick_send",
+                                                "icon"   => "send",
                                         ],
                                         [
                                                 "url"    => url("sms/import"),
@@ -840,6 +903,7 @@ class Helper
                                                 "name"   => "Send Using File",
                                                 "i18n"   => "Send Using File",
                                                 "access" => "sms_bulk_messages",
+                                                "icon"   => "file-text",
                                         ],
                                 ],
                         ],
@@ -847,7 +911,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "Voice",
                                 "i18n"    => "Voice",
-                                "icon"    => "feather icon-phone-call",
+                                "icon"    => "phone-call",
                                 "access"  => "voice_campaign_builder|voice_quick_send|voice_bulk_messages",
                                 "submenu" => [
                                         [
@@ -856,6 +920,7 @@ class Helper
                                                 "name"   => "Campaign Builder",
                                                 "i18n"   => "Campaign Builder",
                                                 "access" => "voice_campaign_builder",
+                                                "icon"   => "server",
                                         ],
                                         [
                                                 "url"    => url("voice/quick-send"),
@@ -863,6 +928,7 @@ class Helper
                                                 "name"   => "Quick Send",
                                                 "i18n"   => "Quick Send",
                                                 "access" => "voice_quick_send",
+                                                "icon"   => "send",
                                         ],
                                         [
                                                 "url"    => url("voice/import"),
@@ -870,6 +936,7 @@ class Helper
                                                 "name"   => "Send Using File",
                                                 "i18n"   => "Send Using File",
                                                 "access" => "voice_bulk_messages",
+                                                "icon"   => "file-text",
                                         ],
                                 ],
                         ],
@@ -877,7 +944,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "MMS",
                                 "i18n"    => "MMS",
-                                "icon"    => "feather icon-image",
+                                "icon"    => "image",
                                 "access"  => "mms_campaign_builder|mms_quick_send|mms_bulk_messages",
                                 "submenu" => [
                                         [
@@ -886,6 +953,7 @@ class Helper
                                                 "name"   => "Campaign Builder",
                                                 "i18n"   => "Campaign Builder",
                                                 "access" => "mms_campaign_builder",
+                                                "icon"   => "server",
                                         ],
                                         [
                                                 "url"    => url("mms/quick-send"),
@@ -893,6 +961,7 @@ class Helper
                                                 "name"   => "Quick Send",
                                                 "i18n"   => "Quick Send",
                                                 "access" => "mms_quick_send",
+                                                "icon"   => "send",
                                         ],
                                         [
                                                 "url"    => url("mms/import"),
@@ -900,6 +969,7 @@ class Helper
                                                 "name"   => "Send Using File",
                                                 "i18n"   => "Send Using File",
                                                 "access" => "mms_bulk_messages",
+                                                "icon"   => "file-text",
                                         ],
                                 ],
                         ],
@@ -907,7 +977,7 @@ class Helper
                                 "url"     => "",
                                 "name"    => "WhatsApp",
                                 "i18n"    => "WhatsApp",
-                                "icon"    => "feather icon-message-circle",
+                                "icon"    => "message-circle",
                                 "access"  => "whatsapp_campaign_builder|whatsapp_quick_send|whatsapp_bulk_messages",
                                 "submenu" => [
                                         [
@@ -916,6 +986,7 @@ class Helper
                                                 "name"   => "Campaign Builder",
                                                 "i18n"   => "Campaign Builder",
                                                 "access" => "whatsapp_campaign_builder",
+                                                "icon"   => "server",
                                         ],
                                         [
                                                 "url"    => url("whatsapp/quick-send"),
@@ -923,6 +994,7 @@ class Helper
                                                 "name"   => "Quick Send",
                                                 "i18n"   => "Quick Send",
                                                 "access" => "whatsapp_quick_send",
+                                                "icon"   => "send",
                                         ],
                                         [
                                                 "url"    => url("whatsapp/import"),
@@ -930,6 +1002,7 @@ class Helper
                                                 "name"   => "Send Using File",
                                                 "i18n"   => "Send Using File",
                                                 "access" => "whatsapp_bulk_messages",
+                                                "icon"   => "file-text",
                                         ],
                                 ],
                         ],
@@ -938,7 +1011,7 @@ class Helper
                                 'slug'   => "chat-box",
                                 "name"   => "Chat Box",
                                 "i18n"   => "Chat Box",
-                                "icon"   => "feather icon-slack",
+                                "icon"   => "slack",
                                 "access" => "chat_box",
                         ],
 
@@ -947,7 +1020,7 @@ class Helper
                                 'slug'   => "developers",
                                 "name"   => "Developers",
                                 "i18n"   => "Developers",
-                                "icon"   => "feather icon-terminal",
+                                "icon"   => "terminal",
                                 "access" => "developers",
                         ],
                 ],
@@ -976,7 +1049,7 @@ class Helper
 
 
     /**
-     * make round robin
+     * make round-robin
      *
      * @param  array  $teams
      * @param  int|null  $rounds
@@ -1101,7 +1174,7 @@ class Helper
 
     public static function greetingMessage()
     {
-        /* This sets the $time variable to the current hour in the 24 hour clock format */
+        /* This sets the $time variable to the current hour in the 24-hour clock format */
         $time = date("H");
         /* If the time is less than 1200 hours, show good morning */
         if ($time < "12") {

@@ -1,4 +1,5 @@
 @extends('layouts/contentLayoutMaster')
+
 @section('title', __('locale.spam_word.add_new_word'))
 
 @section('content')
@@ -20,8 +21,8 @@
                                     <div class="row">
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="word" class="required">{{ __('locale.menu.Spam Word') }}</label>
+                                            <div class="mb-1">
+                                                <label for="word" class="form-label required">{{ __('locale.menu.Spam Word') }}</label>
                                                 <input id="word" class="form-control @error('word') is-invalid @enderror" name="word" required autofocus>
                                                 @error('word')
                                                 <div class="invalid-feedback">
@@ -32,10 +33,10 @@
                                         </div>
 
                                         <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-save"></i> {{ __('locale.buttons.save') }}
+                                            <button type="submit" class="btn btn-primary me-1 mb-1"><i data-feather="save"></i> {{ __('locale.buttons.save') }}
                                             </button>
 
-                                            <button type="reset" class="btn btn-outline-warning mr-1 mb-1"><i class="feather icon-refresh-cw"></i> {{ __('locale.buttons.reset') }}
+                                            <button type="reset" class="btn btn-outline-warning mb-1"><i data-feather="refresh-cw"></i> {{ __('locale.buttons.reset') }}
                                             </button>
                                         </div>
 

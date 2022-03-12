@@ -3,276 +3,288 @@
 @section('title', __('locale.labels.purchase'))
 
 @section('vendor-style')
-    <!-- Vendor css files -->
+    <!-- vendor css files -->
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/forms/wizard/bs-stepper.min.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/forms/select/select2.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/toastr.css')) }}">
 @endsection
 
 @section('page-style')
     <!-- Page css files -->
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/checkout.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('css/plugins/forms/wizard.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('css/plugins/extensions/toastr.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('css/base/plugins/forms/form-wizard.css')) }}">
 @endsection
+
 @section('content')
-    <form action="{{route('customer.subscriptions.purchase', $plan->uid)}}" class="icons-tab-steps checkout-tab-steps wizard-circle" method="post">
-    @csrf
 
 
-    <!-- Checkout Place order starts -->
-        <h6><i class="step-icon step feather icon-shopping-cart"></i>{{ __('locale.labels.cart') }}</h6>
-        <fieldset class="checkout-step-1 px-0">
-            <section id="place-order" class="list-view product-checkout">
-                <div class="checkout-items">
-                    <div class="card ecommerce-card">
-                        <div class="card-content product-description">
-                            <div class="card-body">
-                                <div class="item-name">
-                                    <p>{{ __('locale.subscription.payment_for_plan')  }}: <span class="text-primary">{{ $plan->name }}</span></p>
-                                    <p>{{ __('locale.labels.frequency') }}: <span class="text-primary">{{ $plan->displayFrequencyTime() }}</span></p>
-                                    <p class="stock-status-in">{{ __('locale.plans.price') }} {{ \App\Library\Tool::format_price($plan->price, $plan->currency->format) }}</p>
+    <!-- Modern Horizontal Wizard -->
+    <section class="modern-horizontal-wizard">
+        <form action="{{route('customer.subscriptions.purchase', $plan->uid)}}" method="post">
+            @csrf
+
+            @if ($errors->any())
+                @foreach ($errors->all() as $error)
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <div class="alert-body">
+                            {{ $error }}
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endforeach
+            @endif
+
+            <div class="bs-stepper wizard-modern modern-wizard-example">
+                <div class="bs-stepper-header">
+
+                    <div class="step" data-target="#cart" role="tab" id="cart-trigger">
+                        <button type="button" class="step-trigger">
+                        <span class="bs-stepper-box">
+                            <i data-feather="shopping-cart" class="font-medium-3"></i>
+                        </span>
+                            <span class="bs-stepper-label">
+                            <span class="bs-stepper-title">{{ __('locale.labels.cart') }}</span>
+                            <span class="bs-stepper-subtitle">{{ $plan->name }} {{ __('locale.menu.Plan') }}</span>
+                        </span>
+                        </button>
+                    </div>
+                    <div class="line">
+                        <i data-feather="chevron-right" class="font-medium-2"></i>
+                    </div>
+
+
+                    <div class="step" data-target="#address" role="tab" id="address-trigger">
+                        <button type="button" class="step-trigger">
+                        <span class="bs-stepper-box">
+                            <i data-feather="map-pin" class="font-medium-3"></i>
+                        </span>
+                            <span class="bs-stepper-label">
+                            <span class="bs-stepper-title">{{ __('locale.labels.address') }}</span>
+                            <span class="bs-stepper-subtitle">{{ __('locale.labels.billing_address') }}</span>
+                        </span>
+                        </button>
+                    </div>
+                    <div class="line">
+                        <i data-feather="chevron-right" class="font-medium-2"></i>
+                    </div>
+
+
+                    <div class="step" data-target="#payment" role="tab" id="payment-trigger">
+                        <button type="button" class="step-trigger">
+                        <span class="bs-stepper-box">
+                            <i data-feather="credit-card" class="font-medium-3"></i>
+                        </span>
+                            <span class="bs-stepper-label">
+                            <span class="bs-stepper-title">{{ __('locale.labels.payment') }}</span>
+                            <span class="bs-stepper-subtitle">{{ __('locale.labels.pay_payment') }}</span>
+                        </span>
+                        </button>
+                    </div>
+                </div>
+
+
+                <div class="bs-stepper-content">
+
+                    <div id="cart" class="content" role="tabpanel" aria-labelledby="cart-trigger">
+                        <div class="content-header">
+                            <h5 class="mb-0">{{ __('locale.menu.Subscriptions') }}</h5>
+                            <small class="text-muted">{!!  __('locale.subscription.log_subscribe', ['plan' => $plan->name]) !!}</small>
+                        </div>
+                        <div class="row">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                    <tr>
+                                        <td> {{ __('locale.plans.price') }} </td>
+                                        <td> {{ \App\Library\Tool::format_price($plan->price, $plan->currency->format) }} </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td> {{ __('locale.labels.renew') }} </td>
+                                        <td> {{ __('locale.labels.every') }} {{ $plan->displayFrequencyTime() }} </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td> {{ __('locale.labels.sms_credit') }} </td>
+                                        <td> {{ $plan->displayTotalQuota() }} </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td> {{ __('locale.plans.create_own_sending_server') }} </td>
+                                        <td>
+                                            @if($plan->getOption('create_sending_server') == 'yes')
+                                                {{__('locale.labels.yes')}}
+                                            @else
+                                                {{__('locale.labels.no')}}
+                                            @endif
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td> {{ __('locale.customer.sender_id_verification') }} </td>
+                                        <td>
+                                            @if($plan->getOption('sender_id_verification') == 'yes')
+                                                {{__('locale.labels.yes')}}
+                                            @else
+                                                {{__('locale.labels.no')}}
+                                            @endif
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td> {{ __('locale.labels.cutting_system_available') }} </td>
+                                        <td>
+                                            {{__('locale.labels.yes')}}
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td> {{ __('locale.labels.api_access') }} </td>
+                                        <td>
+                                            @if($plan->getOption('api_access') == 'yes')
+                                                {{__('locale.labels.yes')}}
+                                            @else
+                                                {{__('locale.labels.no')}}
+                                            @endif
+                                        </td>
+                                    </tr>
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-outline-secondary btn-prev" disabled>
+                                <i data-feather="arrow-left" class="align-middle me-sm-25 me-0"></i>
+                                <span class="align-middle d-sm-inline-block d-none">{{ __('locale.datatables.previous') }}</span>
+                            </button>
+                            <button class="btn btn-primary btn-next" type="button">
+                                <span class="align-middle d-sm-inline-block d-none">{{ __('locale.datatables.next') }}</span>
+                                <i data-feather="arrow-right" class="align-middle ms-sm-25 ms-0"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="address" class="content" role="tabpanel" aria-labelledby="address-trigger">
+                        <div class="content-header">
+                            <h5 class="mb-0">{{ __('locale.labels.address') }}</h5>
+                            <small>{{ __('locale.labels.billing_address') }}</small>
+                        </div>
+                        <div class="row">
+
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="first_name" class="required form-label">{{ __('locale.labels.first_name') }}</label>
+                                    <input type="text" id="first_name" class="form-control required" name="first_name" value="{{Auth::user()->first_name}}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="last_name">{{ __('locale.labels.last_name') }}</label>
+                                    <input type="text" id="last_name" class="form-control" name="last_name" value="{{Auth::user()->last_name}}">
+                                </div>
+                            </div>
+
+
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="email" class="required form-label">{{ __('locale.labels.email') }}</label>
+                                    <input type="email" id="email" class="form-control required" name="email" value="{{Auth::user()->email}}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="phone" class="required form-label">{{ __('locale.labels.phone') }}</label>
+                                    <input type="number" id="phone" class="form-control required" name="phone" value="{{ Auth::user()->customer->phone }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="address" class="required form-label">{{ __('locale.labels.address') }}</label>
+                                    <input type="text" id="address" class="form-control required" name="address" value="{{ Auth::user()->customer->financial_address }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="city" class="required form-label">{{ __('locale.labels.city') }}</label>
+                                    <input type="text" id="city" class="form-control required" name="city" value="{{ Auth::user()->customer->financial_city }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="postcode" class="form-label">{{ __('locale.labels.postcode') }}</label>
+                                    <input type="text" id="postcode" class="form-control" name="postcode" value="{{ Auth::user()->customer->financial_postcode }}">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-sm-12">
+                                <div class="mb-1">
+                                    <label for="country" class="required form-label">{{__('locale.labels.country')}}</label>
+                                    <select class="form-select select2" id="country" name="country">
+                                        @foreach(\App\Helpers\Helper::countries() as $country)
+                                            <option value="{{$country['name']}}" {{ Auth::user()->customer->country == $country['name'] ? 'selected': null }}> {{ $country['name'] }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-primary btn-prev" type="button">
+                                <i data-feather="arrow-left" class="align-middle me-sm-25 me-0"></i>
+                                <span class="align-middle d-sm-inline-block d-none">{{ __('locale.datatables.previous') }}</span>
+                            </button>
+                            <button class="btn btn-primary btn-next" type="button">
+                                <span class="align-middle d-sm-inline-block d-none">{{ __('locale.datatables.next') }}</span>
+                                <i data-feather="arrow-right" class="align-middle ms-sm-25 ms-0"></i>
+                            </button>
+                        </div>
                     </div>
+
+                    <div id="payment" class="content" role="tabpanel" aria-labelledby="payment-trigger">
+                        <div class="content-header">
+                            <h5 class="mb-0">{{ __('locale.labels.payment_options') }}</h5>
+                            <small>{{ __('locale.payment_gateways.click_on_correct_option') }}</small>
+                        </div>
+                        <div class="row mb-2 mt-2 ">
+                            <ul class="other-payment-options list-unstyled">
+
+                                @foreach($payment_methods as $method)
+                                    <li class="py-50">
+                                        <div class="form-check">
+                                            <input type="radio" id="{{$method->type}}" value="{{$method->type}}" name="payment_methods" class="form-check-input"/>
+                                            <label class="form-check-label" for="{{$method->type}}"> {{ $method->name }} </label>
+                                        </div>
+                                    </li>
+                                @endforeach
+
+                            </ul>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-primary btn-prev" type="button">
+                                <i data-feather="arrow-left" class="align-middle me-sm-25 me-0"></i>
+                                <span class="align-middle d-sm-inline-block d-none">{{ __('locale.datatables.previous') }}</span>
+                            </button>
+                            <button class="btn btn-success btn-submit" type="submit">{{ __('locale.labels.checkout') }}</button>
+                        </div>
+                    </div>
+
                 </div>
-                <div class="checkout-options">
-                    <div class="card">
-                        <div class="card-content">
-                            <div class="card-body">
-                                <div class="price-details">
-                                    <p>{{ __('locale.sender_id.price_details') }}</p>
-                                </div>
-                                <div class="detail">
-                                    <div class="detail-title">
-                                        {{ __('locale.labels.total_price') }}
-                                    </div>
-                                    <div class="detail-amt">
-                                        {{ \App\Library\Tool::format_price($plan->price, $plan->currency->format) }}
-                                    </div>
-                                </div>
-                                <div class="detail">
-                                    <div class="detail-title">
-                                        {{ __('locale.labels.delivery_charge') }}
-                                    </div>
-                                    <div class="detail-amt discount-amt">
-                                        {{ __('locale.labels.free') }}
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="detail">
-                                    <div class="detail-title detail-total">{{ __('locale.labels.total') }}</div>
-                                    <div class="detail-amt total-amt">{{ \App\Library\Tool::format_price($plan->price, $plan->currency->format) }}</div>
-                                </div>
-                                <div class="btn btn-primary btn-block place-order text-uppercase">{{ __('locale.labels.place_order') }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </fieldset>
-        <!-- Checkout Place order Ends -->
+            </div>
+        </form>
+    </section>
+    <!-- /Modern Horizontal Wizard -->
 
-
-        <!-- Checkout Customer Address Starts -->
-        <h6><i class="step-icon step feather icon-home"></i>{{ __('locale.labels.address') }}</h6>
-        <fieldset class="checkout-step-2 px-0">
-            <section id="checkout-address" class="list-view checkout-address ">
-                <div class="card">
-                    <div class="card-header flex-column align-items-start">
-                    </div>
-                    <div class="card-content">
-                        <div class="card-body">
-                            <div class="row">
-
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="first_name" class="required">{{ __('locale.labels.first_name') }}:</label>
-                                        <input type="text" id="first_name" class="form-control required" name="first_name" value="{{Auth::user()->first_name}}">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="last_name">{{ __('locale.labels.last_name') }}:</label>
-                                        <input type="text" id="last_name" class="form-control" name="last_name" value="{{Auth::user()->last_name}}">
-                                    </div>
-                                </div>
-
-
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="email" class="required">{{ __('locale.labels.email') }}:</label>
-                                        <input type="email" id="email" class="form-control required" name="email" value="{{Auth::user()->email}}">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="phone" class="required">{{ __('locale.labels.phone') }}:</label>
-                                        <input type="number" id="phone" class="form-control required" name="phone" value="{{ Auth::user()->customer->phone }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="address" class="required">{{ __('locale.labels.address') }}:</label>
-                                        <input type="text" id="address" class="form-control required" name="address" value="{{ Auth::user()->customer->financial_address }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="city" class="required">{{ __('locale.labels.city') }}:</label>
-                                        <input type="text" id="city" class="form-control required" name="city" value="{{ Auth::user()->customer->financial_city }}">
-                                    </div>
-                                </div>
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="postcode">{{ __('locale.labels.postcode') }}</label>
-                                        <input type="text" id="postcode" class="form-control" name="postcode" value="{{ Auth::user()->customer->financial_postcode }}">
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6 col-sm-12">
-                                    <div class="form-group">
-                                        <label for="country" class="required">{{__('locale.labels.country')}}</label>
-                                        <select class="form-control select2" id="country" name="country">
-                                            @foreach(\App\Helpers\Helper::countries() as $country)
-                                                <option value="{{$country['name']}}" {{ Auth::user()->customer->country == $country['name'] ? 'selected': null }}> {{ $country['name'] }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-sm-6 offset-md-6">
-                                    <div class="btn btn-primary delivery-address float-right">
-                                        {{ __('locale.labels.payment') }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </fieldset>
-
-        <!-- Checkout Customer Address Ends -->
-
-
-        <!-- Checkout Payment Starts -->
-        <h6><i class="step-icon step feather icon-credit-card"></i>{{ __('locale.labels.payment') }}</h6>
-        <fieldset class="checkout-step-3 px-0">
-            <section id="checkout-payment" class="list-view product-checkout">
-                <div class="payment-type">
-                    <div class="card">
-                        <div class="card-header flex-column align-items-start">
-                            <h4 class="card-title">{{ __('locale.labels.payment_options') }}</h4>
-                            <p class="text-muted mt-25">{{ __('locale.payment_gateways.click_on_correct_option') }}</p>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-body">
-
-                                @error('payment_methods')
-                                <div class="text-danger">
-                                    {{ $message }}
-                                </div>
-                                @enderror
-
-                                <ul class="other-payment-options list-unstyled">
-                                    @foreach($payment_methods as $method)
-                                        <li>
-                                            <div class="vs-radio-con vs-radio-primary py-25">
-                                                <input type="radio" name="payment_methods" value="{{$method->type}}">
-                                                <span class="vs-radio">
-                                                <span class="vs-radio--border"></span>
-                                                <span class="vs-radio--circle"></span>
-                                            </span>
-                                                <span>{{ $method->name }}</span>
-                                            </div>
-                                        </li>
-                                    @endforeach
-                                </ul>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="amount-payable checkout-options">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4 class="card-title">{{ __('locale.sender_id.price_details') }}</h4>
-                        </div>
-                        <div class="card-content">
-                            <div class="card-body">
-                                <div class="detail">
-                                    <div class="details-title">
-                                        {{ __('locale.labels.total_price') }}
-                                    </div>
-                                    <div class="detail-amt">
-                                        <strong>{{ \App\Library\Tool::format_price($plan->price, $plan->currency->format) }}</strong>
-                                    </div>
-                                </div>
-                                <div class="detail">
-                                    <div class="details-title">
-                                        {{ __('locale.labels.delivery_charge') }}
-                                    </div>
-                                    <div class="detail-amt discount-amt">
-                                        {{ __('locale.labels.free') }}
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="detail">
-                                    <div class="details-title">
-                                        {{ __('locale.labels.amount_payable') }}
-                                    </div>
-                                    <div class="detail-amt total-amt">{{ \App\Library\Tool::format_price($plan->price, $plan->currency->format) }}</div>
-                                </div>
-
-                                <button class="btn btn-primary btn-block text-uppercase" type="submit">{{ __('locale.labels.checkout') }}</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </fieldset>
-
-        <!-- Checkout Payment Starts -->
-
-
-    </form>
 @endsection
 
 @section('vendor-script')
-    <!-- Vendor js files -->
-    <script src="{{ asset(mix('vendors/js/extensions/jquery.steps.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/forms/validation/jquery.validate.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/toastr.min.js')) }}"></script>
+    <!-- vendor files -->
+    <script src="{{ asset(mix('vendors/js/forms/wizard/bs-stepper.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/forms/select/select2.full.min.js')) }}"></script>
 @endsection
-
 @section('page-script')
     <!-- Page js files -->
-    <script src="{{ asset(mix('js/scripts/pages/checkout.js')) }}"></script>
-    <script>
-
-        $(document).ready(function () {
-            "use strict"
-
-            let firstInvalid = $('form').find('.is-invalid').eq(0);
-
-            if (firstInvalid.length) {
-                $('body, html').stop(true, true).animate({
-                    'scrollTop': firstInvalid.offset().top - 200 + 'px'
-                }, 200);
-            }
-
-
-            // Basic Select2 select
-            $(".select2").select2({
-                // the following code is used to disable x-scrollbar when click in select input and
-                // take 100% width in responsive also
-                dropdownAutoWidth: true,
-                width: '100%'
-            });
-        });
-    </script>
-
+    <script src="{{ asset(mix('js/scripts/forms/form-wizard.js')) }}"></script>
 @endsection

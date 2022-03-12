@@ -27,56 +27,50 @@
                                     <div class="row">
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="language" class="required">{{__('locale.labels.language')}}</label>
+                                            <div class="mb-1">
+                                                <label for="language" class="form-label required">{{__('locale.labels.language')}}</label>
                                                 <select class="form-control select2" id="language" name="language">
                                                     @foreach(\App\Models\Language::languageCodes() as $language)
                                                         <option value="{{$language['code']}}"> {{ $language['name'] }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('language')
-                                                <div class="text-danger">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="country" class="required">{{__('locale.labels.country')}}</label>
-                                                <select class="form-control select2" id="country" name="country">
+                                            <div class="mb-1">
+                                                <label for="country" class="form-label required">{{__('locale.labels.country')}}</label>
+                                                <select class="form-select select2" id="country" name="country">
                                                     @foreach(\App\Helpers\Helper::countries() as $country)
                                                         <option value="{{$country['code']}}"> {{ $country['name'] }}</option>
                                                     @endforeach
                                                 </select>
                                                 @error('country')
-                                                <div class="text-danger">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="status" class="required">{{ __('locale.labels.status') }}</label>
-                                                <select class="form-control" name="status" id="status">
+                                            <div class="mb-1">
+                                                <label for="status" class="form-label required">{{ __('locale.labels.status') }}</label>
+                                                <select class="form-select" name="status" id="status">
                                                     <option value="1">{{ __('locale.labels.active') }}</option>
                                                     <option value="0">{{ __('locale.labels.disable')}} </option>
                                                 </select>
                                                 @error('status')
-                                                <div class="text-danger">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
 
                                         <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-save"></i> {{ __('locale.buttons.save') }}</button>
+                                            <button type="submit" class="btn btn-primary mb-1"><i data-feather="save"></i> {{ __('locale.buttons.save') }}</button>
                                         </div>
 
                                     </div>
@@ -104,11 +98,17 @@
     <script>
         $(document).ready(function () {
 
-            $(".select2").select2({
-                // the following code is used to disable x-scrollbar when click in select input and
-                // take 100% width in responsive also
-                dropdownAutoWidth: true,
-                width: '100%'
+            // Basic Select2 select
+            $(".select2").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
             });
 
             let firstInvalid = $('form').find('.is-invalid').eq(0);

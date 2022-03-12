@@ -15,6 +15,7 @@ class ChatBox extends Model
             'from',
             'to',
             'notification',
+            'sending_server_id',
     ];
 
 
@@ -30,12 +31,6 @@ class ChatBox extends Model
                 $uid = uniqid();
             }
             $item->uid = $uid;
-        });
-
-        static::deleted(function ($item) {
-            if ( ! is_null($item->boxMessages)) {
-                $item->boxMessages->delete();
-            }
         });
     }
 

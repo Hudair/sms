@@ -25,8 +25,10 @@ class QuickSendRequest extends FormRequest
     public function rules(): array
     {
         return [
-                'recipient' => ['required', new Phone($this->recipient)],
-                'message'   => 'required',
+                'recipient'      => ['required', new Phone($this->recipient)],
+                'sending_server' => 'required|exists:plans_sending_servers,sending_server_id',
+                'country_code'   => 'required|exists:countries,id',
+                'message'        => 'required',
         ];
     }
 }

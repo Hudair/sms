@@ -1,148 +1,159 @@
+@php
+    $configData = Helper::applClasses();
+@endphp
+
 @extends('layouts/fullLayoutMaster')
 
 @section('title', __('locale.auth.login'))
 
 @section('page-style')
     {{-- Page Css files --}}
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/authentication.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('css/base/pages/authentication.css')) }}">
 @endsection
 
 @section('content')
-    <section class="row flexbox-container">
-        <div class="col-xl-8 col-11 d-flex justify-content-center">
-            <div class="card bg-authentication rounded-0 mb-0">
-                <div class="row m-0">
-                    <div class="col-lg-5 d-lg-block d-none text-center align-self-center px-1 py-0">
-                        <img src="{{ asset('images/pages/reset-password.png') }}" alt="branding logo">
-                    </div>
-                    <div class="col-lg-7 col-12 p-0">
-                        <div class="card rounded-0 mb-0 px-2">
-                            <div class="card-header pb-1">
-                                <div class="card-title">
-                                    <h4 class="mb-0">{{ __('locale.auth.login') }}</h4>
-                                </div>
-                            </div>
 
-                            <p class="px-2">{{ __('locale.auth.welcome_message') }}</p>
+    <div class="auth-wrapper auth-cover">
+        <div class="auth-inner row m-0">
+            <!-- Brand logo-->
+            <a class="brand-logo" href="{{route('login')}}">
+                <img src="{{asset(config('app.logo'))}}" alt="{{config('app.name')}}"/>
+            </a>
+            <!-- /Brand logo-->
 
-                            @if(config('app.env') == 'demo')
-                                <p class="px-2" style="cursor: pointer;">
-                                    <span class="text-primary admin-login">Admin Login</span>
-                                    <span class="text-success pull-right client-login">Client Login</span>
-                                </p>
-                            @endif
-
-                            <div class="card-content">
-                                <div class="card-body pt-1">
-                                    <form method="POST" action="{{ route('login') }}">
-                                        @csrf
-                                        <fieldset class="form-label-group form-group position-relative">
-
-                                            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" placeholder="{{ __('locale.labels.email') }}" value="{{ old('email') }}" required autocomplete="email" autofocus>
-                                            <label for="email">{{ __('locale.labels.email') }}</label>
-                                            @error('email')
-                                            <span class="invalid-feedback" role="alert">
-                                                <span>{{ $message }}</span>
-                                            </span>
-                                            @enderror
-
-                                            @error('g-recaptcha-response')
-                                            <span class="text-danger">{{ __('locale.labels.g-recaptcha-response') }}</span>
-                                            @enderror
-                                        </fieldset>
-
-                                        <fieldset class="form-label-group position-relative show_hide_password">
-                                            <input id="password"
-                                                   type="password"
-                                                   class="form-control"
-                                                   name="password"
-                                                   placeholder="{{__('locale.labels.password')}}"
-                                                   required
-                                                   autocomplete="password"
-                                                   @if(config('app.env') == 'demo')
-                                                   value="12345678"
-                                                    @endif
-                                            >
-                                            <label for="password">{{__('locale.labels.password')}}</label>
-                                            <div class="form-control-position cursor-pointer">
-                                                <i class="feather icon-eye-off"></i>
-                                            </div>
-                                        </fieldset>
-
-
-                                        @if(config('no-captcha.login'))
-
-                                            <fieldset class="form-label-group position-relative">
-                                                {{ no_captcha()->input('g-recaptcha-response') }}
-                                            </fieldset>
-
-                                        @endif
-
-                                        <div class="form-group d-flex justify-content-between align-items-center">
-                                            <div class="text-left">
-                                                <fieldset class="checkbox">
-                                                    <div class="vs-checkbox-con vs-checkbox-primary">
-                                                        <input type="checkbox" {{ old('remember') ? 'checked' : '' }} name="remember">
-                                                        <span class="vs-checkbox">
-                                                            <span class="vs-checkbox--check">
-                                                              <i class="vs-icon feather icon-check"></i>
-                                                            </span>
-                                                          </span>
-                                                        <span class="">{{__('locale.auth.remember_me')}}</span>
-                                                    </div>
-                                                </fieldset>
-                                            </div>
-                                            @if (Route::has('password.request'))
-                                                <div class="text-right">
-                                                    <a class="card-link" href="{{ route('password.request') }}">{{ __('locale.auth.forgot_password') }}?</a>
-                                                </div>
-                                            @endif
-
-                                        </div>
-                                        @if(config('account.can_register'))
-                                            <a href="{{route('register')}}" class="btn btn-outline-primary float-left btn-inline">{{ __('locale.auth.register') }}</a>
-                                        @endif
-                                        <button type="submit" class="btn btn-primary float-right btn-inline">{{ __('locale.auth.login') }}</button>
-                                    </form>
-                                </div>
-                            </div>
-
-                            @if(config('services.facebook.active') || config('services.twitter.active') || config('services.google.active') || config('services.github.active'))
-                                <div class="login-footer">
-                                    <div class="divider">
-                                        <div class="divider-text">OR</div>
-                                    </div>
-                                    <div class="footer-btn d-flex justify-content-between flex-wrap">
-                                        @if(config('services.facebook.active'))
-                                            <a href="{{route('social.login', 'facebook')}}" class="btn btn-flat-primary" data-toggle="tooltip" data-placement="top"
-                                               title="Facebook"><span class="feather icon-facebook us-2x"></span></a>
-                                        @endif
-
-                                        @if(config('services.twitter.active'))
-                                            <a href="{{route('social.login', 'twitter')}}" class="btn btn-flat-info" data-toggle="tooltip" data-placement="top"
-                                               title="Twitter"><span class="feather icon-twitter us-2x"></span></a>
-                                        @endif
-
-                                        @if(config('services.google.active'))
-                                            <a href="{{route('social.login', 'google')}}" class="btn btn-flat-danger" data-toggle="tooltip" data-placement="top"
-                                               title="Google"><span class="feather icon-at-sign us-2x"></span></a>
-                                        @endif
-
-                                        @if(config('services.github.active'))
-                                            <a href="{{route('social.login', 'github')}}" class="btn btn-flat-dark" data-toggle="tooltip" data-placement="top"
-                                               title="Github"><span class="feather icon-github us-2x"></span></a>
-                                        @endif
-                                    </div>
-                                </div>
-                            @else
-                                <div class="m-2"></div>
-                            @endif
-                        </div>
-                    </div>
+            <!-- Left Text-->
+            <div class="d-none d-lg-flex col-lg-8 align-items-center p-5">
+                <div class="w-100 d-lg-flex align-items-center justify-content-center px-5">
+                    @if($configData['theme'] === 'dark')
+                        <img class="img-fluid" src="{{asset('images/pages/login-v2-dark.svg')}}" alt="{{config('app.name')}}"/>
+                    @else
+                        <img class="img-fluid" src="{{asset('images/pages/login-v2.svg')}}" alt="{{config('app.name')}}"/>
+                    @endif
                 </div>
             </div>
+            <!-- /Left Text-->
+
+            <!-- Login-->
+            <div class="d-flex col-lg-4 align-items-center auth-bg px-2 p-lg-5">
+                <div class="col-12 col-sm-8 col-md-6 col-lg-12 px-xl-2 mx-auto">
+                    <h2 class="card-title fw-bold mb-1">{{ __('locale.labels.welcome_to') }} {{config('app.name')}}</h2>
+                    <p class="card-text mb-2">{{__('locale.auth.welcome_message')}}</p>
+
+
+                    @if(config('app.env') == 'demo')
+                        <p class="px-2" style="cursor: pointer;">
+                            <span class="text-primary admin-login">Admin Login</span>
+                            <span class="text-success pull-right client-login">Client Login</span>
+                        </p>
+                    @endif
+
+                    <form class="auth-login-form mt-2" method="POST" action="{{ route('login') }}">
+                        @csrf
+                        <div class="mb-1">
+                            <label class="form-label" for="email">{{ __('locale.labels.email') }}</label>
+                            <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" placeholder="{{ __('locale.labels.email') }}" value="{{ old('email') }}" required autocomplete="email" autofocus>
+
+                            @error('email')
+                            <div class="alert alert-danger mt-1 alert-validation-msg" role="alert">
+                                <div class="alert-body d-flex align-items-center">
+                                    <i data-feather="info" class="me-50"></i>
+                                    <span>{{ $message }}</span>
+                                </div>
+                            </div>
+                            @enderror
+
+                            @error('g-recaptcha-response')
+                            <div class="alert alert-danger mt-1 alert-validation-msg" role="alert">
+                                <div class="alert-body d-flex align-items-center">
+                                    <i data-feather="info" class="me-50"></i>
+                                    <span>{{ __('locale.labels.g-recaptcha-response') }}</span>
+                                </div>
+                            </div>
+                            @enderror
+                        </div>
+
+
+                        <div class="mb-1">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label" for="password">{{__('locale.labels.password')}}</label>
+
+                                @if (Route::has('password.request'))
+                                    <a href="{{ route('password.request') }}">
+                                        <small>{{ __('locale.auth.forgot_password') }}?</small>
+                                    </a>
+                                @endif
+                            </div>
+
+                            <div class="input-group input-group-merge form-password-toggle">
+                                <input id="password" type="password" class="form-control" name="password" placeholder="{{__('locale.labels.password')}}"
+                                       required autocomplete="password" @if(config('app.env') == 'demo') value="12345678" @endif>
+                                <span class="input-group-text cursor-pointer"><i data-feather="eye"></i></span>
+                            </div>
+                        </div>
+
+                        @if(config('no-captcha.login'))
+                            <div class="mb-1">
+                                {{ no_captcha()->input('g-recaptcha-response') }}
+                            </div>
+                        @endif
+
+
+                        <div class="mb-1">
+                            <div class="form-check">
+                                <input class="form-check-input" {{ old('remember') ? 'checked' : '' }} name="remember" id="remember-me" type="checkbox" tabindex="3"/>
+                                <label class="form-check-label" for="remember-me"> {{__('locale.auth.remember_me')}}</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100" tabindex="4">{{__('locale.auth.login')}}</button>
+                    </form>
+
+                    @if(config('account.can_register'))
+                        <p class="text-center mt-2">
+                            <span>{{__('locale.auth.new_on_our_platform')}}?</span>
+                            <a href="{{route('register')}}"><span>&nbsp;{{__('locale.auth.register')}}</span></a>
+                        </p>
+                    @endif
+
+                    @if(config('services.facebook.active') || config('services.twitter.active') || config('services.google.active') || config('services.github.active'))
+                        <div class="divider my-2">
+                            <div class="divider-text">{{__('locale.auth.or')}}</div>
+                        </div>
+
+                        <div class="auth-footer-btn d-flex justify-content-center">
+
+                            @if(config('services.facebook.active'))
+                                <a class="btn btn-facebook" href="{{route('social.login', 'facebook')}}" data-bs-toggle="tooltip" data-bs-placement="top" title="Facebook">
+                                    <i data-feather="facebook"></i>
+                                </a>
+                            @endif
+
+                            @if(config('services.twitter.active'))
+                                <a class="btn btn-twitter" href="{{route('social.login', 'twitter')}}" data-bs-toggle="tooltip" data-bs-placement="top" title="Twitter">
+                                    <i data-feather="twitter"></i>
+                                </a>
+                            @endif
+
+                            @if(config('services.google.active'))
+                                <a class="btn btn-google" href="{{route('social.login', 'google')}}" data-bs-toggle="tooltip" data-bs-placement="top" title="Google">
+                                    <i data-feather="mail"></i>
+                                </a>
+                            @endif
+
+                            @if(config('services.github.active'))
+                                <a class="btn btn-github" href="{{route('social.login', 'github')}}" data-bs-toggle="tooltip" data-bs-placement="top" title="Github">
+                                    <i data-feather="github"></i>
+                                </a>
+                            @endif
+
+                        </div>
+                    @endif
+
+
+                </div>
+            </div>
+            <!-- /Login-->
         </div>
-    </section>
+    </div>
 @endsection
 
 
@@ -163,30 +174,12 @@
 
 @push('scripts')
     <script>
-
-        let firstInvalid = $('form').find('.is-invalid').eq(0);
-        let showHideInput = $('.show_hide_password input');
-        let showHideIcon = $('.show_hide_password i');
-
         $('.admin-login').on('click', function () {
             $('#email').val('admin@codeglen.com')
         });
 
         $('.client-login').on('click', function () {
             $('#email').val('client@codeglen.com')
-        });
-
-        $(".form-control-position").on('click', function (event) {
-            event.preventDefault();
-            if (showHideInput.attr("type") === "text") {
-                showHideInput.attr('type', 'password');
-                showHideIcon.addClass("icon-eye-off");
-                showHideIcon.removeClass("icon-eye");
-            } else if (showHideInput.attr("type") === "password") {
-                showHideInput.attr('type', 'text');
-                showHideIcon.removeClass("icon-eye-off");
-                showHideIcon.addClass("icon-eye");
-            }
         });
     </script>
 @endpush

@@ -9,8 +9,8 @@
             @csrf
 
             <div class="col-12">
-                <div class="form-group">
-                    <label for="app_id" class="required">APP ID</label>
+                <div class="mb-1">
+                    <label for="app_id" class="form-label required">APP ID</label>
                     <input type="text" id="app_id" name="app_id" required class="form-control" value="{{ config('broadcasting.connections.pusher.app_id') }}">
                     @error('app_id')
                     <div class="invalid-feedback">
@@ -21,8 +21,8 @@
             </div>
 
             <div class="col-12">
-                <div class="form-group">
-                    <label for="app_key" class="required">Key</label>
+                <div class="mb-1">
+                    <label for="app_key" class="form-label required">Key</label>
                     <input type="text" id="app_key" name="app_key" required class="form-control" value="{{ config('broadcasting.connections.pusher.key') }}">
                     @error('app_key')
                     <div class="invalid-feedback">
@@ -33,8 +33,8 @@
             </div>
 
             <div class="col-12">
-                <div class="form-group">
-                    <label for="app_secret" class="required">Secret</label>
+                <div class="mb-1">
+                    <label for="app_secret" class="form-label required">Secret</label>
                     <input type="text" id="app_secret" name="app_secret" required class="form-control" value="{{ config('broadcasting.connections.pusher.secret') }}">
                     @error('app_secret')
                     <div class="invalid-feedback">
@@ -45,8 +45,8 @@
             </div>
 
             <div class="col-12">
-                <div class="form-group">
-                    <label for="app_cluster" class="required">Cluster</label>
+                <div class="mb-1">
+                    <label for="app_cluster" class="form-label required">Cluster</label>
                     <input type="text" id="app_cluster" name="app_cluster" required class="form-control" value="{{ config('broadcasting.connections.pusher.options.cluster') }}">
                     @error('app_cluster')
                     <div class="invalid-feedback">
@@ -57,7 +57,7 @@
             </div>
 
             <div class="col-12 mt-2">
-                <button type="submit" class="btn btn-primary mr-1 mb-1">
+                <button type="submit" class="btn btn-primary mb-1">
                     <i class="feather icon-save"></i> {{__('locale.buttons.save')}}
                 </button>
             </div>

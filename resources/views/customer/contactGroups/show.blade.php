@@ -3,38 +3,22 @@
 @section('title', $contact->name)
 
 @section('vendor-style')
-    <!-- vendor css files -->
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/nouislider.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/forms/select/select2.min.css')) }}">
+    {{-- vendor css files --}}
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap5.min.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/sweetalert2.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/datatables.min.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/extensions/dataTables.checkboxes.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/forms/select/select2.min.css')) }}">
 
 @endsection
 
 @section('page-style')
-    <!-- Page css files -->
-    <link rel="stylesheet" href="{{ asset(mix('css/plugins/extensions/noui-slider.css')) }}">
-    <link rel="stylesheet" href="{{ asset(mix('css/core/colors/palette-noui.css')) }}">
-
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/data-list-view.css')) }}">
 
     <style>
-        .settings .select2-container--classic .select2-selection--single {
+        .customized_select2 .select2-selection--single {
             border-left: 0;
             border-radius: 0 4px 4px 0;
-        }
-
-        table.dataTable {
-            border: none !important;
-        }
-
-        table.dataTable thead tr {
-            background-color: #fff;
-        }
-
-        .select2-dropdown {
-            z-index: 1061;
+            min-height: 2.75rem !important;
         }
     </style>
 
@@ -45,171 +29,140 @@
 
     <section id="nav-justified">
         <div class="row">
-            <div class="col-sm-12">
-                <div class="card overflow-hidden">
-                    <div class="card-content">
-                        <div class="card-body">
-                            <ul class="nav nav-tabs nav-fill mt-5" id="myTab2" role="tablist">
+            <div class="col-12">
 
-                                @can('update_contact_group')
-                                    <li class="nav-item">
-                                        <a class="nav-link active"
-                                           id="settings-tab-justified"
-                                           data-toggle="tab"
-                                           href="#settings"
-                                           role="tab"
-                                           aria-controls="settings"
-                                           aria-selected="true">
-                                            <i class="feather icon-settings primary"></i> {{ __('locale.labels.settings') }}
-                                        </a>
-                                    </li>
-                                @endcan
+                <ul class="nav nav-pills mb-2 text-uppercase" role="tablist">
 
-                                {{-- contact --}}
-                                @can('view_contact')
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           id="contact-tab-justified"
-                                           data-toggle="tab"
-                                           href="#contact"
-                                           role="tab"
-                                           aria-controls="contact"
-                                           aria-selected="true">
-                                            <i class="feather icon-users primary"></i> {{ __('locale.contacts.contacts') }}
-                                        </a>
-                                    </li>
-                                @endcan
+                    @can('update_contact_group')
+                        <li class="nav-item">
+                            <a class="nav-link @if (old('tab') == 'settings' || old('tab') == null) active @endif"
+                               id="settings-tab-justified"
+                               data-bs-toggle="tab"
+                               href="#settings"
+                               role="tab"
+                               aria-controls="settings"
+                               aria-selected="true">
+                                <i data-feather="settings"></i> {{ __('locale.labels.settings') }}
+                            </a>
+                        </li>
+                    @endcan
 
-                                {{-- settings --}}
-                                @can('update_contact_group')
+                    {{-- contact --}}
+                    @can('view_contact')
+                        <li class="nav-item">
+                            <a class="nav-link {{ old('tab') == 'contact' ? 'active':null }}"
+                               id="contact-tab-justified"
+                               data-bs-toggle="tab"
+                               href="#contact"
+                               role="tab"
+                               aria-controls="contact"
+                               aria-selected="true">
+                                <i data-feather="users"></i> {{ __('locale.contacts.contacts') }}
+                            </a>
+                        </li>
+                    @endcan
 
-                                    {{-- message --}}
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           id="message-tab-justified"
-                                           data-toggle="tab"
-                                           href="#message"
-                                           role="tab"
-                                           aria-controls="message"
-                                           aria-selected="true">
-                                            <i class="feather icon-message-circle primary"></i> {{ __('locale.labels.message') }}
-                                        </a>
-                                    </li>
+                    {{-- settings --}}
+                    @can('update_contact_group')
 
-                                    {{-- opt in keywords --}}
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           id="opt_in_keywords-tab-justified"
-                                           data-toggle="tab"
-                                           href="#opt_in_keywords"
-                                           role="tab"
-                                           aria-controls="opt_in_keywords"
-                                           aria-selected="true">
-                                            <i class="feather icon-user-check primary"></i> {{ __('locale.contacts.opt_in_keywords') }}
-                                        </a>
-                                    </li>
+                        {{-- message --}}
+                        <li class="nav-item">
+                            <a class="nav-link {{ old('tab') == 'message' ? 'active':null }}"
+                               id="message-tab-justified"
+                               data-bs-toggle="tab"
+                               href="#message"
+                               role="tab"
+                               aria-controls="message"
+                               aria-selected="true">
+                                <i data-feather="message-circle"></i> {{ __('locale.labels.message') }}
+                            </a>
+                        </li>
 
-                                    {{-- opt out keywords --}}
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           id="opt_out_keywords-tab-justified"
-                                           data-toggle="tab"
-                                           href="#opt_out_keywords"
-                                           role="tab"
-                                           aria-controls="opt_out_keywords"
-                                           aria-selected="true">
-                                            <i class="feather icon-user-minus primary"></i> {{ __('locale.contacts.opt_out_keywords') }}
-                                        </a>
-                                    </li>
-                                @endcan
+                        {{-- opt in keywords --}}
+                        <li class="nav-item">
+                            <a class="nav-link {{ old('tab') == 'opt_in_keywords' ? 'active':null }}"
+                               id="opt_in_keywords-tab-justified"
+                               data-bs-toggle="tab"
+                               href="#opt_in_keywords"
+                               role="tab"
+                               aria-controls="opt_in_keywords"
+                               aria-selected="true">
+                                <i data-feather="user-check"></i> {{ __('locale.contacts.opt_in_keywords') }}
+                            </a>
+                        </li>
 
-                                {{-- import history --}}
-                                @can('create_contact_group')
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           id="import-history-tab-justified"
-                                           data-toggle="tab"
-                                           href="#import-history"
-                                           role="tab"
-                                           aria-controls="import-history"
-                                           aria-selected="true">
-                                            <i class="feather icon-pie-chart primary"></i> {{ __('locale.contacts.import_history') }}
-                                        </a>
-                                    </li>
-                                @endcan
+                        {{-- opt out keywords --}}
+                        <li class="nav-item">
+                            <a class="nav-link {{ old('tab') == 'opt_out_keywords' ? 'active':null }}"
+                               id="opt_out_keywords-tab-justified"
+                               data-bs-toggle="tab"
+                               href="#opt_out_keywords"
+                               role="tab"
+                               aria-controls="opt_out_keywords"
+                               aria-selected="true">
+                                <i data-feather="user-minus"></i> {{ __('locale.contacts.opt_out_keywords') }}
+                            </a>
+                        </li>
+                    @endcan
 
-                            </ul>
+                    {{-- import history --}}
+                    @can('create_contact_group')
+                        <li class="nav-item">
+                            <a class="nav-link {{ old('tab') == 'import_history' ? 'active':null }}"
+                               id="import-history-tab-justified"
+                               data-bs-toggle="tab"
+                               href="#import-history"
+                               role="tab"
+                               aria-controls="import-history"
+                               aria-selected="true">
+                                <i data-feather="pie-chart"></i> {{ __('locale.contacts.import_history') }}
+                            </a>
+                        </li>
+                    @endcan
 
+                </ul>
 
-                            {{-- Tab panes --}}
-                            <div class="tab-content pt-1">
-                                @can('update_contact_group')
-                                    <div class="tab-pane active" id="settings" role="tabpanel" aria-labelledby="settings-tab-justified">
-                                        @include('customer.contactGroups._settings')
-                                    </div>
-                                @endcan
-
-                                {{-- cotnacts --}}
-                                @can('view_contact')
-                                    <div class="tab-pane" id="contact" role="tabpanel" aria-labelledby="contact-tab-justified">
-                                        @include('customer.contactGroups._contacts')
-                                    </div>
-                                @endcan
-
-                                {{-- settings --}}
-                                @can('update_contact_group')
-                                    {{-- message --}}
-                                    <div class="tab-pane" id="message" role="tabpanel" aria-labelledby="message-tab-justified">
-                                        @include('customer.contactGroups._message')
-                                    </div>
-
-                                    {{-- opt in keywords --}}
-                                    <div class="tab-pane" id="opt_in_keywords" role="tabpanel" aria-labelledby="opt_in_keywords-tab-justified">
-                                        @include('customer.contactGroups._opt_in_keywords')
-                                    </div>
-
-                                    {{-- opt in out keywords --}}
-                                    <div class="tab-pane" id="opt_out_keywords" role="tabpanel" aria-labelledby="opt_out_keywords-tab-justified">
-                                        @include('customer.contactGroups._opt_out_keywords')
-                                    </div>
-                                @endcan
-
-                                {{-- import history --}}
-                                @can('create_contact_group')
-                                    <div class="tab-pane" id="import-history" role="tabpanel" aria-labelledby="import-history-tab-justified">
-                                        <div class="table-responsive">
-                                            <table class="table mb-0">
-                                                <thead class="thead-primary">
-                                                <tr>
-                                                    <th scope="col">{{ __('locale.labels.submitted') }}</th>
-                                                    <th scope="col">{{ __('locale.labels.status') }}</th>
-                                                    <th scope="col">{{ __('locale.labels.message') }}</th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                @forelse ($import_history as $history)
-                                                    <tr>
-                                                        <td> {{ \App\Library\Tool::customerDateTime($history->created_at) }} </td>
-                                                        <td> {!! $history->getStatus() !!} </td>
-                                                        <td>{{ $history->getOption('message') }}</td>
-                                                    </tr>
-                                                @empty
-                                                    <tr>
-                                                        <td class="text-center" colspan="5">
-                                                            {{ __('locale.datatables.no_results') }}
-                                                        </td>
-                                                    </tr>
-                                                @endforelse
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                @endcan
-
-
-                            </div>
+                {{-- Tab panes --}}
+                <div class="tab-content pt-1">
+                    @can('update_contact_group')
+                        <div class="tab-pane @if (old('tab') == 'settings' || old('tab') == null) active @endif" id="settings" role="tabpanel" aria-labelledby="settings-tab-justified">
+                            @include('customer.contactGroups._settings')
                         </div>
-                    </div>
+                    @endcan
+
+                    {{-- cotnacts --}}
+                    @can('view_contact')
+                        <div class="tab-pane {{ old('tab') == 'contact' ? 'active':null }}" id="contact" role="tabpanel" aria-labelledby="contact-tab-justified">
+                            @include('customer.contactGroups._contacts')
+                        </div>
+                    @endcan
+
+                    {{-- settings --}}
+                    @can('update_contact_group')
+                        {{-- message --}}
+                        <div class="tab-pane {{ old('tab') == 'message' ? 'active':null }}" id="message" role="tabpanel" aria-labelledby="message-tab-justified">
+                            @include('customer.contactGroups._message')
+                        </div>
+
+                        {{-- opt in keywords --}}
+                        <div class="tab-pane {{ old('tab') == 'opt_in_keywords' ? 'active':null }}" id="opt_in_keywords" role="tabpanel" aria-labelledby="opt_in_keywords-tab-justified">
+                            @include('customer.contactGroups._opt_in_keywords')
+                        </div>
+
+                        {{-- opt in out keywords --}}
+                        <div class="tab-pane {{ old('tab') == 'opt_out_keywords' ? 'active':null }}" id="opt_out_keywords" role="tabpanel" aria-labelledby="opt_out_keywords-tab-justified">
+                            @include('customer.contactGroups._opt_out_keywords')
+                        </div>
+                    @endcan
+
+                    {{-- import history --}}
+                    @can('create_contact_group')
+                        <div class="tab-pane {{ old('tab') == 'import_history' ? 'active':null }}" id="import-history" role="tabpanel" aria-labelledby="import-history-tab-justified">
+                            @include('customer.contactGroups._import_history')
+                        </div>
+                    @endcan
+
+
                 </div>
             </div>
         </div>
@@ -218,30 +171,36 @@
 @endsection
 
 @section('vendor-script')
-    <!-- vendor files -->
-    <script src="{{ asset(mix('vendors/js/forms/select/select2.full.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/wNumb.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/nouislider.min.js')) }}"></script>
+    {{-- vendor files --}}
+    <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/responsive.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.checkboxes.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.html5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.rowGroup.min.js')) }}"></script>
 
     <script src="{{ asset(mix('vendors/js/extensions/sweetalert2.all.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
-
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.bootstrap.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.select.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.checkboxes.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/forms/select/select2.full.min.js')) }}"></script>
 
     <script src="{{ asset(mix('js/scripts/extensions/copy-to-clipboard.js')) }}"></script>
+
 @endsection
+
 
 
 @section('page-script')
 
     <script>
         $(document).ready(function () {
+
+            $('#contact-tab-justified').on('click', function () {
+                $($.fn.dataTable.tables(true)).DataTable()
+                    .columns.adjust()
+                    .responsive.recalc();
+            });
 
             $(".sender_id").on("click", function () {
                 $("#sender_id").prop("disabled", !this.checked);
@@ -252,6 +211,21 @@
                 $("#phone_number").prop("disabled", !this.checked);
                 $("#sender_id").prop("disabled", this.checked);
             });
+
+
+            // Basic Select2 select
+            $(".select2").each(function () {
+                let $this = $(this);
+                $this.wrap('<div class="position-relative"></div>');
+                $this.select2({
+                    // the following code is used to disable x-scrollbar when click in select input and
+                    // take 100% width in responsive also
+                    dropdownAutoWidth: true,
+                    width: '100%',
+                    dropdownParent: $this.parent()
+                });
+            });
+
 
             let $get_msg = $("#text_message"),
                 merge_state = $('#available_tag');
@@ -295,32 +269,24 @@
             function showResponseMessage(data) {
 
                 if (data.status === 'success') {
-                    toastr.success(data.message, 'Success!!', {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['success'](data.message, '{{__('locale.labels.success')}}!!', {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 3000);
                 } else {
-                    toastr.warning("{{__('locale.exceptions.something_went_wrong')}}", "{{__('locale.labels.attention')}}", {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['warning']("{{__('locale.exceptions.something_went_wrong')}}", '{{ __('locale.labels.warning') }}!', {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
                 }
             }
 
-            $(".select2").select2({
-                dropdownAutoWidth: true,
-                width: '100%',
-                theme: "classic"
-            });
 
             let firstInvalid = $('form').find('.is-invalid').eq(0);
 
@@ -335,7 +301,7 @@
             let Table = $("table");
 
             // init list view datatable
-            let dataListView = $('.data-list-view').DataTable({
+            let dataListView = $('.datatables-basic').DataTable({
 
                 "processing": true,
                 "serverSide": true,
@@ -346,7 +312,9 @@
                     "data": {_token: "{{csrf_token()}}"}
                 },
                 "columns": [
-                    {"data": "uid", orderable: false, searchable: false},
+                    {"data": 'responsive_id', orderable: false, searchable: false},
+                    {"data": "uid"},
+                    {"data": "uid"},
                     {"data": "phone"},
                     {"data": "name"},
                     {"data": "created_at", orderable: false, searchable: false},
@@ -354,61 +322,117 @@
                     {"data": "action", orderable: false, searchable: false}
                 ],
 
-                bAutoWidth: false,
-                responsive: false,
                 searchDelay: 1500,
                 columnDefs: [
                     {
+                        // For Responsive
+                        className: 'control',
                         orderable: false,
-                        targets: 0,
-                        checkboxes: {selectRow: true}
+                        responsivePriority: 2,
+                        targets: 0
+                    },
+                    {
+                        // For Checkboxes
+                        targets: 1,
+                        orderable: false,
+                        responsivePriority: 3,
+                        render: function (data) {
+                            return (
+                                '<div class="form-check"> <input class="form-check-input dt-checkboxes" type="checkbox" value="" id="' +
+                                data +
+                                '" /><label class="form-check-label" for="' +
+                                data +
+                                '"></label></div>'
+                            );
+                        },
+                        checkboxes: {
+                            selectAllRender:
+                                '<div class="form-check"> <input class="form-check-input" type="checkbox" value="" id="checkboxSelectAll" /><label class="form-check-label" for="checkboxSelectAll"></label></div>',
+                            selectRow: true
+                        }
+                    },
+                    {
+                        targets: 2,
+                        visible: false
+                    },
+                    {
+                        // Actions
+                        targets: -1,
+                        title: '{{ __('locale.labels.actions') }}',
+                        orderable: false,
+                        render: function (data, type, full) {
+                            return (
+                                '<a href="' + full['conversion'] + '" class="text-info me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="' + full['conversion_label'] + '">' +
+                                feather.icons['message-square'].toSvg({class: 'font-medium-4'}) +
+                                '</a>' +
+                                '<a href="' + full['send_sms'] + '" class="text-success me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="' + full['send_sms_label'] + '">' +
+                                feather.icons['send'].toSvg({class: 'font-medium-4'}) +
+                                '</a>' +
+                                '<a href="' + full['show'] + '" class="text-primary me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="' + full['show_label'] + '">' +
+                                feather.icons['edit'].toSvg({class: 'font-medium-4'}) +
+                                '</a>' +
+                                '<span class="action-delete text-danger cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="' + full['delete'] + '"  data-id=' + full['uid'] + '>' +
+                                feather.icons['trash'].toSvg({class: 'font-medium-4'}) +
+                                '</span>'
+                            );
+                        }
                     }
                 ],
-                dom:
-                    '<"top"<"actions action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">p>',
-                oLanguage: {
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
                     sLengthMenu: "_MENU_",
                     sZeroRecords: "{{ __('locale.datatables.no_results') }}",
-                    sSearch: "",
+                    sSearch: "{{ __('locale.datatables.search') }}",
                     sProcessing: "{{ __('locale.datatables.processing') }}",
-                    oPaginate: {
-                        sFirst: "{{ __('locale.datatables.first') }}",
-                        sPrevious: "{{ __('locale.datatables.previous') }}",
-                        sNext: "{{ __('locale.datatables.next') }}",
-                        sLast: "{{ __('locale.datatables.last') }}"
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
+                },
+
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.modal({
+                            header: function (row) {
+                                let data = row.data();
+                                return 'Details of ' + data['uid'];
+                            }
+                        }),
+                        type: 'column',
+                        renderer: function (api, rowIdx, columns) {
+                            let data = $.map(columns, function (col) {
+                                return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                    ? '<tr data-dt-row="' +
+                                    col.rowIdx +
+                                    '" data-dt-column="' +
+                                    col.columnIndex +
+                                    '">' +
+                                    '<td>' +
+                                    col.title +
+                                    ':' +
+                                    '</td> ' +
+                                    '<td>' +
+                                    col.data +
+                                    '</td>' +
+                                    '</tr>'
+                                    : '';
+                            }).join('');
+
+                            return data ? $('<table class="table"/>').append('<tbody>' + data + '</tbody>') : false;
+                        }
                     }
                 },
                 aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
                 select: {
                     style: "multi"
                 },
-                order: [[0, "desc"]],
-                bInfo: false,
-                pageLength: 10,
-                buttons: [],
-                initComplete: function () {
-                    $(".dt-buttons .btn").removeClass("btn-secondary")
-                }
-
+                order: [[2, "desc"]],
+                displayLength: 10,
             });
 
-            dataListView.on('draw.dt', function () {
-                setTimeout(function () {
-                    if (navigator.userAgent.indexOf("Mac OS X") !== -1) {
-                        $(".dt-checkboxes-cell input, .dt-checkboxes").addClass("mac-checkbox")
-                    }
-                }, 50);
-            });
-
-
-            // To append actions dropdown before add new button
-            let actionDropdown = $(".add-new-div")
-            actionDropdown.insertBefore($(".top .actions .dt-buttons"))
-
-            // Scrollbar
-            if ($(".data-items").length > 0) {
-                new PerfectScrollbar(".data-items", {wheelPropagation: false})
-            }
 
             $(".opt-in-keywords").DataTable({
                 "processing": true,
@@ -417,36 +441,25 @@
                     {"data": "created_at", orderable: false, searchable: false},
                     {"data": "action", orderable: false, searchable: false}
                 ],
-                bAutoWidth: false,
                 responsive: false,
-                dom:
-                    '<"top"<"actions optin-keywords action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">p>',
-                oLanguage: {
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
                     sLengthMenu: "_MENU_",
                     sZeroRecords: "{{ __('locale.datatables.no_results') }}",
-                    sSearch: "",
+                    sSearch: "{{ __('locale.datatables.search') }}",
                     sProcessing: "{{ __('locale.datatables.processing') }}",
-                    oPaginate: {
-                        sFirst: "{{ __('locale.datatables.first') }}",
-                        sPrevious: "{{ __('locale.datatables.previous') }}",
-                        sNext: "{{ __('locale.datatables.next') }}",
-                        sLast: "{{ __('locale.datatables.last') }}"
-                    }
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
                 },
                 aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
-                order: [[0, "asc"]],
-                bInfo: false,
-                pageLength: 10,
-                buttons: [],
-                initComplete: function () {
-                    $(".dt-buttons .btn").removeClass("btn-secondary")
-                }
+                order: [[0, "desc"]],
+                displayLength: 10,
             });
-
-            // To append actions dropdown before add new button
-            let addNewDropdown = $(".add-new-keyword")
-            addNewDropdown.insertBefore($('.top .optin-keywords .dt-buttons'))
-
 
             $(".opt-out-keywords").DataTable({
                 "processing": true,
@@ -455,36 +468,26 @@
                     {"data": "created_at", orderable: false, searchable: false},
                     {"data": "action", orderable: false, searchable: false}
                 ],
-                bAutoWidth: false,
+
                 responsive: false,
-                dom:
-                    '<"top"<"actions optout-keywords action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">p>',
-                oLanguage: {
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
                     sLengthMenu: "_MENU_",
                     sZeroRecords: "{{ __('locale.datatables.no_results') }}",
-                    sSearch: "",
+                    sSearch: "{{ __('locale.datatables.search') }}",
                     sProcessing: "{{ __('locale.datatables.processing') }}",
-                    oPaginate: {
-                        sFirst: "{{ __('locale.datatables.first') }}",
-                        sPrevious: "{{ __('locale.datatables.previous') }}",
-                        sNext: "{{ __('locale.datatables.next') }}",
-                        sLast: "{{ __('locale.datatables.last') }}"
-                    }
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
                 },
                 aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
-                order: [[0, "asc"]],
-                bInfo: false,
-                pageLength: 10,
-                buttons: [],
-                initComplete: function () {
-                    $(".dt-buttons .btn").removeClass("btn-secondary")
-                }
+                order: [[0, "desc"]],
+                displayLength: 10,
             });
-
-            // To append actions dropdown before add new button
-            let optOutDropdown = $(".add-opt-out-keyword")
-            optOutDropdown.insertBefore($('.top .optout-keywords .dt-buttons'))
-
 
             //change status
             Table.delegate(".get_status", "click", function () {
@@ -498,6 +501,7 @@
                         _token: "{{csrf_token()}}"
                     },
                     success: function (data) {
+                        dataListView.draw();
                         showResponseMessage(data);
                     }
                 });
@@ -513,13 +517,13 @@
                 Swal.fire({
                     title: "{{ __('locale.labels.are_you_sure') }}",
                     text: "{{ __('locale.labels.able_to_revert') }}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.delete_it') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
@@ -530,22 +534,23 @@
                                 _token: "{{csrf_token()}}"
                             },
                             success: function (data) {
+                                dataListView.draw();
                                 showResponseMessage(data);
                             },
                             error: function (reject) {
                                 if (reject.status === 422) {
                                     let errors = reject.responseJSON.errors;
                                     $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     });
                                 } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
+                                    toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                         positionClass: 'toast-top-right',
                                         containerId: 'toast-top-right',
                                         progressBar: true,
@@ -566,22 +571,24 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     text: "{{__('locale.contacts.subscribe_contacts')}}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{__('locale.labels.subscribe')}}",
-                    confirmButtonClass: 'btn btn-primary',
-                    cancelButtonClass: 'btn btn-danger ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
                         let contacts_ids = [];
-                        dataListView.rows('.selected').every(function (rowIdx) {
-                            contacts_ids.push(dataListView.row(rowIdx).data().uid)
-                        })
+                        let rows_selected = dataListView.column(1).checkboxes.selected();
 
-                        if (contacts_ids.length > 1) {
+                        $.each(rows_selected, function (index, rowId) {
+                            contacts_ids.push(rowId)
+                        });
+
+                        if (contacts_ids.length > 0) {
 
                             $.ajax({
                                 url: "{{ route('customer.contact.batch_action', $contact->uid) }}",
@@ -592,38 +599,39 @@
                                     ids: contacts_ids
                                 },
                                 success: function (data) {
+                                    dataListView.draw();
                                     showResponseMessage(data);
                                 },
                                 error: function (reject) {
                                     if (reject.status === 422) {
                                         let errors = reject.responseJSON.errors;
                                         $.each(errors, function (key, value) {
-                                            toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                                positionClass: 'toast-top-right',
-                                                containerId: 'toast-top-right',
-                                                progressBar: true,
+                                            toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                                 closeButton: true,
-                                                newestOnTop: true
+                                                positionClass: 'toast-top-right',
+                                                progressBar: true,
+                                                newestOnTop: true,
+                                                rtl: isRtl
                                             });
                                         });
                                     } else {
-                                        toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     }
                                 }
                             })
                         } else {
-                            toastr.warning("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning']("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
                     }
@@ -637,22 +645,24 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     text: "{{__('locale.contacts.unsubscribe_contacts')}}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{__('locale.labels.unsubscribe')}}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
-                        let contact_ids = [];
-                        dataListView.rows('.selected').every(function (rowIdx) {
-                            contact_ids.push(dataListView.row(rowIdx).data().uid)
-                        })
+                        let contacts_ids = [];
+                        let rows_selected = dataListView.column(1).checkboxes.selected();
 
-                        if (contact_ids.length > 1) {
+                        $.each(rows_selected, function (index, rowId) {
+                            contacts_ids.push(rowId)
+                        });
+
+                        if (contacts_ids.length > 1) {
 
                             $.ajax({
                                 url: "{{ route('customer.contact.batch_action', $contact->uid) }}",
@@ -660,41 +670,42 @@
                                 data: {
                                     _token: "{{csrf_token()}}",
                                     action: 'unsubscribe',
-                                    ids: contact_ids
+                                    ids: contacts_ids
                                 },
                                 success: function (data) {
+                                    dataListView.draw();
                                     showResponseMessage(data);
                                 },
                                 error: function (reject) {
                                     if (reject.status === 422) {
                                         let errors = reject.responseJSON.errors;
                                         $.each(errors, function (key, value) {
-                                            toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                                positionClass: 'toast-top-right',
-                                                containerId: 'toast-top-right',
-                                                progressBar: true,
+                                            toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                                 closeButton: true,
-                                                newestOnTop: true
+                                                positionClass: 'toast-top-right',
+                                                progressBar: true,
+                                                newestOnTop: true,
+                                                rtl: isRtl
                                             });
                                         });
                                     } else {
-                                        toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     }
                                 }
                             })
                         } else {
-                            toastr.warning("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning']("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
                     }
@@ -715,11 +726,10 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     html: html,
-                    onOpen: function () {
+                    didOpen: function () {
                         $('#my-select2').select2({
                             dropdownAutoWidth: true,
                             width: '100%',
-                            theme: "classic"
                         });
                     },
                     preConfirm: function () {
@@ -727,19 +737,21 @@
                     },
 
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.copy') }}",
-                    confirmButtonClass: 'btn btn-primary',
-                    cancelButtonClass: 'btn btn-danger ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
-                        let contact_ids = [];
-                        dataListView.rows('.selected').every(function (rowIdx) {
-                            contact_ids.push(dataListView.row(rowIdx).data().uid)
-                        })
-                        if (contact_ids.length > 1) {
+                        let contacts_ids = [];
+                        let rows_selected = dataListView.column(1).checkboxes.selected();
+
+                        $.each(rows_selected, function (index, rowId) {
+                            contacts_ids.push(rowId)
+                        });
+                        if (contacts_ids.length > 1) {
 
                             $.ajax({
                                 url: "{{ route('customer.contact.batch_action', $contact->uid) }}",
@@ -747,7 +759,7 @@
                                 data: {
                                     _method: 'POST',
                                     action: 'copy',
-                                    ids: contact_ids,
+                                    ids: contacts_ids,
                                     target_group: result.value,
                                     _token: "{{csrf_token()}}"
                                 },
@@ -758,32 +770,32 @@
                                     if (reject.status === 422) {
                                         let errors = reject.responseJSON.errors;
                                         $.each(errors, function (key, value) {
-                                            toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                                positionClass: 'toast-top-right',
-                                                containerId: 'toast-top-right',
-                                                progressBar: true,
+                                            toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                                 closeButton: true,
-                                                newestOnTop: true
+                                                positionClass: 'toast-top-right',
+                                                progressBar: true,
+                                                newestOnTop: true,
+                                                rtl: isRtl
                                             });
                                         });
                                     } else {
-                                        toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     }
                                 }
                             })
                         } else {
-                            toastr.warning("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning']("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
                     }
@@ -804,11 +816,10 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     html: html,
-                    onOpen: function () {
+                    didOpen: function () {
                         $('#my-select2').select2({
                             dropdownAutoWidth: true,
                             width: '100%',
-                            theme: "classic"
                         });
                     },
                     preConfirm: function () {
@@ -816,19 +827,21 @@
                     },
 
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.move') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
-                        let contact_ids = [];
-                        dataListView.rows('.selected').every(function (rowIdx) {
-                            contact_ids.push(dataListView.row(rowIdx).data().uid)
-                        })
-                        if (contact_ids.length > 1) {
+                        let contacts_ids = [];
+                        let rows_selected = dataListView.column(1).checkboxes.selected();
+
+                        $.each(rows_selected, function (index, rowId) {
+                            contacts_ids.push(rowId)
+                        });
+                        if (contacts_ids.length > 1) {
 
                             $.ajax({
                                 url: "{{ route('customer.contact.batch_action', $contact->uid) }}",
@@ -836,43 +849,44 @@
                                 data: {
                                     _method: 'POST',
                                     action: 'move',
-                                    ids: contact_ids,
+                                    ids: contacts_ids,
                                     target_group: result.value,
                                     _token: "{{csrf_token()}}"
                                 },
                                 success: function (data) {
+                                    dataListView.draw();
                                     showResponseMessage(data);
                                 },
                                 error: function (reject) {
                                     if (reject.status === 422) {
                                         let errors = reject.responseJSON.errors;
                                         $.each(errors, function (key, value) {
-                                            toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                                positionClass: 'toast-top-right',
-                                                containerId: 'toast-top-right',
-                                                progressBar: true,
+                                            toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                                 closeButton: true,
-                                                newestOnTop: true
+                                                positionClass: 'toast-top-right',
+                                                progressBar: true,
+                                                newestOnTop: true,
+                                                rtl: isRtl
                                             });
                                         });
                                     } else {
-                                        toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     }
                                 }
                             })
                         } else {
-                            toastr.warning("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning']("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
                     }
@@ -887,22 +901,24 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     text: "{{__('locale.contacts.delete_contacts')}}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{__('locale.labels.delete_selected')}}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
-                        let contact_ids = [];
-                        dataListView.rows('.selected').every(function (rowIdx) {
-                            contact_ids.push(dataListView.row(rowIdx).data().uid)
-                        })
+                        let contacts_ids = [];
+                        let rows_selected = dataListView.column(1).checkboxes.selected();
 
-                        if (contact_ids.length > 1) {
+                        $.each(rows_selected, function (index, rowId) {
+                            contacts_ids.push(rowId)
+                        });
+
+                        if (contacts_ids.length > 1) {
 
                             $.ajax({
                                 url: "{{ route('customer.contact.batch_action', $contact->uid) }}",
@@ -910,41 +926,42 @@
                                 data: {
                                     _token: "{{csrf_token()}}",
                                     action: 'destroy',
-                                    ids: contact_ids
+                                    ids: contacts_ids
                                 },
                                 success: function (data) {
+                                    dataListView.draw();
                                     showResponseMessage(data);
                                 },
                                 error: function (reject) {
                                     if (reject.status === 422) {
                                         let errors = reject.responseJSON.errors;
                                         $.each(errors, function (key, value) {
-                                            toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                                positionClass: 'toast-top-right',
-                                                containerId: 'toast-top-right',
-                                                progressBar: true,
+                                            toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                                 closeButton: true,
-                                                newestOnTop: true
+                                                positionClass: 'toast-top-right',
+                                                progressBar: true,
+                                                newestOnTop: true,
+                                                rtl: isRtl
                                             });
                                         });
                                     } else {
-                                        toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     }
                                 }
                             })
                         } else {
-                            toastr.warning("{{__('locale.labels.at_least_one_data')}}", "{{__('locale.labels.attention')}}", {
-                                positionClass: 'toast-top-right',
-                                containerId: 'toast-top-right',
-                                progressBar: true,
+                            toastr['warning']("{{ __('locale.labels.at_least_one_data') }}", "{{ __('locale.labels.attention') }}", {
                                 closeButton: true,
-                                newestOnTop: true
+                                positionClass: 'toast-top-right',
+                                progressBar: true,
+                                newestOnTop: true,
+                                rtl: isRtl
                             });
                         }
 
@@ -966,11 +983,9 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     html: html,
-                    onOpen: function () {
+                    didOpen: function () {
                         $('#opt-in-select2').select2({
-                            dropdownAutoWidth: true,
                             width: '100%',
-                            theme: "classic"
                         });
                     },
                     preConfirm: function () {
@@ -978,11 +993,11 @@
                     },
 
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.yes') }}",
-                    confirmButtonClass: 'btn btn-primary',
-                    cancelButtonClass: 'btn btn-danger ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
@@ -996,26 +1011,30 @@
                             },
                             success: function (data) {
                                 showResponseMessage(data);
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 3000);
                             },
+
                             error: function (reject) {
                                 if (reject.status === 422) {
                                     let errors = reject.responseJSON.errors;
                                     $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     });
                                 } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
+                                    toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                         closeButton: true,
-                                        newestOnTop: true
+                                        positionClass: 'toast-top-right',
+                                        progressBar: true,
+                                        newestOnTop: true,
+                                        rtl: isRtl
                                     });
                                 }
                             }
@@ -1038,11 +1057,9 @@
                 Swal.fire({
                     title: "{{__('locale.labels.are_you_sure')}}",
                     html: html,
-                    onOpen: function () {
+                    didOpen: function () {
                         $('#opt-out-select2').select2({
-                            dropdownAutoWidth: true,
                             width: '100%',
-                            theme: "classic"
                         });
                     },
                     preConfirm: function () {
@@ -1050,11 +1067,11 @@
                     },
 
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.yes') }}",
-                    confirmButtonClass: 'btn btn-primary',
-                    cancelButtonClass: 'btn btn-danger ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
@@ -1068,26 +1085,30 @@
                             },
                             success: function (data) {
                                 showResponseMessage(data);
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 3000);
                             },
+
                             error: function (reject) {
                                 if (reject.status === 422) {
                                     let errors = reject.responseJSON.errors;
                                     $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     });
                                 } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
+                                    toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                         closeButton: true,
-                                        newestOnTop: true
+                                        positionClass: 'toast-top-right',
+                                        progressBar: true,
+                                        newestOnTop: true,
+                                        rtl: isRtl
                                     });
                                 }
                             }
@@ -1107,13 +1128,13 @@
                 Swal.fire({
                     title: "{{ __('locale.labels.are_you_sure') }}",
                     text: "{{ __('locale.labels.able_to_revert') }}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.delete_it') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
@@ -1125,26 +1146,30 @@
                             },
                             success: function (data) {
                                 showResponseMessage(data);
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 3000);
                             },
+
                             error: function (reject) {
                                 if (reject.status === 422) {
                                     let errors = reject.responseJSON.errors;
                                     $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     });
                                 } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
+                                    toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                         closeButton: true,
-                                        newestOnTop: true
+                                        positionClass: 'toast-top-right',
+                                        progressBar: true,
+                                        newestOnTop: true,
+                                        rtl: isRtl
                                     });
                                 }
                             }
@@ -1164,13 +1189,13 @@
                 Swal.fire({
                     title: "{{ __('locale.labels.are_you_sure') }}",
                     text: "{{ __('locale.labels.able_to_revert') }}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.delete_it') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {
@@ -1182,26 +1207,30 @@
                             },
                             success: function (data) {
                                 showResponseMessage(data);
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 3000);
                             },
+
                             error: function (reject) {
                                 if (reject.status === 422) {
                                     let errors = reject.responseJSON.errors;
                                     $.each(errors, function (key, value) {
-                                        toastr.warning(value[0], "{{__('locale.labels.attention')}}", {
-                                            positionClass: 'toast-top-right',
-                                            containerId: 'toast-top-right',
-                                            progressBar: true,
+                                        toastr['warning'](value[0], "{{__('locale.labels.attention')}}", {
                                             closeButton: true,
-                                            newestOnTop: true
+                                            positionClass: 'toast-top-right',
+                                            progressBar: true,
+                                            newestOnTop: true,
+                                            rtl: isRtl
                                         });
                                     });
                                 } else {
-                                    toastr.warning(reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
-                                        positionClass: 'toast-top-right',
-                                        containerId: 'toast-top-right',
-                                        progressBar: true,
+                                    toastr['warning'](reject.responseJSON.message, "{{__('locale.labels.attention')}}", {
                                         closeButton: true,
-                                        newestOnTop: true
+                                        positionClass: 'toast-top-right',
+                                        progressBar: true,
+                                        newestOnTop: true,
+                                        rtl: isRtl
                                     });
                                 }
                             }

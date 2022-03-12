@@ -4,90 +4,57 @@
 
 
 @section('vendor-style')
-    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/datatables.min.css')) }}">
-
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/dataTables.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/responsive.bootstrap5.min.css')) }}">
+    <link rel="stylesheet" href="{{ asset(mix('vendors/css/tables/datatable/buttons.bootstrap5.min.css')) }}">
     <link rel="stylesheet" href="{{ asset(mix('vendors/css/extensions/sweetalert2.min.css')) }}">
 @endsection
 
-@section('page-style')
-    <!-- Page css files -->
-    <link rel="stylesheet" href="{{ asset(mix('css/pages/data-list-view.css')) }}">
-
-    <style>
-        table.dataTable {
-            border: none !important;
-        }
-
-        table.dataTable thead tr {
-            background-color: #fff;
-        }
-    </style>
-
-@endsection
 
 @section('content')
     <section id="vertical-tabs">
         <div class="row match-height">
             <div class="col-12">
-                <div class="card overflow-hidden">
-                    <div class="card-header"></div>
-                    <div class="card-content">
-                        <div class="card-body">
-                            <div class="nav-vertical">
-                                <ul class="nav nav-tabs nav-left flex-column text-uppercase" role="tablist">
 
-                                    <li class="nav-item">
-                                        <a class="nav-link active" id="credit-used-tab" data-toggle="tab" aria-controls="credit-used" href="#credit-used" role="tab" aria-selected="true">
-                                            {{ __('locale.labels.credits_used') }}
-                                        </a>
-                                    </li>
+                <ul class="nav nav-pills mb-2 text-uppercase" role="tablist">
 
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="invoice-tab" data-toggle="tab" aria-controls="invoice" href="#invoice" role="tab" aria-selected="true">
-                                            {{ __('locale.labels.invoices') }}
-                                        </a>
-                                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link  @if (old('tab') == 'invoice' || old('tab') == null) active @endif" id="invoice" data-bs-toggle="tab" aria-controls="invoice" href="#invoice" role="tab" aria-selected="true"><i data-feather="shopping-cart"></i> {{ __('locale.labels.invoices') }}</a>
+                    </li>
 
 
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           id="subscriptions-tab"
-                                           data-toggle="tab"
-                                           aria-controls="subscriptions"
-                                           href="#subscriptions" role="tab"
-                                           aria-selected="false">
-                                            {{ __('locale.menu.Subscriptions') }}
-                                        </a>
-                                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
+                           id="subscriptions-tab"
+                           data-bs-toggle="tab"
+                           aria-controls="subscriptions"
+                           href="#subscriptions" role="tab"
+                           aria-selected="false">
+                            <i data-feather="credit-card"></i>
+                            {{ __('locale.menu.Subscriptions') }}
+                        </a>
+                    </li>
 
 
-                                    <li class="nav-item">
-                                        <a class="nav-link" id="preferences-tab" data-toggle="tab" aria-controls="preferences"
-                                           href="#preferences" role="tab" aria-selected="false"> {{__('locale.labels.preferences')}} </a>
-                                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ old('tab') == 'preferences' ? 'active':null }}" id="preferences-tab" data-bs-toggle="tab" aria-controls="preferences"
+                           href="#preferences" role="tab" aria-selected="false"> <i data-feather="settings"></i> {{__('locale.labels.preferences')}} </a>
+                    </li>
 
-                                </ul>
+                </ul>
 
-                                <div class="tab-content">
+                <div class="tab-content">
 
-                                    <div class="tab-pane active" id="credit-used" role="tabpanel" aria-labelledby="credit-used-tab">
-                                        @include('customer.Accounts._credits_used')
-                                    </div>
+                    <div class="tab-pane  @if (old('tab') == 'invoice' || old('tab') == null) active @endif" id="invoice" role="tabpanel" aria-labelledby="invoice">
+                        @include('customer.Accounts._invoices')
+                    </div>
 
-                                    <div class="tab-pane" id="invoice" role="tabpanel" aria-labelledby="invoice-tab">
-                                        @include('customer.Accounts._invoices')
-                                    </div>
+                    <div class="tab-pane" id="subscriptions" role="tabpanel" aria-labelledby="subscriptions-tab">
+                        @include('customer.Accounts._subscriptions')
+                    </div>
 
-                                    <div class="tab-pane" id="subscriptions" role="tabpanel" aria-labelledby="subscriptions-tab">
-                                        @include('customer.Accounts._subscriptions')
-                                    </div>
-
-                                    <div class="tab-pane" id="preferences" role="tabpanel" aria-labelledby="preferences-tab">
-                                        @include('customer.Accounts._preferences')
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="tab-pane {{ old('tab') == 'preferences' ? 'active':null }}" id="preferences" role="tabpanel" aria-labelledby="preferences-tab">
+                        @include('customer.Accounts._preferences')
                     </div>
                 </div>
             </div>
@@ -97,12 +64,14 @@
 
 @section('vendor-script')
     <!-- vendor files -->
-
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/jquery.dataTables.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.responsive.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/responsive.bootstrap5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.checkboxes.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.buttons.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/datatables.bootstrap4.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.bootstrap.min.js')) }}"></script>
-    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.select.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/buttons.html5.min.js')) }}"></script>
+    <script src="{{ asset(mix('vendors/js/tables/datatable/dataTables.rowGroup.min.js')) }}"></script>
 
     <script src="{{ asset(mix('vendors/js/extensions/sweetalert2.all.min.js')) }}"></script>
     <script src="{{ asset(mix('vendors/js/extensions/polyfill.min.js')) }}"></script>
@@ -118,31 +87,26 @@
             function showResponseMessage(data) {
 
                 if (data.status === 'success') {
-                    toastr.success(data.message, 'Success!!', {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['success'](data.message, '{{__('locale.labels.success')}}!!', {
                         closeButton: true,
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
                         newestOnTop: true,
-                        timeOut: 3000
+                        rtl: isRtl
                     });
-
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 3000);
+                    dataListView.draw();
                 } else {
-                    toastr.warning("{{__('locale.exceptions.something_went_wrong')}}", "{{__('locale.labels.attention')}}", {
-                        positionClass: 'toast-top-right',
-                        containerId: 'toast-top-right',
-                        progressBar: true,
+                    toastr['warning']("{{__('locale.exceptions.something_went_wrong')}}", '{{ __('locale.labels.warning') }}!', {
                         closeButton: true,
-                        newestOnTop: true
+                        positionClass: 'toast-top-right',
+                        progressBar: true,
+                        newestOnTop: true,
+                        rtl: isRtl
                     });
                 }
             }
 
-
-            $('.data-list-view').DataTable({
+            $('.datatables-basic').DataTable({
 
                 "processing": true,
                 "serverSide": true,
@@ -153,72 +117,113 @@
                     "data": {_token: "{{csrf_token()}}"}
                 },
                 "columns": [
-                    {"data": "created_at"},
+                    {"data": 'responsive_id', orderable: false, searchable: false},
                     {"data": "uid"},
+                    {"data": "uid"},
+                    {"data": "id"},
+                    {"data": "created_at"},
                     {"data": "type"},
                     {"data": "description"},
                     {"data": "amount"},
                     {"data": "status"},
-                    {"data": "action", orderable: false, searchable: false}
+                    {"data": "actions", orderable: false, searchable: false}
                 ],
 
-                bAutoWidth: false,
-                responsive: false,
                 searchDelay: 1500,
                 columnDefs: [
                     {
+                        // For Responsive
+                        className: 'control',
                         orderable: false,
-                        targets: 0,
-                        checkboxes: {selectRow: true}
+                        responsivePriority: 2,
+                        targets: 0
+                    },
+                    {
+                        targets: 1,
+                        visible: false
+                    },
+                    {
+                        targets: 2,
+                        visible: false
+                    },
+
+                    {
+                        // Actions
+                        targets: -1,
+                        title: '{{ __('locale.labels.actions') }}',
+                        orderable: false,
+                        render: function (data, type, full) {
+                            return (
+                                '<a href="' + full['edit'] + '" class="text-primary">' +
+                                feather.icons['eye'].toSvg({class: 'font-medium-4'}) +
+                                '</a>'
+                            );
+                        }
                     }
                 ],
-                dom:
-                    '<"top"<"actions action-btns"B><"action-filters"lf>><"clear">rt<"bottom"<"actions">p>',
-                oLanguage: {
+                dom: '<"d-flex justify-content-between align-items-center mx-0 row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>t<"d-flex justify-content-between mx-0 row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+                language: {
+                    paginate: {
+                        // remove previous & next text from pagination
+                        previous: '&nbsp;',
+                        next: '&nbsp;'
+                    },
                     sLengthMenu: "_MENU_",
                     sZeroRecords: "{{ __('locale.datatables.no_results') }}",
-                    sSearch: "",
+                    sSearch: "{{ __('locale.datatables.search') }}",
                     sProcessing: "{{ __('locale.datatables.processing') }}",
-                    oPaginate: {
-                        sFirst: "{{ __('locale.datatables.first') }}",
-                        sPrevious: "{{ __('locale.datatables.previous') }}",
-                        sNext: "{{ __('locale.datatables.next') }}",
-                        sLast: "{{ __('locale.datatables.last') }}"
+                    sInfo: "{{ __('locale.datatables.showing_entries', ['start' => '_START_', 'end' => '_END_', 'total' => '_TOTAL_']) }}"
+                },
+                responsive: {
+                    details: {
+                        display: $.fn.dataTable.Responsive.display.modal({
+                            header: function (row) {
+                                let data = row.data();
+                                return 'Details of ' + data['id'];
+                            }
+                        }),
+                        type: 'column',
+                        renderer: function (api, rowIdx, columns) {
+                            let data = $.map(columns, function (col) {
+                                return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+                                    ? '<tr data-dt-row="' +
+                                    col.rowIdx +
+                                    '" data-dt-column="' +
+                                    col.columnIndex +
+                                    '">' +
+                                    '<td>' +
+                                    col.title +
+                                    ':' +
+                                    '</td> ' +
+                                    '<td>' +
+                                    col.data +
+                                    '</td>' +
+                                    '</tr>'
+                                    : '';
+                            }).join('');
+
+                            return data ? $('<table class="table"/>').append('<tbody>' + data + '</tbody>') : false;
+                        }
                     }
                 },
                 aLengthMenu: [[10, 20, 50, 100], [10, 20, 50, 100]],
-                select: {
-                    style: "multi"
-                },
-                order: [[0, "desc"]],
-                bInfo: false,
-                pageLength: 10,
-                buttons: [],
-                initComplete: function () {
-                    $(".dt-buttons .btn").removeClass("btn-secondary")
-                }
-
+                order: [[2, "desc"]],
+                displayLength: 10,
             });
-
-            // Scrollbar
-            if ($(".data-items").length > 0) {
-                new PerfectScrollbar(".data-items", {wheelPropagation: false})
-            }
-
             // On cancel
             $(".action-cancel").on("click", function (e) {
                 e.stopPropagation();
-                let id = $(this).data('id');
                 Swal.fire({
                     title: "{{ __('locale.labels.are_you_sure') }}",
                     text: "{{ __('locale.subscription.cancel_subscription_warning') }}",
-                    type: 'warning',
+                    icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
                     confirmButtonText: "{{ __('locale.labels.cancel_it') }}",
-                    confirmButtonClass: 'btn btn-danger',
-                    cancelButtonClass: 'btn btn-primary ml-1',
+                    customClass: {
+                        confirmButton: 'btn btn-primary',
+                        cancelButton: 'btn btn-outline-danger ms-1'
+                    },
                     buttonsStyling: false,
                 }).then(function (result) {
                     if (result.value) {

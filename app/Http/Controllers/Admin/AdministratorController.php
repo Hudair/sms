@@ -70,7 +70,7 @@ class AdministratorController extends AdminBaseController
                 ['name' => __('locale.menu.Administrators')],
         ];
 
-        return view('admin.administrator.index', compact('breadcrumbs'));
+        return view('admin.Administrator.index', compact('breadcrumbs'));
     }
 
 
@@ -86,12 +86,14 @@ class AdministratorController extends AdminBaseController
         $this->authorize('view administrator');
 
         $columns = [
-                0 => 'uid',
-                1 => 'name',
-                2 => 'roles',
-                3 => 'created_at',
-                4 => 'status',
-                5 => 'uid',
+                0 => 'responsive_id',
+                1 => 'uid',
+                2 => 'uid',
+                3 => 'name',
+                4 => 'roles',
+                5 => 'created_at',
+                6 => 'status',
+                7 => 'actions',
         ];
 
 
@@ -103,6 +105,9 @@ class AdministratorController extends AdminBaseController
         $start = $request->input('start');
         $order = $columns[$request->input('order.0.column')];
         $dir   = $request->input('order.0.dir');
+        if ($order == 'name'){
+            $order = 'first_name';
+        }
 
         if (empty($request->input('search.value'))) {
             $administrators = User::where('is_admin', 1)->where('id', '!=', 1)->offset($start)
@@ -142,33 +147,36 @@ class AdministratorController extends AdminBaseController
                     $roles = __('locale.administrator.no_active_roles');
                 }
 
-                $action = null;
+                $edit   = null;
+                $delete = null;
 
                 if (Auth::user()->can('edit administrator')) {
-                    $action .= "<a href='$show' class='text-primary mr-1'><i class='feather us-2x icon-edit'></i></a>";
+                    $edit .= $show;
                 }
 
                 if (Auth::user()->can('delete administrator')) {
-                    $action .= "<span class='action-delete text-danger' data-id='$administrator->uid'><i class='feather us-2x icon-trash'></i></span>";
+                    $delete .= $administrator->uid;
                 }
 
-                $nestedData['uid']        = $administrator->uid;
-                $nestedData['name']       = "<div>
-                                            <h5 class='text-bold-600'><a href='$show' > $administrator->first_name $administrator->last_name </a></h5>
-                                             <span class='text-muted'> $administrator->email </span>
-                                          </div>";
-                $nestedData['roles']      = $roles;
-                $nestedData['created_at'] = Tool::formatDate($administrator->created_at);
-                $nestedData['status']     = "<div class='custom-control custom-switch switch-lg custom-switch-success'>
-                <input type='checkbox' class='custom-control-input get_status' id='status_$administrator->uid' data-id='$administrator->uid' name='status' $status>
-                <label class='custom-control-label' for='status_$administrator->uid'>
-                  <span class='switch-text-left'>".__('locale.labels.active')."</span>
-                  <span class='switch-text-right'>".__('locale.labels.inactive')."</span>
+
+                $nestedData['uid']           = $administrator->uid;
+                $nestedData['responsive_id'] = '';
+                $nestedData['avatar']        = route('admin.customers.avatar', $administrator->uid);
+                $nestedData['email']         = $administrator->email;
+                $nestedData['name']          = $administrator->first_name.' '.$administrator->last_name;
+                $nestedData['roles']         = $roles;
+                $nestedData['created_at']    = Tool::formatDate($administrator->created_at);
+                $nestedData['status']        = "<div class='form-check form-switch form-check-primary'>
+                <input type='checkbox' class='form-check-input get_status' id='status_$administrator->uid' data-id='$administrator->uid' name='status' $status>
+                <label class='form-check-label' for='status_$administrator->uid'>
+                  <span class='switch-icon-left'><i data-feather='check'></i> </span>
+                  <span class='switch-icon-right'><i data-feather='x'></i> </span>
                 </label>
               </div>";
 
 
-                $nestedData['action'] = $action;
+                $nestedData['edit']   = $edit;
+                $nestedData['delete'] = $delete;
                 $data[]               = $nestedData;
 
             }
@@ -206,7 +214,7 @@ class AdministratorController extends AdminBaseController
 
         $roles = $this->roles->getAllowedRoles();
 
-        return view('admin.administrator.create', compact('breadcrumbs', 'roles'));
+        return view('admin.Administrator.create', compact('breadcrumbs', 'roles'));
     }
 
 
@@ -264,7 +272,7 @@ class AdministratorController extends AdminBaseController
         $languages = Language::where('status', 1)->get();
         $roles     = $this->roles->getAllowedRoles();
 
-        return view('admin.administrator.show', compact('breadcrumbs', 'administrator', 'languages', 'roles', 'get_roles'));
+        return view('admin.Administrator.show', compact('breadcrumbs', 'administrator', 'languages', 'roles', 'get_roles'));
     }
 
 

@@ -29,22 +29,20 @@
                                     <div class="row">
 
                                         <div class="col-12">
-                                            <div class="form-group">
-                                                <label for="name" class="required">{{ __('locale.labels.name') }}</label>
-                                                <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name',  isset($tag->name) ? $tag->name : null) }}" name="name" required placeholder="{{__('locale.labels.required')}}" autofocus>
+                                            <div class="mb-1">
+                                                <label for="name" class="form-label required">{{ __('locale.labels.name') }}</label>
+                                                <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name',  $tag->name ?? null) }}" name="name" required placeholder="{{__('locale.labels.required')}}" autofocus>
                                                 @error('name')
-                                                <div class="invalid-feedback">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
                                             </div>
                                         </div>
 
 
                                         <div class="col-12">
-                                            <fieldset class="form-group">
-                                                <label for="type" class="required">{{ __('locale.labels.type') }}</label>
-                                                <select class="form-control" name="type" id="type">
+                                            <div class="mb-1">
+                                                <label for="type" class="form-label required">{{ __('locale.labels.type') }}</label>
+                                                <select class="form-select" name="type" id="type">
                                                     <option value="text" {{ isset($tag->type) && $tag->type == 'text' ? 'selected' : null }}>text</option>
                                                     <option value="email" {{ isset($tag->type) && $tag->type == 'email' ? 'selected' : null }}>email</option>
                                                     <option value="number" {{ isset($tag->type) && $tag->type == 'number' ? 'selected' : null }}>number</option>
@@ -53,32 +51,28 @@
                                                     <option value="date" {{ isset($tag->type) && $tag->type == 'date' ? 'selected' : null }}>date</option>
                                                 </select>
                                                 @error('type')
-                                                <div class="text-danger">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
-                                            </fieldset>
+                                            </div>
                                         </div>
 
 
                                         <div class="col-12">
-                                            <fieldset class="form-group">
-                                                <label for="required" class="required">{{ __('locale.labels.required') }}</label>
-                                                <select class="form-control" name="required" id="required">
+                                            <div class="mb-1">
+                                                <label for="required" class="form-label required">{{ __('locale.labels.required') }}</label>
+                                                <select class="form-select" name="required" id="required">
                                                     <option value="0" {{ isset($tag->required) && $tag->required == 0 ? 'selected' : null }}>{{ __('locale.labels.optional')}} </option>
                                                     <option value="1" {{ isset($tag->required) && $tag->required == 1 ? 'selected' : null }}>{{ __('locale.labels.required') }}</option>
                                                 </select>
                                                 @error('required')
-                                                <div class="text-danger">
-                                                    {{ $message }}
-                                                </div>
+                                                <p><small class="text-danger">{{ $message }}</small></p>
                                                 @enderror
-                                            </fieldset>
+                                            </div>
                                         </div>
 
 
                                         <div class="col-12">
-                                            <button type="submit" class="btn btn-primary mr-1 mb-1"><i class="feather icon-save"></i> {{ __('locale.buttons.save') }}</button>
+                                            <button type="submit" class="btn btn-primary mb-1"><i data-feather="save"></i> {{ __('locale.buttons.save') }}</button>
                                         </div>
 
                                     </div>
