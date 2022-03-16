@@ -13,6 +13,7 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 -- Dumping structure for table sms.cg_app_config
+DROP TABLE IF EXISTS `cg_app_config`;
 CREATE TABLE IF NOT EXISTS `cg_app_config` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `setting` text COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -24,7 +25,7 @@ CREATE TABLE IF NOT EXISTS `cg_app_config` (
 
 -- Dumping data for table sms.cg_app_config: ~67 rows (approximately)
 /*!40000 ALTER TABLE `cg_app_config` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_app_config` (`id`, `setting`, `value`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_app_config` (`id`, `setting`, `value`, `created_at`, `updated_at`) VALUES
 	(1, 'app_name', 'arabcodesms', '2022-03-07 04:26:53', '2022-03-07 02:40:48'),
 	(2, 'app_title', 'التسويق بواسطة sms', '2022-03-07 04:26:53', '2022-03-07 02:40:48'),
 	(3, 'app_keyword', 'تسويق', '2022-03-07 04:26:53', '2022-03-07 02:40:48'),
@@ -95,6 +96,7 @@ INSERT IGNORE INTO `cg_app_config` (`id`, `setting`, `value`, `created_at`, `upd
 /*!40000 ALTER TABLE `cg_app_config` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_blacklists
+DROP TABLE IF EXISTS `cg_blacklists`;
 CREATE TABLE IF NOT EXISTS `cg_blacklists` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -113,6 +115,7 @@ CREATE TABLE IF NOT EXISTS `cg_blacklists` (
 /*!40000 ALTER TABLE `cg_blacklists` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_campaigns
+DROP TABLE IF EXISTS `cg_campaigns`;
 CREATE TABLE IF NOT EXISTS `cg_campaigns` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -150,6 +153,7 @@ CREATE TABLE IF NOT EXISTS `cg_campaigns` (
 /*!40000 ALTER TABLE `cg_campaigns` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_campaigns_lists
+DROP TABLE IF EXISTS `cg_campaigns_lists`;
 CREATE TABLE IF NOT EXISTS `cg_campaigns_lists` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `campaign_id` bigint(20) unsigned NOT NULL,
@@ -168,6 +172,7 @@ CREATE TABLE IF NOT EXISTS `cg_campaigns_lists` (
 /*!40000 ALTER TABLE `cg_campaigns_lists` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_campaigns_recipients
+DROP TABLE IF EXISTS `cg_campaigns_recipients`;
 CREATE TABLE IF NOT EXISTS `cg_campaigns_recipients` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `campaign_id` bigint(20) unsigned NOT NULL,
@@ -184,6 +189,7 @@ CREATE TABLE IF NOT EXISTS `cg_campaigns_recipients` (
 /*!40000 ALTER TABLE `cg_campaigns_recipients` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_campaigns_senderids
+DROP TABLE IF EXISTS `cg_campaigns_senderids`;
 CREATE TABLE IF NOT EXISTS `cg_campaigns_senderids` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `campaign_id` bigint(20) unsigned NOT NULL,
@@ -201,6 +207,7 @@ CREATE TABLE IF NOT EXISTS `cg_campaigns_senderids` (
 /*!40000 ALTER TABLE `cg_campaigns_senderids` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_campaigns_sending_servers
+DROP TABLE IF EXISTS `cg_campaigns_sending_servers`;
 CREATE TABLE IF NOT EXISTS `cg_campaigns_sending_servers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `campaign_id` bigint(20) unsigned NOT NULL,
@@ -220,6 +227,7 @@ CREATE TABLE IF NOT EXISTS `cg_campaigns_sending_servers` (
 /*!40000 ALTER TABLE `cg_campaigns_sending_servers` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_chat_boxes
+DROP TABLE IF EXISTS `cg_chat_boxes`;
 CREATE TABLE IF NOT EXISTS `cg_chat_boxes` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -239,6 +247,7 @@ CREATE TABLE IF NOT EXISTS `cg_chat_boxes` (
 /*!40000 ALTER TABLE `cg_chat_boxes` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_chat_box_messages
+DROP TABLE IF EXISTS `cg_chat_box_messages`;
 CREATE TABLE IF NOT EXISTS `cg_chat_box_messages` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `box_id` bigint(20) unsigned NOT NULL,
@@ -261,6 +270,7 @@ CREATE TABLE IF NOT EXISTS `cg_chat_box_messages` (
 /*!40000 ALTER TABLE `cg_chat_box_messages` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_contacts
+DROP TABLE IF EXISTS `cg_contacts`;
 CREATE TABLE IF NOT EXISTS `cg_contacts` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -290,6 +300,7 @@ CREATE TABLE IF NOT EXISTS `cg_contacts` (
 /*!40000 ALTER TABLE `cg_contacts` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_contacts_custom_field
+DROP TABLE IF EXISTS `cg_contacts_custom_field`;
 CREATE TABLE IF NOT EXISTS `cg_contacts_custom_field` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -311,6 +322,7 @@ CREATE TABLE IF NOT EXISTS `cg_contacts_custom_field` (
 /*!40000 ALTER TABLE `cg_contacts_custom_field` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_contact_groups
+DROP TABLE IF EXISTS `cg_contact_groups`;
 CREATE TABLE IF NOT EXISTS `cg_contact_groups` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -338,6 +350,7 @@ CREATE TABLE IF NOT EXISTS `cg_contact_groups` (
 /*!40000 ALTER TABLE `cg_contact_groups` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_contact_groups_optin_keywords
+DROP TABLE IF EXISTS `cg_contact_groups_optin_keywords`;
 CREATE TABLE IF NOT EXISTS `cg_contact_groups_optin_keywords` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -355,6 +368,7 @@ CREATE TABLE IF NOT EXISTS `cg_contact_groups_optin_keywords` (
 /*!40000 ALTER TABLE `cg_contact_groups_optin_keywords` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_contact_groups_optout_keywords
+DROP TABLE IF EXISTS `cg_contact_groups_optout_keywords`;
 CREATE TABLE IF NOT EXISTS `cg_contact_groups_optout_keywords` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -372,6 +386,7 @@ CREATE TABLE IF NOT EXISTS `cg_contact_groups_optout_keywords` (
 /*!40000 ALTER TABLE `cg_contact_groups_optout_keywords` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_countries
+DROP TABLE IF EXISTS `cg_countries`;
 CREATE TABLE IF NOT EXISTS `cg_countries` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -383,13 +398,14 @@ CREATE TABLE IF NOT EXISTS `cg_countries` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_countries: ~0 rows (approximately)
+-- Dumping data for table sms.cg_countries: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_countries` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_countries` (`id`, `name`, `iso_code`, `country_code`, `status`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_countries` (`id`, `name`, `iso_code`, `country_code`, `status`, `created_at`, `updated_at`) VALUES
 	(1, 'Zimbabwe', 'ZW', '263', 1, '2022-03-07 04:26:56', '2022-03-07 04:27:05');
 /*!40000 ALTER TABLE `cg_countries` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_csv_data
+DROP TABLE IF EXISTS `cg_csv_data`;
 CREATE TABLE IF NOT EXISTS `cg_csv_data` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) unsigned NOT NULL,
@@ -408,6 +424,7 @@ CREATE TABLE IF NOT EXISTS `cg_csv_data` (
 /*!40000 ALTER TABLE `cg_csv_data` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_currencies
+DROP TABLE IF EXISTS `cg_currencies`;
 CREATE TABLE IF NOT EXISTS `cg_currencies` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -423,9 +440,9 @@ CREATE TABLE IF NOT EXISTS `cg_currencies` (
   CONSTRAINT `cg_currencies_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `cg_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_currencies: ~11 rows (approximately)
+-- Dumping data for table sms.cg_currencies: ~12 rows (approximately)
 /*!40000 ALTER TABLE `cg_currencies` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_currencies` (`id`, `uid`, `user_id`, `name`, `code`, `format`, `status`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_currencies` (`id`, `uid`, `user_id`, `name`, `code`, `format`, `status`, `created_at`, `updated_at`) VALUES
 	(1, '6225353f7ef49', 1, 'US Dollar', 'USD', '${PRICE}', 1, '2022-03-07 04:27:11', '2022-03-07 04:27:11'),
 	(2, '6225353f88762', 1, 'EURO', 'EUR', '€{PRICE}', 1, '2022-03-07 04:27:11', '2022-03-07 04:27:11'),
 	(3, '6225353f911e4', 1, 'British Pound', 'GBP', '£{PRICE}', 1, '2022-03-07 04:27:11', '2022-03-07 04:27:11'),
@@ -441,6 +458,7 @@ INSERT IGNORE INTO `cg_currencies` (`id`, `uid`, `user_id`, `name`, `code`, `for
 /*!40000 ALTER TABLE `cg_currencies` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_customers
+DROP TABLE IF EXISTS `cg_customers`;
 CREATE TABLE IF NOT EXISTS `cg_customers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -472,12 +490,13 @@ CREATE TABLE IF NOT EXISTS `cg_customers` (
 
 -- Dumping data for table sms.cg_customers: ~2 rows (approximately)
 /*!40000 ALTER TABLE `cg_customers` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_customers` (`id`, `uid`, `user_id`, `contact_id`, `parent`, `company`, `website`, `address`, `city`, `postcode`, `financial_address`, `financial_city`, `financial_postcode`, `tax_number`, `state`, `country`, `phone`, `notifications`, `permissions`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_customers` (`id`, `uid`, `user_id`, `contact_id`, `parent`, `company`, `website`, `address`, `city`, `postcode`, `financial_address`, `financial_city`, `financial_postcode`, `tax_number`, `state`, `country`, `phone`, `notifications`, `permissions`, `created_at`, `updated_at`) VALUES
 	(1, '62253542c206a', 1, NULL, NULL, NULL, 'https://localhost/sms', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{"login":"no","sender_id":"yes","keyword":"yes","subscription":"yes","promotion":"yes","profile":"yes"}', '["access_backend","view_reports","view_contact_group","create_contact_group","update_contact_group","delete_contact_group","view_contact","create_contact","update_contact","delete_contact","view_sender_id","create_sender_id","view_blacklist","create_blacklist","delete_blacklist","sms_campaign_builder","sms_quick_send","sms_bulk_messages","sms_template","developers"]', '2022-03-07 04:27:14', '2022-03-07 04:27:14'),
 	(2, '62253b35d2e20', 2, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{"login":"no","tickets":"yes","sender_id":"yes","keyword":"yes","subscription":"yes","promotion":"yes","profile":"yes"}', '["view_reports","create_sending_servers","view_contact_group","create_contact_group","update_contact_group","delete_contact_group","view_contact","create_contact","update_contact","delete_contact","view_numbers","buy_numbers","release_numbers","view_keywords","buy_keywords","update_keywords","release_keywords","view_sender_id","create_sender_id","delete_sender_id","view_blacklist","create_blacklist","delete_blacklist","sms_campaign_builder","sms_quick_send","sms_bulk_messages","voice_campaign_builder","voice_quick_send","voice_bulk_messages","mms_campaign_builder","mms_quick_send","whatsapp_campaign_builder","whatsapp_quick_send","whatsapp_bulk_messages","sms_template","chat_box","developers","access_backend"]', '2022-03-07 01:52:37', '2022-03-07 02:18:15');
 /*!40000 ALTER TABLE `cg_customers` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_custom_sending_servers
+DROP TABLE IF EXISTS `cg_custom_sending_servers`;
 CREATE TABLE IF NOT EXISTS `cg_custom_sending_servers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -533,6 +552,7 @@ CREATE TABLE IF NOT EXISTS `cg_custom_sending_servers` (
 /*!40000 ALTER TABLE `cg_custom_sending_servers` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_email_templates
+DROP TABLE IF EXISTS `cg_email_templates`;
 CREATE TABLE IF NOT EXISTS `cg_email_templates` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -548,7 +568,7 @@ CREATE TABLE IF NOT EXISTS `cg_email_templates` (
 
 -- Dumping data for table sms.cg_email_templates: ~10 rows (approximately)
 /*!40000 ALTER TABLE `cg_email_templates` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_email_templates` (`id`, `uid`, `name`, `slug`, `subject`, `content`, `status`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_email_templates` (`id`, `uid`, `name`, `slug`, `subject`, `content`, `status`, `created_at`, `updated_at`) VALUES
 	(1, '62253540885c4', 'Customer Registration', 'customer_registration', 'Welcome to {app_name}', 'Hi {first_name} {last_name},\n                                      Welcome to {app_name}! This message is an automated reply to your User Access request. Login to your User panel by using the details below:\n                                      {login_url}\n                                      Email: {email_address}\n                                      Password: {password}', 1, '2022-03-07 04:27:12', '2022-03-07 04:27:12'),
 	(2, '6225354093695', 'Customer Registration Verification', 'registration_verification', 'Registration Verification From {app_name}', 'Hi {first_name} {last_name},\n                                      Welcome to {app_name}! This message is an automated reply to your account verification request. Click the following url to verify your account:\n                                      {verification_url}', 1, '2022-03-07 04:27:12', '2022-03-07 04:27:12'),
 	(3, '622535409b57c', 'Password Reset', 'password_reset', '{app_name} New Password', 'Hi {first_name} {last_name},\n                                      Password Reset Successfully! This message is an automated reply to your password reset request. Login to your account to set up your all details by using the details below:\n                                      {login_url}\n                                      Email: {email_address}\n                                      Password: {password}', 1, '2022-03-07 04:27:12', '2022-03-07 04:27:12'),
@@ -562,6 +582,7 @@ INSERT IGNORE INTO `cg_email_templates` (`id`, `uid`, `name`, `slug`, `subject`,
 /*!40000 ALTER TABLE `cg_email_templates` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_failed_jobs
+DROP TABLE IF EXISTS `cg_failed_jobs`;
 CREATE TABLE IF NOT EXISTS `cg_failed_jobs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `connection` text COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -577,6 +598,7 @@ CREATE TABLE IF NOT EXISTS `cg_failed_jobs` (
 /*!40000 ALTER TABLE `cg_failed_jobs` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_import_job_histories
+DROP TABLE IF EXISTS `cg_import_job_histories`;
 CREATE TABLE IF NOT EXISTS `cg_import_job_histories` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -595,6 +617,7 @@ CREATE TABLE IF NOT EXISTS `cg_import_job_histories` (
 /*!40000 ALTER TABLE `cg_import_job_histories` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_invoices
+DROP TABLE IF EXISTS `cg_invoices`;
 CREATE TABLE IF NOT EXISTS `cg_invoices` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -617,13 +640,14 @@ CREATE TABLE IF NOT EXISTS `cg_invoices` (
   CONSTRAINT `cg_invoices_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `cg_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_invoices: ~0 rows (approximately)
+-- Dumping data for table sms.cg_invoices: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_invoices` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_invoices` (`id`, `uid`, `user_id`, `currency_id`, `payment_method`, `amount`, `type`, `description`, `transaction_id`, `status`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_invoices` (`id`, `uid`, `user_id`, `currency_id`, `payment_method`, `amount`, `type`, `description`, `transaction_id`, `status`, `created_at`, `updated_at`) VALUES
 	(1, '62253b62e2870', 2, 12, 16, '0.00', 'subscription', 'Payment for plan مجاني', '622539cde530c', 'paid', '2022-03-07 01:53:22', '2022-03-07 01:53:22');
 /*!40000 ALTER TABLE `cg_invoices` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_jobs
+DROP TABLE IF EXISTS `cg_jobs`;
 CREATE TABLE IF NOT EXISTS `cg_jobs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `queue` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -641,6 +665,7 @@ CREATE TABLE IF NOT EXISTS `cg_jobs` (
 /*!40000 ALTER TABLE `cg_jobs` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_job_batches
+DROP TABLE IF EXISTS `cg_job_batches`;
 CREATE TABLE IF NOT EXISTS `cg_job_batches` (
   `id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -660,6 +685,7 @@ CREATE TABLE IF NOT EXISTS `cg_job_batches` (
 /*!40000 ALTER TABLE `cg_job_batches` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_keywords
+DROP TABLE IF EXISTS `cg_keywords`;
 CREATE TABLE IF NOT EXISTS `cg_keywords` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -692,6 +718,7 @@ CREATE TABLE IF NOT EXISTS `cg_keywords` (
 /*!40000 ALTER TABLE `cg_keywords` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_languages
+DROP TABLE IF EXISTS `cg_languages`;
 CREATE TABLE IF NOT EXISTS `cg_languages` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -703,9 +730,9 @@ CREATE TABLE IF NOT EXISTS `cg_languages` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_languages: ~4 rows (approximately)
+-- Dumping data for table sms.cg_languages: ~5 rows (approximately)
 /*!40000 ALTER TABLE `cg_languages` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_languages` (`id`, `name`, `code`, `iso_code`, `status`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_languages` (`id`, `name`, `code`, `iso_code`, `status`, `created_at`, `updated_at`) VALUES
 	(1, 'English', 'en', 'us', 1, '2022-03-07 04:27:05', '2022-03-07 04:27:05'),
 	(2, 'German', 'de', 'de', 1, '2022-03-07 04:27:05', '2022-03-07 04:27:05'),
 	(3, 'French', 'fr', 'fr', 1, '2022-03-07 04:27:05', '2022-03-07 04:27:05'),
@@ -714,6 +741,7 @@ INSERT IGNORE INTO `cg_languages` (`id`, `name`, `code`, `iso_code`, `status`, `
 /*!40000 ALTER TABLE `cg_languages` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_migrations
+DROP TABLE IF EXISTS `cg_migrations`;
 CREATE TABLE IF NOT EXISTS `cg_migrations` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `migration` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -723,7 +751,7 @@ CREATE TABLE IF NOT EXISTS `cg_migrations` (
 
 -- Dumping data for table sms.cg_migrations: ~47 rows (approximately)
 /*!40000 ALTER TABLE `cg_migrations` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_migrations` (`id`, `migration`, `batch`) VALUES
+INSERT INTO `cg_migrations` (`id`, `migration`, `batch`) VALUES
 	(1, '2014_10_12_000000_create_users_table', 1),
 	(2, '2014_10_12_100000_create_password_resets_table', 1),
 	(3, '2018_07_26_134739_create_app_config_table', 1),
@@ -774,6 +802,7 @@ INSERT IGNORE INTO `cg_migrations` (`id`, `migration`, `batch`) VALUES
 /*!40000 ALTER TABLE `cg_migrations` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_notifications
+DROP TABLE IF EXISTS `cg_notifications`;
 CREATE TABLE IF NOT EXISTS `cg_notifications` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -789,13 +818,14 @@ CREATE TABLE IF NOT EXISTS `cg_notifications` (
   CONSTRAINT `cg_notifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `cg_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_notifications: ~0 rows (approximately)
+-- Dumping data for table sms.cg_notifications: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_notifications` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_notifications` (`id`, `uid`, `user_id`, `notification_for`, `notification_type`, `message`, `mark_read`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_notifications` (`id`, `uid`, `user_id`, `notification_for`, `notification_type`, `message`, `mark_read`, `created_at`, `updated_at`) VALUES
 	(1, '62253b36cb653', 1, 'admin', 'user', 'mohammed hudair Registered', 1, '2022-03-07 01:52:38', '2022-03-07 02:16:27');
 /*!40000 ALTER TABLE `cg_notifications` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_password_resets
+DROP TABLE IF EXISTS `cg_password_resets`;
 CREATE TABLE IF NOT EXISTS `cg_password_resets` (
   `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `token` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -805,12 +835,13 @@ CREATE TABLE IF NOT EXISTS `cg_password_resets` (
 
 -- Dumping data for table sms.cg_password_resets: ~2 rows (approximately)
 /*!40000 ALTER TABLE `cg_password_resets` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_password_resets` (`email`, `token`, `created_at`) VALUES
+INSERT INTO `cg_password_resets` (`email`, `token`, `created_at`) VALUES
 	('mohammed.hudair@gmail.com', '$2y$10$6PChVVMGP696W5koI3n2z.TF8MYztQxViWEzOs1SPGeSFE24PAqvG', '2022-03-11 08:06:59'),
 	('mohammed.hudair@gmail.com', '$2y$10$UuZOArohdvJabWoOrPtXrOhHYIqF2Zr/UDmh8OzB24/pNYz/munNq', '2022-03-11 08:06:59');
 /*!40000 ALTER TABLE `cg_password_resets` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_payment_methods
+DROP TABLE IF EXISTS `cg_payment_methods`;
 CREATE TABLE IF NOT EXISTS `cg_payment_methods` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -825,7 +856,7 @@ CREATE TABLE IF NOT EXISTS `cg_payment_methods` (
 
 -- Dumping data for table sms.cg_payment_methods: ~16 rows (approximately)
 /*!40000 ALTER TABLE `cg_payment_methods` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_payment_methods` (`id`, `uid`, `name`, `type`, `options`, `status`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_payment_methods` (`id`, `uid`, `name`, `type`, `options`, `status`, `created_at`, `updated_at`) VALUES
 	(1, '622535416c414', 'PayPal', 'paypal', '{"environment":"production","client_id":"gjgjg","secret":"-jgghjgjhg"}', 1, '2022-03-07 04:27:13', '2022-03-07 03:03:54'),
 	(2, '62253541756ca', 'Braintree', 'braintree', '{"merchant_id":"s999zxpkvhh6dpm2","public_key":"hw4v45rty67jdxc9","private_key":"cac14c4d9d950e32c947b400b10a7596","environment":"sandbox"}', 1, '2022-03-07 04:27:13', '2022-03-07 04:27:13'),
 	(3, '622535417ddfa', 'Stripe', 'stripe', '{"publishable_key":"pk_test_AnS4Ov8GS92XmHeVCDRPIZF4","secret_key":"sk_test_iS0xwfgzBF6cmPBBkgO13sjd","environment":"sandbox"}', 1, '2022-03-07 04:27:13', '2022-03-07 04:27:13'),
@@ -845,6 +876,7 @@ INSERT IGNORE INTO `cg_payment_methods` (`id`, `uid`, `name`, `type`, `options`,
 /*!40000 ALTER TABLE `cg_payment_methods` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_permissions
+DROP TABLE IF EXISTS `cg_permissions`;
 CREATE TABLE IF NOT EXISTS `cg_permissions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -859,7 +891,7 @@ CREATE TABLE IF NOT EXISTS `cg_permissions` (
 
 -- Dumping data for table sms.cg_permissions: ~70 rows (approximately)
 /*!40000 ALTER TABLE `cg_permissions` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_permissions` (`id`, `uid`, `role_id`, `name`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_permissions` (`id`, `uid`, `role_id`, `name`, `created_at`, `updated_at`) VALUES
 	(1, '6225353b98f7c', 1, 'access backend', '2022-03-07 04:27:07', '2022-03-07 04:27:07'),
 	(2, '6225353ba0af9', 1, 'view customer', '2022-03-07 04:27:07', '2022-03-07 04:27:07'),
 	(3, '6225353ba95d3', 1, 'create customer', '2022-03-07 04:27:07', '2022-03-07 04:27:07'),
@@ -933,6 +965,7 @@ INSERT IGNORE INTO `cg_permissions` (`id`, `uid`, `role_id`, `name`, `created_at
 /*!40000 ALTER TABLE `cg_permissions` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_personal_access_tokens
+DROP TABLE IF EXISTS `cg_personal_access_tokens`;
 CREATE TABLE IF NOT EXISTS `cg_personal_access_tokens` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `tokenable_type` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -950,12 +983,13 @@ CREATE TABLE IF NOT EXISTS `cg_personal_access_tokens` (
 
 -- Dumping data for table sms.cg_personal_access_tokens: ~2 rows (approximately)
 /*!40000 ALTER TABLE `cg_personal_access_tokens` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `created_at`, `updated_at`) VALUES
 	(1, 'user', 1, 'akasham67@gmail.com', '3b12741f7d54fc32593fd8db92758ef3bbf0571987f2775b7f309c82c374732f', '["*"]', NULL, '2022-03-07 04:27:11', '2022-03-07 04:27:11'),
 	(2, 'user', 2, 'mohammed.hudair@gmail.com', 'd6ff2bea7861595706a9e0cb5d93c5a794b6d42bcce528eeba2b824f5b381091', '["access_backend","view_reports","view_contact_group","create_contact_group","update_contact_group","delete_contact_group","view_contact","create_contact","update_contact","delete_contact","view_sender_id","create_sender_id","view_blacklist","create_blacklist","delete_blacklist","sms_campaign_builder","sms_quick_send","sms_bulk_messages","sms_template","developers"]', NULL, '2022-03-07 01:52:38', '2022-03-07 01:52:38');
 /*!40000 ALTER TABLE `cg_personal_access_tokens` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_phone_numbers
+DROP TABLE IF EXISTS `cg_phone_numbers`;
 CREATE TABLE IF NOT EXISTS `cg_phone_numbers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -984,6 +1018,7 @@ CREATE TABLE IF NOT EXISTS `cg_phone_numbers` (
 /*!40000 ALTER TABLE `cg_phone_numbers` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_plans
+DROP TABLE IF EXISTS `cg_plans`;
 CREATE TABLE IF NOT EXISTS `cg_plans` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1012,7 +1047,7 @@ CREATE TABLE IF NOT EXISTS `cg_plans` (
 
 -- Dumping data for table sms.cg_plans: ~4 rows (approximately)
 /*!40000 ALTER TABLE `cg_plans` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_plans` (`id`, `uid`, `user_id`, `currency_id`, `name`, `description`, `price`, `billing_cycle`, `frequency_amount`, `frequency_unit`, `options`, `status`, `custom_order`, `is_default`, `is_popular`, `tax_billing_required`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_plans` (`id`, `uid`, `user_id`, `currency_id`, `name`, `description`, `price`, `billing_cycle`, `frequency_amount`, `frequency_unit`, `options`, `status`, `custom_order`, `is_default`, `is_popular`, `tax_billing_required`, `created_at`, `updated_at`) VALUES
 	(1, '622539cde530c', 1, 12, 'مجاني', NULL, 0.00, 'monthly', 1, 'month', '{"sms_max":"5","whatsapp_max":"100","list_max":"-1","subscriber_max":"-1","subscriber_per_list_max":"-1","segment_per_list_max":"3","billing_cycle":"monthly","sending_limit":"1000_per_hour","sending_quota":"1000","sending_quota_time":"1","sending_quota_time_unit":"hour","max_process":"1","unsubscribe_url_required":"no","create_sending_server":"no","sending_servers_max":"5","list_import":"yes","list_export":"yes","api_access":"no","create_sub_account":"yes","delete_sms_history":"yes","add_previous_balance":"no","sender_id_verification":"yes","send_spam_message":"no","cutting_system":"no","cutting_value":"0","cutting_unit":"percentage","cutting_logic":"random","plain_sms":"1","receive_plain_sms":"0","voice_sms":"2","receive_voice_sms":"0","mms_sms":"3","receive_mms_sms":"0","whatsapp_sms":"1","receive_whatsapp_sms":"0","per_unit_price":".3"}', 1, 3, 0, 1, 0, '2022-03-07 01:46:37', '2022-03-07 02:56:04'),
 	(2, '62254702c175e', 1, 1, 'بيسك', 'باقة اشتراك مجانية', 0.00, 'yearly', 1, 'year', '{"sms_max":"100","whatsapp_max":"100","list_max":"-1","subscriber_max":"-1","subscriber_per_list_max":"-1","segment_per_list_max":"3","billing_cycle":"monthly","sending_limit":"1000_per_hour","sending_quota":"1000","sending_quota_time":"1","sending_quota_time_unit":"hour","max_process":"1","unsubscribe_url_required":"no","create_sending_server":"no","sending_servers_max":"5","list_import":"yes","list_export":"yes","api_access":"no","create_sub_account":"yes","delete_sms_history":"yes","add_previous_balance":"no","sender_id_verification":"yes","send_spam_message":"no","cutting_system":"no","cutting_value":"5","cutting_unit":"digit","cutting_logic":"start","plain_sms":"1","receive_plain_sms":"0","voice_sms":"2","receive_voice_sms":"0","mms_sms":"3","receive_mms_sms":"0","whatsapp_sms":"1","receive_whatsapp_sms":"0","per_unit_price":".3"}', 1, 2, 0, 0, 0, '2022-03-07 02:42:58', '2022-03-07 02:56:04'),
 	(3, '622548bc5f3a7', 1, 1, 'بلس', NULL, 100.00, 'monthly', 1, 'month', '{"sms_max":"100","whatsapp_max":"100","list_max":"-1","subscriber_max":"-1","subscriber_per_list_max":"-1","segment_per_list_max":"3","billing_cycle":"monthly","sending_limit":"1000_per_hour","sending_quota":"1000","sending_quota_time":"1","sending_quota_time_unit":"hour","max_process":"1","unsubscribe_url_required":"no","create_sending_server":"no","sending_servers_max":"5","list_import":"yes","list_export":"yes","api_access":"no","create_sub_account":"yes","delete_sms_history":"yes","add_previous_balance":"no","sender_id_verification":"yes","send_spam_message":"no","cutting_system":"no","cutting_value":"50","cutting_unit":"digit","cutting_logic":"start","plain_sms":"1","receive_plain_sms":"0","voice_sms":"2","receive_voice_sms":"0","mms_sms":"3","receive_mms_sms":"0","whatsapp_sms":"1","receive_whatsapp_sms":"0","per_unit_price":".3"}', 1, 1, 0, 0, 0, '2022-03-07 02:50:20', '2022-03-07 02:56:04'),
@@ -1020,6 +1055,7 @@ INSERT IGNORE INTO `cg_plans` (`id`, `uid`, `user_id`, `currency_id`, `name`, `d
 /*!40000 ALTER TABLE `cg_plans` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_plans_coverage_countries
+DROP TABLE IF EXISTS `cg_plans_coverage_countries`;
 CREATE TABLE IF NOT EXISTS `cg_plans_coverage_countries` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `country_id` bigint(20) unsigned NOT NULL,
@@ -1038,6 +1074,7 @@ CREATE TABLE IF NOT EXISTS `cg_plans_coverage_countries` (
 /*!40000 ALTER TABLE `cg_plans_coverage_countries` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_plans_sending_servers
+DROP TABLE IF EXISTS `cg_plans_sending_servers`;
 CREATE TABLE IF NOT EXISTS `cg_plans_sending_servers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `sending_server_id` bigint(20) unsigned NOT NULL,
@@ -1055,7 +1092,7 @@ CREATE TABLE IF NOT EXISTS `cg_plans_sending_servers` (
 
 -- Dumping data for table sms.cg_plans_sending_servers: ~4 rows (approximately)
 /*!40000 ALTER TABLE `cg_plans_sending_servers` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_plans_sending_servers` (`id`, `sending_server_id`, `plan_id`, `fitness`, `is_primary`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_plans_sending_servers` (`id`, `sending_server_id`, `plan_id`, `fitness`, `is_primary`, `created_at`, `updated_at`) VALUES
 	(1, 1, 2, 50, 1, '2022-03-07 02:45:59', '2022-03-07 02:46:10'),
 	(2, 2, 2, 50, 0, '2022-03-07 02:46:10', '2022-03-07 02:46:10'),
 	(3, 1, 3, 100, 1, '2022-03-07 02:53:09', '2022-03-07 02:53:09'),
@@ -1063,6 +1100,7 @@ INSERT IGNORE INTO `cg_plans_sending_servers` (`id`, `sending_server_id`, `plan_
 /*!40000 ALTER TABLE `cg_plans_sending_servers` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_reports
+DROP TABLE IF EXISTS `cg_reports`;
 CREATE TABLE IF NOT EXISTS `cg_reports` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1094,6 +1132,7 @@ CREATE TABLE IF NOT EXISTS `cg_reports` (
 /*!40000 ALTER TABLE `cg_reports` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_roles
+DROP TABLE IF EXISTS `cg_roles`;
 CREATE TABLE IF NOT EXISTS `cg_roles` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1105,13 +1144,14 @@ CREATE TABLE IF NOT EXISTS `cg_roles` (
   UNIQUE KEY `cg_roles_name_unique` (`name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_roles: ~0 rows (approximately)
+-- Dumping data for table sms.cg_roles: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_roles` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_roles` (`id`, `uid`, `name`, `status`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_roles` (`id`, `uid`, `name`, `status`, `created_at`, `updated_at`) VALUES
 	(1, '6225353b5cf3b', 'administrator', 1, '2022-03-07 04:27:07', '2022-03-07 04:27:07');
 /*!40000 ALTER TABLE `cg_roles` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_role_user
+DROP TABLE IF EXISTS `cg_role_user`;
 CREATE TABLE IF NOT EXISTS `cg_role_user` (
   `user_id` bigint(20) unsigned NOT NULL,
   `role_id` bigint(20) unsigned NOT NULL,
@@ -1121,13 +1161,14 @@ CREATE TABLE IF NOT EXISTS `cg_role_user` (
   CONSTRAINT `cg_role_user_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `cg_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_role_user: ~0 rows (approximately)
+-- Dumping data for table sms.cg_role_user: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_role_user` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_role_user` (`user_id`, `role_id`) VALUES
+INSERT INTO `cg_role_user` (`user_id`, `role_id`) VALUES
 	(1, 1);
 /*!40000 ALTER TABLE `cg_role_user` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_senderid
+DROP TABLE IF EXISTS `cg_senderid`;
 CREATE TABLE IF NOT EXISTS `cg_senderid` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1156,6 +1197,7 @@ CREATE TABLE IF NOT EXISTS `cg_senderid` (
 /*!40000 ALTER TABLE `cg_senderid` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_senderid_plans
+DROP TABLE IF EXISTS `cg_senderid_plans`;
 CREATE TABLE IF NOT EXISTS `cg_senderid_plans` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1176,6 +1218,7 @@ CREATE TABLE IF NOT EXISTS `cg_senderid_plans` (
 /*!40000 ALTER TABLE `cg_senderid_plans` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_sending_servers
+DROP TABLE IF EXISTS `cg_sending_servers`;
 CREATE TABLE IF NOT EXISTS `cg_sending_servers` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1238,12 +1281,13 @@ CREATE TABLE IF NOT EXISTS `cg_sending_servers` (
 
 -- Dumping data for table sms.cg_sending_servers: ~2 rows (approximately)
 /*!40000 ALTER TABLE `cg_sending_servers` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_sending_servers` (`id`, `uid`, `user_id`, `name`, `settings`, `api_link`, `port`, `username`, `password`, `route`, `sms_type`, `account_sid`, `auth_id`, `auth_token`, `access_key`, `secret_access`, `access_token`, `api_key`, `api_secret`, `user_token`, `project_id`, `api_token`, `auth_key`, `device_id`, `region`, `application_id`, `source_addr_ton`, `source_addr_npi`, `dest_addr_ton`, `dest_addr_npi`, `c1`, `c2`, `c3`, `c4`, `c5`, `c6`, `c7`, `type`, `status`, `plain`, `schedule`, `two_way`, `voice`, `mms`, `whatsapp`, `sms_per_request`, `quota_value`, `quota_base`, `quota_unit`, `custom`, `custom_order`, `success_keyword`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_sending_servers` (`id`, `uid`, `user_id`, `name`, `settings`, `api_link`, `port`, `username`, `password`, `route`, `sms_type`, `account_sid`, `auth_id`, `auth_token`, `access_key`, `secret_access`, `access_token`, `api_key`, `api_secret`, `user_token`, `project_id`, `api_token`, `auth_key`, `device_id`, `region`, `application_id`, `source_addr_ton`, `source_addr_npi`, `dest_addr_ton`, `dest_addr_npi`, `c1`, `c2`, `c3`, `c4`, `c5`, `c6`, `c7`, `type`, `status`, `plain`, `schedule`, `two_way`, `voice`, `mms`, `whatsapp`, `sms_per_request`, `quota_value`, `quota_base`, `quota_unit`, `custom`, `custom_order`, `success_keyword`, `created_at`, `updated_at`) VALUES
 	(1, '622541c73b657', 1, 'Twilio', 'Twilio', NULL, NULL, NULL, NULL, NULL, NULL, 'account_sid', NULL, 'auth_token', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '5', '0', '1', '1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'http', 1, 1, 1, 1, 1, 1, 1, 1, 60, 1, 'minute', 0, 0, NULL, '2022-03-07 02:20:39', '2022-03-07 02:20:39'),
 	(2, '6225420969fdc', 1, 'JohnsonConnect', 'JohnsonConnect', 'http://161.117.182.177:8080/api/sms/mtsend', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'app_key', 'secret_key', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '5', '0', '1', '1', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'http', 1, 1, 1, 0, 0, 0, 0, 1, 100, 1, 'minute', 0, 0, NULL, '2022-03-07 02:21:45', '2022-03-07 02:21:45');
 /*!40000 ALTER TABLE `cg_sending_servers` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_spam_word
+DROP TABLE IF EXISTS `cg_spam_word`;
 CREATE TABLE IF NOT EXISTS `cg_spam_word` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1258,6 +1302,7 @@ CREATE TABLE IF NOT EXISTS `cg_spam_word` (
 /*!40000 ALTER TABLE `cg_spam_word` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_subscriptions
+DROP TABLE IF EXISTS `cg_subscriptions`;
 CREATE TABLE IF NOT EXISTS `cg_subscriptions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1286,13 +1331,14 @@ CREATE TABLE IF NOT EXISTS `cg_subscriptions` (
   CONSTRAINT `cg_subscriptions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `cg_users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_subscriptions: ~0 rows (approximately)
+-- Dumping data for table sms.cg_subscriptions: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_subscriptions` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_subscriptions` (`id`, `uid`, `user_id`, `plan_id`, `payment_method_id`, `options`, `status`, `paid`, `payment_claimed`, `current_period_ends_at`, `start_at`, `end_at`, `end_by`, `end_period_last_days`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_subscriptions` (`id`, `uid`, `user_id`, `plan_id`, `payment_method_id`, `options`, `status`, `paid`, `payment_claimed`, `current_period_ends_at`, `start_at`, `end_at`, `end_by`, `end_period_last_days`, `created_at`, `updated_at`) VALUES
 	(1, '62253b631736d', 2, 1, 16, '{"credit_warning":true,"credit":"100","credit_notify":"both","subscription_warning":true,"subscription_notify":"both"}', 'active', 0, 0, '2022-04-07 01:53:23', '2022-03-07 01:53:23', NULL, NULL, 10, '2022-03-07 01:53:23', '2022-03-07 01:53:23');
 /*!40000 ALTER TABLE `cg_subscriptions` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_subscription_logs
+DROP TABLE IF EXISTS `cg_subscription_logs`;
 CREATE TABLE IF NOT EXISTS `cg_subscription_logs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1309,13 +1355,14 @@ CREATE TABLE IF NOT EXISTS `cg_subscription_logs` (
   CONSTRAINT `cg_subscription_logs_transaction_id_foreign` FOREIGN KEY (`transaction_id`) REFERENCES `cg_subscription_transactions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_subscription_logs: ~0 rows (approximately)
+-- Dumping data for table sms.cg_subscription_logs: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_subscription_logs` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_subscription_logs` (`id`, `uid`, `subscription_id`, `transaction_id`, `type`, `data`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_subscription_logs` (`id`, `uid`, `subscription_id`, `transaction_id`, `type`, `data`, `created_at`, `updated_at`) VALUES
 	(1, '62253b63792a0', 1, NULL, 'admin_plan_assigned', '{"plan":"\\u0645\\u062c\\u0627\\u0646\\u064a","price":"sar(price)"}', '2022-03-07 01:53:23', '2022-03-07 01:53:23');
 /*!40000 ALTER TABLE `cg_subscription_logs` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_subscription_transactions
+DROP TABLE IF EXISTS `cg_subscription_transactions`;
 CREATE TABLE IF NOT EXISTS `cg_subscription_transactions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1331,13 +1378,14 @@ CREATE TABLE IF NOT EXISTS `cg_subscription_transactions` (
   CONSTRAINT `cg_subscription_transactions_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `cg_subscriptions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_subscription_transactions: ~0 rows (approximately)
+-- Dumping data for table sms.cg_subscription_transactions: ~1 rows (approximately)
 /*!40000 ALTER TABLE `cg_subscription_transactions` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_subscription_transactions` (`id`, `uid`, `subscription_id`, `title`, `type`, `status`, `amount`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_subscription_transactions` (`id`, `uid`, `subscription_id`, `title`, `type`, `status`, `amount`, `created_at`, `updated_at`) VALUES
 	(1, '62253b6352d72', 1, 'Subscribed to مجاني plan', 'subscribe', 'success', 'sar(price)', '2022-03-07 01:53:23', '2022-03-07 01:53:23');
 /*!40000 ALTER TABLE `cg_subscription_transactions` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_templates
+DROP TABLE IF EXISTS `cg_templates`;
 CREATE TABLE IF NOT EXISTS `cg_templates` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1357,6 +1405,7 @@ CREATE TABLE IF NOT EXISTS `cg_templates` (
 /*!40000 ALTER TABLE `cg_templates` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_template_tags
+DROP TABLE IF EXISTS `cg_template_tags`;
 CREATE TABLE IF NOT EXISTS `cg_template_tags` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1374,6 +1423,7 @@ CREATE TABLE IF NOT EXISTS `cg_template_tags` (
 /*!40000 ALTER TABLE `cg_template_tags` ENABLE KEYS */;
 
 -- Dumping structure for table sms.cg_users
+DROP TABLE IF EXISTS `cg_users`;
 CREATE TABLE IF NOT EXISTS `cg_users` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `uid` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -1405,9 +1455,9 @@ CREATE TABLE IF NOT EXISTS `cg_users` (
   UNIQUE KEY `cg_users_email_unique` (`email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Dumping data for table sms.cg_users: ~1 rows (approximately)
+-- Dumping data for table sms.cg_users: ~2 rows (approximately)
 /*!40000 ALTER TABLE `cg_users` DISABLE KEYS */;
-INSERT IGNORE INTO `cg_users` (`id`, `uid`, `api_token`, `first_name`, `last_name`, `email`, `email_verified_at`, `password`, `status`, `image`, `sms_unit`, `is_admin`, `is_customer`, `active_portal`, `two_factor`, `two_factor_code`, `two_factor_expires_at`, `two_factor_backup_code`, `locale`, `timezone`, `last_access_at`, `provider`, `provider_id`, `remember_token`, `created_at`, `updated_at`) VALUES
+INSERT INTO `cg_users` (`id`, `uid`, `api_token`, `first_name`, `last_name`, `email`, `email_verified_at`, `password`, `status`, `image`, `sms_unit`, `is_admin`, `is_customer`, `active_portal`, `two_factor`, `two_factor_code`, `two_factor_expires_at`, `two_factor_backup_code`, `locale`, `timezone`, `last_access_at`, `provider`, `provider_id`, `remember_token`, `created_at`, `updated_at`) VALUES
 	(1, '6225353ed821e', '$2y$10$eAX4k2fllyYv71nvDTFtAeVmXCsroZTtnh8VA03E3oArWpLPsXLEu', 'arab', 'code', 'admin@gmail.com', '2022-03-07 04:27:10', '$2y$10$r/7q4doBAQ7lz9YnRtHQJe4HkriQzaLjcMxR4vi6.0hODzyaRUCh.', 1, NULL, NULL, 1, 1, 'admin', 0, NULL, NULL, NULL, 'ar', 'Asia/Dhaka', '2022-03-13 01:55:48', NULL, NULL, NULL, '2022-03-07 04:27:10', '2022-03-13 02:06:03'),
 	(2, '62253b359e5bb', '2|T1K18U0a5Xb7WsjpsLI6GXcRIIovFEPDG86CHEOL', 'mohammed', 'hudair', 'mohammed.hudair@gmail.com', '2022-03-07 01:52:37', '$2y$10$tNazDAsVhTX/vC35skrUNOxZWrbFyj58LhsSUQs03RWeYI0kk.XbS', 1, NULL, NULL, 0, 1, 'customer', 0, NULL, NULL, NULL, 'ar', 'Asia/Riyadh', NULL, NULL, NULL, NULL, '2022-03-07 01:52:37', '2022-03-07 02:23:08');
 /*!40000 ALTER TABLE `cg_users` ENABLE KEYS */;
